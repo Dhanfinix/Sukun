@@ -23,6 +23,7 @@
 # Gson specific classes
 -keep class sun.misc.Unsafe { *; }
 -keep class com.google.gson.** { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
 
 # Application defined models for Retrofit/Gson
 -keep class dhanfinix.android.sukun.feature.prayer.data.model.** { *; }
@@ -30,3 +31,19 @@
 # Keep generic signature information
 -keepattributes Signature
 -keepattributes *Annotation*
+
+# For AndroidTest
+-dontwarn javax.lang.model.**
+-dontwarn com.google.errorprone.annotations.**
+-dontwarn net.bytebuddy.**
+-dontwarn org.mockito.**
+-dontwarn junit.**
+-dontwarn org.junit.**
+-dontwarn com.google.j2objc.annotations.**
+-dontwarn sun.misc.**
+
+-keep class androidx.test.** { *; }
+-keep interface androidx.test.** { *; }
+-keep class androidx.tracing.** { *; }
+-dontwarn androidx.test.**
+-dontwarn androidx.tracing.**

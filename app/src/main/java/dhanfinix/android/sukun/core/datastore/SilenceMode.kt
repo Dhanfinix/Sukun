@@ -5,14 +5,14 @@ package dhanfinix.android.sukun.core.datastore
  */
 enum class SilenceMode {
     /**
-     * Sets the phone's Ringer Mode to Silent.
-     * Notifications will still appear visually, but the device will make no sound.
+     * Uses Android's Do Not Disturb (DND)/Interruption Filter feature.
+     * Blocks visual notifications and sounds (depending on system DND settings).
      */
     DND,
 
     /**
-     * Uses Android's Do Not Disturb (DND)/Interruption Filter feature.
-     * Blocks visual notifications and sounds (depending on system DND settings).
+     * Sets the phone's Ringer Mode to Silent.
+     * Notifications will still appear visually, but the device will make no sound.
      */
     SILENT,
 

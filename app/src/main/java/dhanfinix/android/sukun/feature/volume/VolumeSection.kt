@@ -108,6 +108,18 @@ fun VolumeSection(
                     }
                 }
             }
+            
+            // Mode Description
+            Text(
+                text = when (state.silenceMode) {
+                    dhanfinix.android.sukun.core.datastore.SilenceMode.DND -> "Uses system 'Do Not Disturb' to block all sounds and notifications."
+                    dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT -> "Mutes all sounds but allows visual notifications."
+                    dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE -> "Mutes sounds but keeps vibrations active."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
