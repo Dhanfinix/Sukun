@@ -56,6 +56,7 @@ class UserPreferences(private val context: Context) {
     // ── Silence Metadata ──
     private val KEY_SILENCE_END_TIME = longPreferencesKey("silence_end_time")
     private val KEY_SILENCE_LABEL = stringPreferencesKey("silence_label")
+    private val KEY_SILENCE_MODE = stringPreferencesKey("silence_mode")
 
     // ── VOIP toggle ──
     private val KEY_VOIP_LINKED = booleanPreferencesKey("voip_linked")
@@ -114,6 +115,15 @@ class UserPreferences(private val context: Context) {
             AppTheme.valueOf(themeName)
         } catch (e: Exception) {
             AppTheme.SYSTEM
+        }
+    }
+
+    val silenceMode: Flow<SilenceMode> = context.dataStore.data.map { prefs ->
+        val modeName = prefs[KEY_SILENCE_MODE] ?: SilenceMode.DND.name
+        try {
+            SilenceMode.valueOf(modeName)
+        } catch (e: Exception) {
+            SilenceMode.DND
         }
     }
 
@@ -232,6 +242,12 @@ class UserPreferences(private val context: Context) {
     suspend fun setHomeCoachmarkShown(shown: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[KEY_HOME_COACH_MARK_SHOWN] = shown
+        }
+    }
+
+    suspend fun setSilenceMode(mode: SilenceMode) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_SILENCE_MODE] = mode.name
         }
     }
 }

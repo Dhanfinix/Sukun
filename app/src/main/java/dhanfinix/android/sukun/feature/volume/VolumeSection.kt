@@ -137,6 +137,46 @@ fun VolumeSection(
         )
 
         // ── Advanced Options ──
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+        // ── Silence Mode Selection ──
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Silence Mode",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = "Choose how Sukun mutes your phone during prayers",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val options = dhanfinix.android.sukun.core.datastore.SilenceMode.values()
+                options.forEachIndexed { index, mode ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                        onClick = { onEvent(VolumeEvent.SilenceModeChanged(mode)) },
+                        selected = state.silenceMode == mode
+                    ) {
+                        Text(
+                            text = when (mode) {
+                                dhanfinix.android.sukun.core.datastore.SilenceMode.DND -> "DND"
+                                dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT -> "Silent"
+                                dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE -> "Vibrate"
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
         if (!state.isSystemLinked) {
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 

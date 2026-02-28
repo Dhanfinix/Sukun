@@ -8,6 +8,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dhanfinix.android.sukun.core.notification.NotificationHelper
 import dhanfinix.android.sukun.core.datastore.UserPreferences
+import dhanfinix.android.sukun.core.datastore.SilenceMode
 import kotlinx.coroutines.flow.first
 
 /**
@@ -39,21 +40,35 @@ class SilenceWorker(
         val endTime = System.currentTimeMillis() + (durationMin * 60 * 1000L)
         userPrefs.setSilenceMetadata(endTime, prayerName)
 
-        // 2. Enable DND / Silent
+        val silenceMode = userPrefs.silenceMode.first()
         val notifManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (notifManager.isNotificationPolicyAccessGranted) {
-            notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
-        } else {
-            // Fallback: set ringer to silent
-            audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+
+        // 2. Enable selected Silence Mode
+        when (silenceMode) {
+            SilenceMode.DND -> {
+                if (notifManager.isNotificationPolicyAccessGranted) {
+                    notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
+                } else {
+                    audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                }
+            }
+            SilenceMode.SILENT -> {
+                audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+            }
+            SilenceMode.VIBRATE -> {
+                audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+            }
         }
 
-        // 3. Also set all volumes to 0 for maximum silence
+        // 3. Also set all volumes to 0 for maximum silence (except for ringer/notif if vibrating)
         try {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
-            audioManager.setStreamVolume(AudioManager.STREAM_RING, 0, 0)
-            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, 0)
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, 0, 0)
+            
+            if (silenceMode != SilenceMode.VIBRATE) {
+                audioManager.setStreamVolume(AudioManager.STREAM_RING, 0, 0)
+                audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, 0)
+            }
         } catch (e: SecurityException) {
             // Log or ignore
         }

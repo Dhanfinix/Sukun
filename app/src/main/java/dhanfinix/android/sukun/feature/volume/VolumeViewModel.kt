@@ -57,6 +57,7 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             is VolumeEvent.StopSilence -> stopSilence()
             is VolumeEvent.RequestExactAlarm -> reliabilityManager.openExactAlarmSettings()
             is VolumeEvent.RequestIgnoreBattery -> reliabilityManager.requestIgnoreBatteryOptimizations()
+            is VolumeEvent.SilenceModeChanged -> setSilenceMode(event.mode)
         }
     }
 
@@ -221,6 +222,11 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
                 _uiState.update { it.copy(isNotifLinked = linked) }
             }
         }
+        viewModelScope.launch {
+            userPrefs.silenceMode.collect { mode ->
+                _uiState.update { it.copy(silenceMode = mode) }
+            }
+        }
     }
 
     private fun observeSilenceState() {
@@ -288,10 +294,15 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             )
         }
         
-        // Trigger a refresh after a tiny delay to allow RestoreWorker to finish
         viewModelScope.launch {
             delay(500) 
             loadCurrentVolumes()
+        }
+    }
+
+    private fun setSilenceMode(mode: dhanfinix.android.sukun.core.datastore.SilenceMode) {
+        viewModelScope.launch {
+            userPrefs.setSilenceMode(mode)
         }
     }
 }
