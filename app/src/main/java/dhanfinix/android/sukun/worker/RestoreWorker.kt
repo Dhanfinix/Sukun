@@ -25,12 +25,28 @@ class RestoreWorker(
         val audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val userPrefs = UserPreferences(applicationContext)
 
-        // 1. Disable DND / restore ringer FIRST
+        // 1. Restore exact system ringer mode / interruption filter
+        val savedRingerMode = userPrefs.savedRingerMode.first()
+        val savedFilter = userPrefs.savedInterruptionFilter.first()
+        
         val notifManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (notifManager.isNotificationPolicyAccessGranted) {
-            notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
-        } else {
-            audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+        
+        try {
+            if (notifManager.isNotificationPolicyAccessGranted) {
+                if (savedFilter >= 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    notifManager.setInterruptionFilter(savedFilter)
+                } else {
+                    notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+                }
+            }
+            
+            if (savedRingerMode >= 0) {
+                audioManager.ringerMode = savedRingerMode
+            } else {
+                audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+            }
+        } catch (e: SecurityException) {
+            // Log or ignore if permission was revoked since silence started
         }
 
         // 2. ONLY THEN restore saved volumes

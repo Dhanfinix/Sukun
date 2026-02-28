@@ -52,6 +52,8 @@ class UserPreferences(private val context: Context) {
     private val KEY_SAVED_RING = intPreferencesKey("saved_ring_vol")
     private val KEY_SAVED_NOTIFICATION = intPreferencesKey("saved_notification_vol")
     private val KEY_SAVED_ALARM = intPreferencesKey("saved_alarm_vol")
+    private val KEY_SAVED_RINGER_MODE = intPreferencesKey("saved_ringer_mode")
+    private val KEY_SAVED_INTERRUPTION_FILTER = intPreferencesKey("saved_interruption_filter")
 
     // ── Silence Metadata ──
     private val KEY_SILENCE_END_TIME = longPreferencesKey("silence_end_time")
@@ -209,17 +211,30 @@ class UserPreferences(private val context: Context) {
         }
     }
 
-    suspend fun saveAllVolumes(media: Int, ring: Int, notif: Int, alarm: Int) {
+    suspend fun saveAllVolumes(
+        media: Int, ring: Int, notif: Int, alarm: Int,
+        ringerMode: Int = -1, interruptionFilter: Int = -1
+    ) {
         context.dataStore.edit {
             it[KEY_SAVED_MEDIA] = media
             it[KEY_SAVED_RING] = ring
             it[KEY_SAVED_NOTIFICATION] = notif
             it[KEY_SAVED_ALARM] = alarm
+            it[KEY_SAVED_RINGER_MODE] = ringerMode
+            it[KEY_SAVED_INTERRUPTION_FILTER] = interruptionFilter
         }
     }
 
     val savedAlarmVol: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[KEY_SAVED_ALARM] ?: -1
+    }
+
+    val savedRingerMode: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_SAVED_RINGER_MODE] ?: -1
+    }
+
+    val savedInterruptionFilter: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_SAVED_INTERRUPTION_FILTER] ?: -1
     }
 
     suspend fun clearSilenceState() {
@@ -230,6 +245,8 @@ class UserPreferences(private val context: Context) {
             it.remove(KEY_SAVED_RING)
             it.remove(KEY_SAVED_NOTIFICATION)
             it.remove(KEY_SAVED_ALARM)
+            it.remove(KEY_SAVED_RINGER_MODE)
+            it.remove(KEY_SAVED_INTERRUPTION_FILTER)
         }
     }
 

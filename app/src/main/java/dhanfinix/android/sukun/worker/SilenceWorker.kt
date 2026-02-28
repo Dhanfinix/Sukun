@@ -29,19 +29,28 @@ class SilenceWorker(
         val audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val userPrefs = UserPreferences(applicationContext)
 
-        // 1. Save current volumes
+        val notifManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        // 1. Save current volumes & system modes
         val currentMedia = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         val currentRing = audioManager.getStreamVolume(AudioManager.STREAM_RING)
         val currentNotif = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
         val currentAlarm = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
-        userPrefs.saveAllVolumes(currentMedia, currentRing, currentNotif, currentAlarm)
+        
+        val currentRingerMode = audioManager.ringerMode
+        val currentFilter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            notifManager.currentInterruptionFilter
+        } else {
+            -1
+        }
+        
+        userPrefs.saveAllVolumes(currentMedia, currentRing, currentNotif, currentAlarm, currentRingerMode, currentFilter)
 
         // Save silence metadata
         val endTime = System.currentTimeMillis() + (durationMin * 60 * 1000L)
         userPrefs.setSilenceMetadata(endTime, prayerName)
 
         val silenceMode = userPrefs.silenceMode.first()
-        val notifManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // 2. Enable selected Silence Mode
         when (silenceMode) {
