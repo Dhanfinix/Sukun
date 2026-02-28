@@ -12,13 +12,13 @@
     --md-sys-color-on-surface-variant: #CAC4D0;
     --md-sys-color-outline: #938F99;
     --md-sys-color-outline-variant: #49454F;
-    
+
     /* Primary (Purple) */
     --md-sys-color-primary: #D0BCFF;
     --md-sys-color-on-primary: #381E72;
     --md-sys-color-primary-container: #4F378B;
     --md-sys-color-on-primary-container: #EADDFF;
-    
+
     /* Secondary */
     --md-sys-color-secondary: #CCC2DC;
     --md-sys-color-on-secondary: #332D41;
@@ -60,6 +60,8 @@
 
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+    /* Offset for fixed navbar */
 }
 
 body {
@@ -73,7 +75,10 @@ body {
 }
 
 /* Typography styles */
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
     font-weight: 600;
     letter-spacing: -0.02em;
 }
@@ -175,13 +180,13 @@ a:hover {
 }
 
 .btn-primary:hover {
-    background-image: linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08));
+    background-image: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08));
     box-shadow: var(--md-sys-elevation-1);
     transform: translateY(-1px);
 }
 
 .btn-primary:active {
-    background-image: linear-gradient(rgba(0,0,0,0.12), rgba(0,0,0,0.12));
+    background-image: linear-gradient(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.12));
     transform: translateY(0);
 }
 
@@ -191,7 +196,7 @@ a:hover {
 }
 
 .btn-tonal:hover {
-    background-image: linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08));
+    background-image: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08));
     box-shadow: var(--md-sys-elevation-1);
 }
 
@@ -202,14 +207,16 @@ a:hover {
 }
 
 .btn-outline:hover {
-    background-color: rgba(208, 188, 255, 0.08); /* Primary color at 8% */
+    background-color: rgba(208, 188, 255, 0.08);
+    /* Primary color at 8% */
     border-color: var(--md-sys-color-primary);
 }
 
 /* Main Layout */
 main {
     flex-grow: 1;
-    padding-top: 80px; /* Account for fixed nav */
+    padding-top: 80px;
+    /* Account for fixed nav */
 }
 
 section {
@@ -301,9 +308,17 @@ section {
 }
 
 @keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-16px); }
-    100% { transform: translateY(0px); }
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-16px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
 }
 
 .status-bar {
@@ -361,7 +376,8 @@ section {
     color: var(--md-sys-color-on-primary-container);
 }
 
-.prayer-card.active h3, .prayer-card.active p {
+.prayer-card.active h3,
+.prayer-card.active p {
     color: var(--md-sys-color-on-primary-container);
 }
 
@@ -661,7 +677,7 @@ footer {
     .cta-actions {
         flex-direction: column;
     }
-    
+
     .section-title {
         font-size: 2rem;
     }

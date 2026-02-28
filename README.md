@@ -1,6 +1,6 @@
 # Sukun
 
-Sukun is an Android app that helps you manage prayer times and automatically silences your phone during prayers. It utilizes Aladhan API for fetching accurate prayer schedules and uses WorkManager to handle background silencing tasks smoothly.
+Sukun is an Android app that helps you manage prayer times and automatically silences your phone during prayers. It utilizes Aladhan API for fetching accurate prayer schedules and uses AlarmManager to handle background silencing tasks precisely.
 
 ## Features
 
@@ -14,7 +14,7 @@ Sukun is an Android app that helps you manage prayer times and automatically sil
 - **Architecture:** MVVM (Model-View-ViewModel) + Clean Architecture principles
 - **Local Data:** Room Database for caching prayer times, DataStore for user preferences
 - **Network:** Retrofit + kotlinx.serialization for the Aladhan API
-- **Background Tasks:** WorkManager for scheduling device silence and restoring volume
+- **Background Tasks:** AlarmManager for exact device silence scheduling and restoring volume
 
 ## Getting Started
 
