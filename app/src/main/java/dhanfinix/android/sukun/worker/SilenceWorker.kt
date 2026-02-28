@@ -46,14 +46,14 @@ class SilenceWorker(
         // 2. Enable selected Silence Mode
         when (silenceMode) {
             SilenceMode.DND -> {
+                audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+            }
+            SilenceMode.SILENT -> {
                 if (notifManager.isNotificationPolicyAccessGranted) {
                     notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
                 } else {
                     audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
                 }
-            }
-            SilenceMode.SILENT -> {
-                audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
             }
             SilenceMode.VIBRATE -> {
                 audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
