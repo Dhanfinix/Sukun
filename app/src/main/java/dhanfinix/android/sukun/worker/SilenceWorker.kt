@@ -1,0 +1,71 @@
+package dhanfinix.android.sukun.worker
+
+import android.app.NotificationManager
+import android.content.Context
+import android.media.AudioManager
+import android.os.Build
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import dhanfinix.android.sukun.core.notification.NotificationHelper
+import dhanfinix.android.sukun.core.datastore.UserPreferences
+import kotlinx.coroutines.flow.first
+
+/**
+ * Worker triggered at the exact prayer (adhan) time.
+ * 1. Saves current volume levels to DataStore
+ * 2. Enables DND or sets ringer to silent
+ * 3. Shows the countdown notification
+ */
+class SilenceWorker(
+    context: Context,
+    params: WorkerParameters
+) : CoroutineWorker(context, params) {
+
+    override suspend fun doWork(): Result {
+        val prayerName = inputData.getString(KEY_PRAYER_NAME) ?: "Prayer"
+        val durationMin = inputData.getInt(KEY_DURATION_MIN, 15)
+
+        val audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val userPrefs = UserPreferences(applicationContext)
+
+        // 1. Save current volumes
+        val currentMedia = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val currentRing = audioManager.getStreamVolume(AudioManager.STREAM_RING)
+        val currentNotif = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
+        val currentAlarm = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
+        userPrefs.saveAllVolumes(currentMedia, currentRing, currentNotif, currentAlarm)
+
+        // Save silence metadata
+        val endTime = System.currentTimeMillis() + (durationMin * 60 * 1000L)
+        userPrefs.setSilenceMetadata(endTime, prayerName)
+
+        // 2. Enable DND / Silent
+        val notifManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (notifManager.isNotificationPolicyAccessGranted) {
+            notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
+        } else {
+            // Fallback: set ringer to silent
+            audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+        }
+
+        // 3. Also set all volumes to 0 for maximum silence
+        try {
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
+            audioManager.setStreamVolume(AudioManager.STREAM_RING, 0, 0)
+            audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, 0)
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, 0, 0)
+        } catch (e: SecurityException) {
+            // Log or ignore
+        }
+
+        // 4. Show notification
+        NotificationHelper.showSilenceNotification(applicationContext, prayerName, endTime)
+
+        return Result.success()
+    }
+
+    companion object {
+        const val KEY_PRAYER_NAME = "prayer_name"
+        const val KEY_DURATION_MIN = "duration_min"
+    }
+}
