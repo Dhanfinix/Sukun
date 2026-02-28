@@ -19,3 +19,14 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Gson specific classes
+-keep class sun.misc.Unsafe { *; }
+-keep class com.google.gson.** { *; }
+
+# Application defined models for Retrofit/Gson
+-keep class dhanfinix.android.sukun.feature.prayer.data.model.** { *; }
+
+# Keep generic signature information
+-keepattributes Signature
+-keepattributes *Annotation*
