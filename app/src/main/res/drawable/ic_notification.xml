@@ -1,23 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-    Notification small icon — monochrome white on transparent.
-    Crescent moon + small star: iconic symbol for Islamic prayer time,
-    unique to Sukun and recognizable at small notification sizes.
--->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-
-    <!-- Crescent moon — outer arc sweeps left side, inner arc cuts back right -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M12,4 C7.8,4 4,7.6 4,12 C4,16.4 7.8,20 12,20 C9.5,18.3 7.8,15.4 7.8,12 C7.8,8.6 9.5,5.7 12,4 Z" />
-
-    <!-- Small four-point star near crescent opening -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M17.5,7.5 L18.3,9.2 L20,9.2 L18.7,10.3 L19.3,12 L17.5,11 L15.7,12 L16.3,10.3 L15,9.2 L16.7,9.2 Z" />
-
+    android:width="18dp"
+    android:height="25dp"
+    android:viewportWidth="18"
+    android:viewportHeight="25">
+  <path
+      android:pathData="M8.974,25C7.27,25 5.739,24.699 4.383,24.098C3.026,23.496 1.948,22.576 1.148,21.338C0.383,20.099 0,18.524 0,16.614C0,15.092 0.574,13.199 1.722,10.934C2.87,8.634 4.87,6.21 7.722,3.662L8.713,6.529L5.165,3.291L7.878,0C9.687,1.451 11.356,3.008 12.887,4.671C14.417,6.334 15.652,8.103 16.591,9.979C17.53,11.854 18,13.836 18,15.924C18,16.737 17.861,17.657 17.583,18.684C17.304,19.71 16.835,20.718 16.174,21.709C15.513,22.664 14.591,23.461 13.409,24.098C12.226,24.699 10.748,25 8.974,25ZM8.974,20.648C10.156,20.648 11.13,20.453 11.896,20.064C12.696,19.639 13.287,19.055 13.67,18.312C14.087,17.569 14.296,16.702 14.296,15.711C14.296,14.827 14.139,13.907 13.826,12.951C13.548,11.96 12.957,10.899 12.052,9.766C11.183,8.599 9.843,7.289 8.035,5.839L10.33,5.732C9.043,6.865 7.93,8.068 6.991,9.342C6.052,10.58 5.339,11.801 4.852,13.004C4.365,14.172 4.122,15.233 4.122,16.189C4.122,17.675 4.574,18.79 5.478,19.533C6.417,20.276 7.583,20.648 8.974,20.648Z"
+      android:fillColor="#6B5042"/>
 </vector>

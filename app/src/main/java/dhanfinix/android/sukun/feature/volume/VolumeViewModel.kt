@@ -2,7 +2,10 @@ package dhanfinix.android.sukun.feature.volume
 
 import kotlin.math.roundToInt
 import android.app.Application
+import android.database.ContentObserver
 import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import android.app.NotificationManager
 import android.os.Build
@@ -36,10 +39,23 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
     private val _uiState = MutableStateFlow(VolumeUiState())
     val uiState: StateFlow<VolumeUiState> = _uiState.asStateFlow()
 
+    // ── Real-time volume observer (picks up hardware button presses) ──
+    private val volumeObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) {
+            viewModelScope.launch { loadCurrentVolumes() }
+        }
+    }
+
     init {
         loadCurrentVolumes()
         observeSettings()
         observeSilenceState()
+        // Register observer for all System settings (covers all audio stream volume rows)
+        getApplication<Application>().contentResolver.registerContentObserver(
+            Settings.System.CONTENT_URI,
+            true,
+            volumeObserver
+        )
     }
 
     /**
@@ -322,5 +338,10 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             userPrefs.setSilenceMode(mode)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        getApplication<Application>().contentResolver.unregisterContentObserver(volumeObserver)
     }
 }

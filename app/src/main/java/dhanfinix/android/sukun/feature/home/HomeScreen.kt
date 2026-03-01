@@ -126,7 +126,7 @@ fun HomeScreen(
                 LargeTopAppBar(
                     title = {
                         Text(
-                            text = "سكون  Sukun",
+                            text = "Sukun",
                             fontWeight = FontWeight.Bold
                         )
                     },

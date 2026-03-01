@@ -259,7 +259,7 @@ class UserPreferences(private val context: Context) {
     }
 
     val useDynamicColor: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[KEY_USE_DYNAMIC_COLOR] ?: true // Default: use dynamic color when supported
+        prefs[KEY_USE_DYNAMIC_COLOR] ?: false // Default: disable dynamic color
     }
 
     suspend fun setUseDynamicColor(enabled: Boolean) {

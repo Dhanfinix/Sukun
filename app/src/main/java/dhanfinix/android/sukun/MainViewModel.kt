@@ -44,7 +44,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = true
+            initialValue = false
         )
 
     val hasSeenLanding: StateFlow<Boolean> = userPrefs.hasSeenLanding
