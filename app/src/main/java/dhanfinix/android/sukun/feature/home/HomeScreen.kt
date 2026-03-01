@@ -293,6 +293,11 @@ private fun AboutDialog(
     onDismiss: () -> Unit,
     onShowTutorial: (() -> Unit)? = null
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val versionName = remember(context) {
+        try { context.packageManager.getPackageInfo(context.packageName, 0).versionName }
+        catch (e: Exception) { "—" }
+    }
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -338,7 +343,7 @@ private fun AboutDialog(
                 )
 
                 Text(
-                    text = "Version 1.0.0",
+                    text = "Version $versionName",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)

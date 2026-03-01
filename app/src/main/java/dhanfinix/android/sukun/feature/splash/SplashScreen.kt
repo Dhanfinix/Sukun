@@ -1,5 +1,8 @@
 package dhanfinix.android.sukun.feature.splash
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -24,10 +27,13 @@ import dhanfinix.android.sukun.R
 import kotlinx.coroutines.delay
 import kotlin.math.sin
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SplashScreen(
     isReady: Boolean,
-    onSplashFinished: () -> Unit
+    onSplashFinished: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     // ── Entry animations ──
     val logoScale = remember { Animatable(0f) }
@@ -97,9 +103,9 @@ fun SplashScreen(
         delay(200)
         nameAlpha.animateTo(1f, tween(500))
         dividerScale.animateTo(1f, tween(600, easing = FastOutSlowInEasing))
-        delay(250)
+        delay(200)
         taglineAlpha.animateTo(1f, tween(600))
-        delay(600) // hold the finished state briefly
+        delay(300) // hold the finished state briefly
         animsCompleted = true
     }
 
@@ -176,15 +182,21 @@ fun SplashScreen(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Logo with spring bounce
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = "Sukun Logo",
-                modifier = Modifier
-                    .size(148.dp)
-                    .scale(logoScale.value)
-                    .alpha(logoAlpha.value)
-            )
+            // Logo with spring bounce + shared element transition
+            with(sharedTransitionScope) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = "Sukun Logo",
+                    modifier = Modifier
+                        .size(148.dp)
+                        .sharedElement(
+                            state = rememberSharedContentState(key = "app_icon"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                        .scale(logoScale.value)
+                        .alpha(logoAlpha.value)
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -223,16 +235,22 @@ fun SplashScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Tagline
-            Text(
-                text = "Pray in peace, undisturbed.",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .alpha(taglineAlpha.value)
-                    .padding(horizontal = 48.dp)
-            )
+            with(sharedTransitionScope) {
+                Text(
+                    text = "Pray in peace, undisturbed.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .alpha(taglineAlpha.value)
+                        .padding(horizontal = 48.dp)
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState(key = "tagline"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                )
+            }
         }
     }
 }

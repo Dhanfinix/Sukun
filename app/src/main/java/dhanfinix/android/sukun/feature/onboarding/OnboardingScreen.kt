@@ -68,6 +68,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun OnboardingScreen(
     onBack: (() -> Unit)? = null,
+    onComplete: () -> Unit = { onBack?.invoke() },  // defaults to same as back for returning-user path
+    showBackButton: Boolean = onBack != null,
     modifier: Modifier = Modifier,
     viewModel: OnboardingViewModel = viewModel()
 ) {
@@ -131,11 +133,11 @@ fun OnboardingScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            if (onBack != null) {
+            if (showBackButton) {
                 CenterAlignedTopAppBar(
                     title = { Text("Permissions", style = MaterialTheme.typography.titleMedium) },
                     navigationIcon = {
-                        IconButton(onClick = onBack) {
+                        IconButton(onClick = { onBack?.invoke() }) {
                             Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                         }
                     },
@@ -235,9 +237,9 @@ fun OnboardingScreen(
                 hasLocationPermission && hasExactAlarmPermission && isIgnoringBatteryOptimizations
             
             Button(
-                onClick = { 
+                onClick = {
                     viewModel.markOnboardingCompleted()
-                    onBack?.invoke() 
+                    onComplete()
                 },
                 modifier = Modifier
                     .fillMaxWidth()

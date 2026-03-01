@@ -71,6 +71,7 @@ class UserPreferences(private val context: Context) {
     private val KEY_APP_THEME = stringPreferencesKey("app_theme")
     private val KEY_HOME_COACH_MARK_SHOWN = booleanPreferencesKey("home_coachmark_shown")
     private val KEY_USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
+    private val KEY_HAS_SEEN_LANDING = booleanPreferencesKey("has_seen_landing")
 
     // ── Flows ──
 
@@ -264,6 +265,16 @@ class UserPreferences(private val context: Context) {
     suspend fun setUseDynamicColor(enabled: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[KEY_USE_DYNAMIC_COLOR] = enabled
+        }
+    }
+
+    val hasSeenLanding: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_HAS_SEEN_LANDING] ?: false
+    }
+
+    suspend fun setHasSeenLanding(seen: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_HAS_SEEN_LANDING] = seen
         }
     }
 

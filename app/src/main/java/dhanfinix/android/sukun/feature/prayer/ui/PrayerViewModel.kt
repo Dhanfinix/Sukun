@@ -420,7 +420,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     val hours = remaining / 3600
                     val minutes = (remaining % 3600) / 60
                     val seconds = remaining % 60
-                    String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                    String.format("-%02d:%02d:%02d", hours, minutes, seconds)
                 } ?: "--:--:--"
 
                 _uiState.update { 

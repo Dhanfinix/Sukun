@@ -630,7 +630,7 @@ fun NextPrayerCard(
                                 text = countdown,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = MaterialTheme.colorScheme.primary,
                                 textAlign = TextAlign.End
                             )
                         }

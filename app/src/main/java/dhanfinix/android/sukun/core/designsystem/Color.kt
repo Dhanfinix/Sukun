@@ -2,19 +2,19 @@ package dhanfinix.android.sukun.core.designsystem
 
 import androidx.compose.ui.graphics.Color
 
-// ── Earth Tone Pastel palette ──
-// Primary: warm terracotta / clay
-val Clay40 = Color(0xFF8B4A2A)       // muted terracotta
-val Clay80 = Color(0xFFFFB59C)       // peachy pastel (dark-theme primary)
+// ── Sandy Beige / Warm Brown earth-tone palette ──
+// Primary: warm coffee brown
+val WarmBrown40 = Color(0xFF6B5042)   // deep warm brown (light primary)
+val WarmBrown80 = Color(0xFFD4B49A)   // sandy tan pastel (dark primary)
 
-// Secondary: dusty blush / mocha
-val Blush40 = Color(0xFF775851)
-val Blush80 = Color(0xFFE7BBB5)
+// Secondary: neutral taupe
+val Taupe40 = Color(0xFF7D7063)
+val Taupe80 = Color(0xFFC9BFB5)
 
-// Tertiary: warm olive / khaki
-val Olive40 = Color(0xFF6A5E2F)
-val Olive80 = Color(0xFFD6C77E)
+// Tertiary: warm khaki/sand
+val Khaki40 = Color(0xFF6C6740)
+val Khaki80 = Color(0xFFCFC89A)
 
-// Surfaces
-val SukunSurfaceLight = Color(0xFFFFF8F5)  // warm cream
-val SukunSurfaceDark  = Color(0xFF1A1210)  // warm very dark brown
+// Surfaces — anchored to the palette image (#F3EAD8 light, warm dark brown)
+val SukunSurfaceLight = Color(0xFFFAF6F0)  // warm cream, slightly lighter than F3EAD8
+val SukunSurfaceDark  = Color(0xFF1C1611)  // deep warm dark brown

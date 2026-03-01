@@ -47,6 +47,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = true
         )
 
+    val hasSeenLanding: StateFlow<Boolean> = userPrefs.hasSeenLanding
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     val hasSeenHomeCoachmark: StateFlow<Boolean> = userPrefs.hasSeenHomeCoachmark
         .stateIn(
             scope = viewModelScope,
@@ -63,6 +70,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setUseDynamicColor(enabled: Boolean) {
         viewModelScope.launch {
             userPrefs.setUseDynamicColor(enabled)
+        }
+    }
+
+    fun setHasSeenLanding(seen: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setHasSeenLanding(seen)
         }
     }
 
