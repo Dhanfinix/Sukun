@@ -2,18 +2,19 @@ package dhanfinix.android.sukun.core.designsystem
 
 import androidx.compose.ui.graphics.Color
 
-// ── Calming Teal/Green palette (fallback for pre-Android 12) ──
+// ── Earth Tone Pastel palette ──
+// Primary: warm terracotta / clay
+val Clay40 = Color(0xFF8B4A2A)       // muted terracotta
+val Clay80 = Color(0xFFFFB59C)       // peachy pastel (dark-theme primary)
 
-// Light theme
-val Teal40 = Color(0xFF006B5E)
-val TealGrey40 = Color(0xFF4A635E)
-val Amber40 = Color(0xFF7B5800)
+// Secondary: dusty blush / mocha
+val Blush40 = Color(0xFF775851)
+val Blush80 = Color(0xFFE7BBB5)
 
-// Dark theme
-val Teal80 = Color(0xFF54DBc5)
-val TealGrey80 = Color(0xFFB2CCC5)
-val Amber80 = Color(0xFFF5BE48)
+// Tertiary: warm olive / khaki
+val Olive40 = Color(0xFF6A5E2F)
+val Olive80 = Color(0xFFD6C77E)
 
-// Surface tones
-val SukunSurfaceLight = Color(0xFFF5FBF8)
-val SukunSurfaceDark = Color(0xFF191C1B)
+// Surfaces
+val SukunSurfaceLight = Color(0xFFFFF8F5)  // warm cream
+val SukunSurfaceDark  = Color(0xFF1A1210)  // warm very dark brown

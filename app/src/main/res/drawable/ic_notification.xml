@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Notification small icon — monochrome white on transparent.
+    Crescent moon + small star: iconic symbol for Islamic prayer time,
+    unique to Sukun and recognizable at small notification sizes.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Crescent moon — outer arc sweeps left side, inner arc cuts back right -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,4 C7.8,4 4,7.6 4,12 C4,16.4 7.8,20 12,20 C9.5,18.3 7.8,15.4 7.8,12 C7.8,8.6 9.5,5.7 12,4 Z" />
+
+    <!-- Small four-point star near crescent opening -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M17.5,7.5 L18.3,9.2 L20,9.2 L18.7,10.3 L19.3,12 L17.5,11 L15.7,12 L16.3,10.3 L15,9.2 L16.7,9.2 Z" />
+
+</vector>

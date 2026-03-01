@@ -40,6 +40,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = AppTheme.SYSTEM
         )
 
+    val useDynamicColor: StateFlow<Boolean> = userPrefs.useDynamicColor
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
     val hasSeenHomeCoachmark: StateFlow<Boolean> = userPrefs.hasSeenHomeCoachmark
         .stateIn(
             scope = viewModelScope,
@@ -50,6 +57,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch {
             userPrefs.setAppTheme(theme)
+        }
+    }
+
+    fun setUseDynamicColor(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setUseDynamicColor(enabled)
         }
     }
 

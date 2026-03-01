@@ -70,6 +70,7 @@ class UserPreferences(private val context: Context) {
     // ── App Settings ──
     private val KEY_APP_THEME = stringPreferencesKey("app_theme")
     private val KEY_HOME_COACH_MARK_SHOWN = booleanPreferencesKey("home_coachmark_shown")
+    private val KEY_USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
 
     // ── Flows ──
 
@@ -253,6 +254,16 @@ class UserPreferences(private val context: Context) {
     suspend fun setAppTheme(theme: AppTheme) {
         context.dataStore.edit { prefs ->
             prefs[KEY_APP_THEME] = theme.name
+        }
+    }
+
+    val useDynamicColor: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_USE_DYNAMIC_COLOR] ?: true // Default: use dynamic color when supported
+    }
+
+    suspend fun setUseDynamicColor(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_USE_DYNAMIC_COLOR] = enabled
         }
     }
 

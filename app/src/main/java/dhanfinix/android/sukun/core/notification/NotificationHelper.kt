@@ -53,7 +53,7 @@ object NotificationHelper {
         )
 
         val remoteViews = RemoteViews(context.packageName, R.layout.notification_sukun_countdown)
-        remoteViews.setTextViewText(R.id.notification_text, "$prayerName: Ends in ")
+        remoteViews.setTextViewText(R.id.notification_text, prayerName)
         
         // Chronometer expects a base in SystemClock.elapsedRealtime() (time since boot), 
         // not System.currentTimeMillis() (epoch time).
@@ -68,14 +68,18 @@ object NotificationHelper {
         )
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setCustomContentView(remoteViews)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setContentIntent(openAppPending)
-            .addAction(R.drawable.ic_launcher_foreground, "Stop Mute", stopPending)
+            .addAction(R.drawable.ic_notification, "Stop Mute", stopPending)
+            // Safety net: auto-dismiss the notification when silence ends,
+            // in case RestoreWorker is delayed by Doze/battery saver.
+            // This prevents the Chronometer from going into negative values.
+            .setTimeoutAfter(remainingMs)
 
         val notification = builder.build()
 

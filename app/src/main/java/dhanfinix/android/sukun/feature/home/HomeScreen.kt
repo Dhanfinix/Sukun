@@ -1,5 +1,7 @@
 package dhanfinix.android.sukun.feature.home
 
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Switch
 import dhanfinix.android.sukun.core.datastore.AppTheme
 import dhanfinix.android.sukun.MainViewModel
 import android.Manifest
@@ -104,6 +106,7 @@ fun HomeScreen(
     var showThemeSheet by remember { mutableStateOf(false) }
 
     val appTheme by mainVm.appTheme.collectAsState()
+    val useDynamicColor by mainVm.useDynamicColor.collectAsState()
     val hasSeenCoachmark by mainVm.hasSeenHomeCoachmark.collectAsState()
     val coachMarkTargets = remember { mutableStateMapOf<CoachMarkTarget, Rect>() }
     val scrollState = rememberScrollState()
@@ -194,8 +197,8 @@ fun HomeScreen(
                         onClick = onShowOnboarding,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            contentColor = MaterialTheme.colorScheme.onSurface
                         ),
                         shape = MaterialTheme.shapes.medium
                     ) {
@@ -239,10 +242,12 @@ fun HomeScreen(
                 if (showThemeSheet) {
                     ThemeSelectionSheet(
                         currentTheme = appTheme,
+                        useDynamicColor = useDynamicColor,
                         onThemeSelect = { theme ->
                             mainVm.setTheme(theme)
                             showThemeSheet = false
                         },
+                        onDynamicColorToggle = { mainVm.setUseDynamicColor(it) },
                         onDismiss = { showThemeSheet = false }
                     )
                 }
@@ -347,7 +352,9 @@ private fun AboutDialog(
 @Composable
 private fun ThemeSelectionSheet(
     currentTheme: AppTheme,
+    useDynamicColor: Boolean,
     onThemeSelect: (AppTheme) -> Unit,
+    onDynamicColorToggle: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     androidx.compose.material3.ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -398,6 +405,39 @@ private fun ThemeSelectionSheet(
                             )
                         }
                     }
+                }
+            }
+
+            // Dynamic Color toggle — only shown on Android 12+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onDynamicColorToggle(!useDynamicColor) }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Dynamic Color",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "Use wallpaper colors (Material You)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = useDynamicColor,
+                        onCheckedChange = onDynamicColorToggle
+                    )
                 }
             }
         }

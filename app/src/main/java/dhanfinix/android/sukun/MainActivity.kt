@@ -34,8 +34,9 @@ class MainActivity : ComponentActivity() {
             val isOnboardingCompleted by mainVm.isOnboardingCompleted.collectAsState()
             val isReady by mainVm.isReady.collectAsState()
             val appTheme by mainVm.appTheme.collectAsState()
+            val useDynamicColor by mainVm.useDynamicColor.collectAsState()
             
-            SukunTheme(appTheme = appTheme) {
+            SukunTheme(appTheme = appTheme, dynamicColor = useDynamicColor) {
                 AppNavigation(
                     mainVm = mainVm,
                     isOnboardingCompleted = isOnboardingCompleted,
