@@ -11,7 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.compose.runtime.getValue
 import dhanfinix.android.sukun.core.designsystem.SukunTheme
 import dhanfinix.android.sukun.core.notification.NotificationHelper
 import dhanfinix.android.sukun.navigation.AppNavigation
@@ -21,13 +21,7 @@ class MainActivity : ComponentActivity() {
     private val mainVm: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-        
-        // Keep splash screen visible until we know if onboarding is completed
-        splashScreen.setKeepOnScreenCondition {
-            !mainVm.isReady.value
-        }
 
         enableEdgeToEdge()
 

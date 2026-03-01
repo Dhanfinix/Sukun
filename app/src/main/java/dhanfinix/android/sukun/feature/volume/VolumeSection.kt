@@ -100,7 +100,6 @@ fun VolumeSection(
                     ) {
                         Text(
                             text = when (mode) {
-                                dhanfinix.android.sukun.core.datastore.SilenceMode.DND -> "DND"
                                 dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT -> "Silent"
                                 dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE -> "Vibrate"
                             }
@@ -112,7 +111,6 @@ fun VolumeSection(
             // Mode Description
             Text(
                 text = when (state.silenceMode) {
-                    dhanfinix.android.sukun.core.datastore.SilenceMode.DND -> "Uses system 'Do Not Disturb' to block all sounds and notifications."
                     dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT -> "Mutes all sounds but allows visual notifications."
                     dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE -> "Mutes sounds but keeps vibrations active."
                 },

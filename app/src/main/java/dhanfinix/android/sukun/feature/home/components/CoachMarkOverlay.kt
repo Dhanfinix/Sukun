@@ -79,10 +79,17 @@ val HomeCoachMarkSteps = listOf(
 @Composable
 fun CoachMarkOverlay(
     targets: Map<CoachMarkTarget, Rect>,
+    onStepChange: (CoachMarkStep) -> Unit = {},
     onDismiss: () -> Unit
 ) {
     var currentStep by remember { mutableIntStateOf(0) }
     val stepData = HomeCoachMarkSteps.getOrNull(currentStep)
+
+    LaunchedEffect(stepData) {
+        if (stepData != null) {
+            onStepChange(stepData)
+        }
+    }
 
     if (stepData == null) {
         onDismiss()

@@ -30,21 +30,35 @@ class MidnightReceiver : BroadcastReceiver() {
             val duration = userPrefs.silenceDurationMin.first()
             val enabledMap = userPrefs.isPrayerEnabled.first()
 
-            // Fetching today's times (which are now available since it's past 00:00)
-            val result = prayerRepo.getPrayerTimes(LocalDate.now(), lat, lng, method)
-            result.onSuccess { timesMap ->
-                val prayers = PrayerName.entries.map { name ->
+            // Fetching today and tomorrow
+            val today = LocalDate.now()
+            val tomorrow = today.plusDays(1)
+            
+            val resultToday = prayerRepo.getPrayerTimes(today, lat, lng, method)
+            val resultTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method)
+
+            if (resultToday.isSuccess && resultTomorrow.isSuccess) {
+                val timesMapToday = resultToday.getOrThrow()
+                val timesMapTomorrow = resultTomorrow.getOrThrow()
+                
+                val prayersToday = PrayerName.entries.map { name ->
                     PrayerInfo(
                         name = name,
-                        time = timesMap[name] ?: "--:--",
+                        time = timesMapToday[name] ?: "--:--",
                         isEnabled = enabledMap[name] ?: true
                     )
                 }
-                // Re-schedule for the whole day
-                scheduler.scheduleAll(prayers, duration)
                 
-                // Set the next midnight alarm
-                // (Optional: SilenceScheduler could handle this, but for simplicity let's keep it here or inside scheduleAll)
+                val prayersTomorrow = PrayerName.entries.map { name ->
+                    PrayerInfo(
+                        name = name,
+                        time = timesMapTomorrow[name] ?: "--:--",
+                        isEnabled = enabledMap[name] ?: true
+                    )
+                }
+                
+                // Re-schedule for the whole rolling 24h window
+                scheduler.scheduleAll(prayersToday, prayersTomorrow, duration)
             }
         }
     }

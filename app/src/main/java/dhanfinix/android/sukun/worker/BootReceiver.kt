@@ -32,16 +32,33 @@ class BootReceiver : BroadcastReceiver() {
             val duration = userPrefs.silenceDurationMin.first()
             val enabledMap = userPrefs.isPrayerEnabled.first()
 
-            val result = prayerRepo.getPrayerTimes(LocalDate.now(), lat, lng, method)
-            result.onSuccess { timesMap ->
-                val prayers = PrayerName.entries.map { name ->
+            val today = LocalDate.now()
+            val tomorrow = today.plusDays(1)
+            
+            val resultToday = prayerRepo.getPrayerTimes(today, lat, lng, method)
+            val resultTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method)
+
+            if (resultToday.isSuccess && resultTomorrow.isSuccess) {
+                val timesMapToday = resultToday.getOrThrow()
+                val timesMapTomorrow = resultTomorrow.getOrThrow()
+                
+                val prayersToday = PrayerName.entries.map { name ->
                     PrayerInfo(
                         name = name,
-                        time = timesMap[name] ?: "--:--",
+                        time = timesMapToday[name] ?: "--:--",
                         isEnabled = enabledMap[name] ?: true
                     )
                 }
-                scheduler.scheduleAll(prayers, duration)
+                
+                val prayersTomorrow = PrayerName.entries.map { name ->
+                    PrayerInfo(
+                        name = name,
+                        time = timesMapTomorrow[name] ?: "--:--",
+                        isEnabled = enabledMap[name] ?: true
+                    )
+                }
+                
+                scheduler.scheduleAll(prayersToday, prayersTomorrow, duration)
             }
         }
     }

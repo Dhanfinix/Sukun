@@ -21,7 +21,7 @@ data class VolumeUiState(
     val sukunLabel: String? = null,
     val hasExactAlarmPermission: Boolean = true,
     val isIgnoringBatteryOptimizations: Boolean = true,
-    val silenceMode: dhanfinix.android.sukun.core.datastore.SilenceMode = dhanfinix.android.sukun.core.datastore.SilenceMode.DND
+    val silenceMode: dhanfinix.android.sukun.core.datastore.SilenceMode = dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT
 )
 
 /**

@@ -13,8 +13,8 @@ android {
         applicationId = "dhanfinix.android.sukun"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.4"
+        versionCode = 6
+        versionName = "1.0.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -89,9 +89,9 @@ dependencies {
 
     // Location
     implementation(libs.play.services.location)
+    implementation(libs.play.services.coroutines)
 
-    // Splash Screen
-    implementation(libs.androidx.core.splashscreen)
+
 
     // Testing
     testImplementation(libs.junit)

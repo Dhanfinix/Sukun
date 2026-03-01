@@ -23,6 +23,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -43,19 +47,55 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _uiState = MutableStateFlow(PrayerUiState())
     val uiState: StateFlow<PrayerUiState> = _uiState.asStateFlow()
 
+    private var loadJob: Job? = null
+
     init {
-        loadPrayerTimes()
-        startClockTicker()
+        // Simple startup flow: 
+        // 1. Check if we need to auto-detect (fresh install)
+        // 2. If yes, try to detect (with timeout)
+        // 3. Load prayer times using whatever coordinates we have (GPS or fallback)
+        viewModelScope.launch {
+            val latVal = userPrefs.latitude.first()
+            val lngVal = userPrefs.longitude.first()
+            val locNameVal = userPrefs.locationName.first()
+
+            if (latVal == -6.2088 && lngVal == 106.8456 && locNameVal == null) {
+                val nm = getApplication<Application>().checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                if (nm == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    // We have permission, try a quick detection before loading
+                    detectLocationSync()
+                }
+            }
+            
+            // Now load the data (either with newly detected GPS, or fallback Jakarta)
+            loadPrayerTimes()
+            startClockTicker()
+        }
     }
 
     fun onEvent(event: PrayerEvent) {
         when (event) {
             is PrayerEvent.TogglePrayer -> togglePrayer(event.prayer)
             is PrayerEvent.DurationSelected -> setDuration(event.minutes)
-            is PrayerEvent.LocationUpdated -> updateLocation(event.latitude, event.longitude)
+            is PrayerEvent.LocationUpdated -> {
+                viewModelScope.launch {
+                    updateLocationSync(event.latitude, event.longitude)
+                    loadPrayerTimes()
+                }
+            }
             is PrayerEvent.MethodChanged -> changeMethod(event.methodId)
-            is PrayerEvent.RefreshTimes -> loadPrayerTimes()
-            is PrayerEvent.DetectLocation -> detectLocation()
+            is PrayerEvent.RefreshTimes -> {
+                viewModelScope.launch {
+                    prayerRepo.clearCache()
+                    loadPrayerTimes(minDelay = 600L)
+                }
+            }
+            is PrayerEvent.DetectLocation -> {
+                viewModelScope.launch {
+                    detectLocationSync()
+                    loadPrayerTimes()
+                }
+            }
             is PrayerEvent.SearchLocation -> searchLocation(event.query)
             is PrayerEvent.SearchQueryChanged -> fetchSuggestions(event.query)
             is PrayerEvent.SuggestionSelected -> selectSuggestion(event.suggestion)
@@ -66,52 +106,96 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun loadPrayerTimes() {
-        viewModelScope.launch {
+    private fun loadPrayerTimes(minDelay: Long = 0L) {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val startTime = System.currentTimeMillis()
 
-            val lat = userPrefs.latitude.first()
-            val lng = userPrefs.longitude.first()
-            val locName = userPrefs.locationName.first()
-            val method = userPrefs.calculationMethod.first()
-            val duration = userPrefs.silenceDurationMin.first()
-            val enabledMap = userPrefs.isPrayerEnabled.first()
+            try {
+                // Offload DataStore reads to IO
+                val latVal = withContext(Dispatchers.IO) { userPrefs.latitude.first() }
+                val lngVal = withContext(Dispatchers.IO) { userPrefs.longitude.first() }
+                val locNameVal = withContext(Dispatchers.IO) { userPrefs.locationName.first() }
+                val methodVal = withContext(Dispatchers.IO) { userPrefs.calculationMethod.first() }
+                val durationVal = withContext(Dispatchers.IO) { userPrefs.silenceDurationMin.first() }
+                val enabledMapVal = withContext(Dispatchers.IO) { userPrefs.isPrayerEnabled.first() }
 
-            val result = prayerRepo.getPrayerTimes(LocalDate.now(), lat, lng, method)
+                val today = LocalDate.now()
+                val tomorrow = today.plusDays(1)
+                
+                val deferredToday = async { prayerRepo.getPrayerTimes(today, latVal, lngVal, methodVal) }
+                val deferredTomorrow = async { prayerRepo.getPrayerTimes(tomorrow, latVal, lngVal, methodVal) }
 
-            result.fold(
-                onSuccess = { timesMap ->
-                    val prayers = PrayerName.entries.map { name ->
+                val resultToday = deferredToday.await()
+                val resultTomorrow = deferredTomorrow.await()
+
+                if (resultToday.isSuccess && resultTomorrow.isSuccess) {
+                    val timesMapToday = resultToday.getOrThrow()
+                    val timesMapTomorrow = resultTomorrow.getOrThrow()
+                    
+                    val prayersToday = PrayerName.entries.map { name ->
                         PrayerInfo(
                             name = name,
-                            time = timesMap[name] ?: "--:--",
-                            isEnabled = enabledMap[name] ?: true
+                            time = timesMapToday[name] ?: "--:--",
+                            isEnabled = enabledMapVal[name] ?: true
                         )
                     }
-                    val finalLocName = locName ?: reverseGeocode(lat, lng) ?: "Jakarta"
                     
+                    val prayersTomorrow = PrayerName.entries.map { name ->
+                        PrayerInfo(
+                            name = name,
+                            time = timesMapTomorrow[name] ?: "--:--",
+                            isEnabled = enabledMapVal[name] ?: true
+                        )
+                    }
+                    
+                    val finalLocName = locNameVal ?: if (latVal == -6.2088 && lngVal == 106.8456) {
+                        "Jakarta"
+                    } else {
+                        withContext(Dispatchers.IO) { reverseGeocode(latVal, lngVal) } ?: "Unknown Location"
+                    }
+                    
+                    val elapsed = System.currentTimeMillis() - startTime
+                    if (elapsed < minDelay) delay(minDelay - elapsed)
+
                     _uiState.update { 
                         it.copy(
-                            prayers = prayers,
-                            silenceDurationMin = duration,
-                            latitude = lat.toString(),
-                            longitude = lng.toString(),
+                            prayers = prayersToday,
+                            silenceDurationMin = durationVal,
+                            latitude = latVal.toString(),
+                            longitude = lngVal.toString(),
                             locationName = finalLocName,
-                            method = method,
-                            isLoading = false
+                            method = methodVal,
+                            isLoading = false,
+                            isDetectingLocation = false
                         )
                     }
-                    scheduleWorkers(prayers, duration)
-                },
-                onFailure = { error ->
+                    
+                    scheduleWorkers(prayersToday, prayersTomorrow, durationVal)
+                } else {
+                    val error = resultToday.exceptionOrNull() ?: resultTomorrow.exceptionOrNull()
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = error.localizedMessage ?: "Failed to load prayer times"
+                            errorMessage = error?.localizedMessage ?: "Failed to load prayer times"
                         )
                     }
                 }
-            )
+            } catch (e: Exception) {
+                if (e !is kotlinx.coroutines.CancellationException) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Unexpected error: ${e.localizedMessage}"
+                        )
+                    }
+                }
+            } finally {
+                if (loadJob?.isActive == true) {
+                    _uiState.update { it.copy(isLoading = false) }
+                }
+            }
         }
     }
 
@@ -127,7 +211,23 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 if (it.name == prayer) it.copy(isEnabled = !currentEnabled) else it
             }
             _uiState.update { it.copy(prayers = updatedPrayers) }
-            scheduleWorkers(updatedPrayers, currentState.silenceDurationMin)
+            
+            // Re-fetch tomorrow for scheduling
+            val lat = userPrefs.latitude.first()
+            val lng = userPrefs.longitude.first()
+            val method = userPrefs.calculationMethod.first()
+            val tomorrow = LocalDate.now().plusDays(1)
+            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method).getOrNull() ?: emptyMap()
+            
+            val prayersTomorrow = PrayerName.entries.map { name ->
+                PrayerInfo(
+                    name = name,
+                    time = timesMapTomorrow[name] ?: "--:--",
+                    isEnabled = if (name == prayer) !currentEnabled else (currentState.prayers.find { it.name == name }?.isEnabled ?: true)
+                )
+            }
+            
+            scheduleWorkers(updatedPrayers, prayersTomorrow, currentState.silenceDurationMin)
         }
     }
 
@@ -135,45 +235,75 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             userPrefs.setSilenceDuration(minutes)
             _uiState.update { it.copy(silenceDurationMin = minutes) }
-            scheduleWorkers(_uiState.value.prayers, minutes)
+            
+            val lat = userPrefs.latitude.first()
+            val lng = userPrefs.longitude.first()
+            val method = userPrefs.calculationMethod.first()
+            val tomorrow = LocalDate.now().plusDays(1)
+            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method).getOrNull() ?: emptyMap()
+            
+            val prayersTomorrow = PrayerName.entries.map { name ->
+                PrayerInfo(
+                    name = name,
+                    time = timesMapTomorrow[name] ?: "--:--",
+                    isEnabled = _uiState.value.prayers.find { it.name == name }?.isEnabled ?: true
+                )
+            }
+            
+            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, minutes)
         }
     }
 
-    private fun updateLocation(latStr: String, lngStr: String) {
-        viewModelScope.launch {
-            val lat = latStr.toDoubleOrNull() ?: return@launch
-            val lng = lngStr.toDoubleOrNull() ?: return@launch
-            
-            val name = reverseGeocode(lat, lng)
-            userPrefs.setLocation(lat, lng, name ?: "Unknown Location")
-            
-            // Set flag only for the immediate detect -> load flow
-            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = null) }
-            loadPrayerTimes() 
-        }
+    private suspend fun updateLocationSync(latStr: String, lngStr: String) {
+        val lat = latStr.toDoubleOrNull() ?: return
+        val lng = lngStr.toDoubleOrNull() ?: return
+        
+        val name = withContext(Dispatchers.IO) { reverseGeocode(lat, lng) }
+        userPrefs.setLocation(lat, lng, name ?: "Unknown Location")
+        
+        _uiState.update { it.copy(isDetectingLocation = false, errorMessage = null) }
     }
 
     @RequiresPermission(
         anyOf = ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"]
     )
-    private fun detectLocation() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isDetectingLocation = true, errorMessage = null) }
+    private suspend fun detectLocationSync() {
+        val nm = getApplication<Application>().checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (nm != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Location permission denied") }
+            return
+        }
 
+        _uiState.update { it.copy(isDetectingLocation = true, errorMessage = null) }
+
+        try {
+            // Quick 5-second timeout for first-run or explicit refresh
+            var location: Location? = null
             try {
-                fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, CancellationTokenSource().token)
-                    .addOnSuccessListener { location: Location? ->
-                        if (location != null) {
-                            updateLocation(location.latitude.toString(), location.longitude.toString())
-                        } else {
-                            _uiState.update { it.copy(isDetectingLocation = false, isLoading = false, errorMessage = "Location not found") }
-                        }
-                    }
-                    .addOnFailureListener {
-                        _uiState.update { it.copy(isDetectingLocation = false, isLoading = false, errorMessage = "Failed to detect location") }
-                    }
-            } catch (e: SecurityException) {
-                 _uiState.update { it.copy(isDetectingLocation = false, isLoading = false, errorMessage = "Location permission denied") }
+                location = kotlinx.coroutines.withTimeout(5000L) {
+                    fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token).await()
+                }
+            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                // Ignore timeout here, try fallback
+            }
+
+            // Fallback to last known location if current location is null (or timed out)
+            if (location == null) {
+                location = fusedLocationClient.lastLocation.await()
+            }
+
+            if (location != null) {
+                updateLocationSync(location.latitude.toString(), location.longitude.toString())
+            } else {
+                _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Location not found via GPS") }
+            }
+        } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Location detection timed out") }
+        } catch (e: SecurityException) {
+            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Location permission denied") }
+        } catch (e: Exception) {
+            if (e !is kotlinx.coroutines.CancellationException) {
+                _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Failed to detect location") }
             }
         }
     }
@@ -182,8 +312,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             _uiState.update { it.copy(isDetectingLocation = true, errorMessage = null) }
             try {
-                val geocoder = Geocoder(getApplication())
-                val addresses = geocoder.getFromLocationName(query, 1)
+                val addresses = withContext(Dispatchers.IO) {
+                    val geocoder = Geocoder(getApplication())
+                    geocoder.getFromLocationName(query, 1)
+                }
                 if (!addresses.isNullOrEmpty()) {
                     val address = addresses[0]
                     val locationName = address.locality ?: address.subAdminArea ?: address.adminArea ?: query
@@ -210,8 +342,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             delay(500)
             _uiState.update { it.copy(isSearchingSuggestions = true) }
             try {
-                val geocoder = Geocoder(getApplication())
-                val addresses = geocoder.getFromLocationName(query, 5)
+                val addresses = withContext(Dispatchers.IO) {
+                    val geocoder = Geocoder(getApplication())
+                    geocoder.getFromLocationName(query, 5)
+                }
                 val suggestions = addresses?.map { address ->
                     val name = listOfNotNull(
                         address.locality,
@@ -261,8 +395,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun scheduleWorkers(prayers: List<PrayerInfo>, durationMin: Int) {
-        silenceScheduler.scheduleAll(prayers, durationMin)
+    private fun scheduleWorkers(prayersToday: List<PrayerInfo>, prayersTomorrow: List<PrayerInfo>, durationMin: Int) {
+        silenceScheduler.scheduleAll(prayersToday, prayersTomorrow, durationMin)
     }
 
     private fun startClockTicker() {

@@ -46,6 +46,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.gestures.animateScrollBy
+import kotlinx.coroutines.launch
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -98,14 +102,18 @@ fun HomeScreen(
     val appTheme by mainVm.appTheme.collectAsState()
     val hasSeenCoachmark by mainVm.hasSeenHomeCoachmark.collectAsState()
     val coachMarkTargets = remember { mutableStateMapOf<CoachMarkTarget, Rect>() }
+    val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    val config = LocalConfiguration.current
 
     PullToRefreshBox(
         isRefreshing = prayerState.isLoading,
         onRefresh = { prayerVm.onEvent(PrayerEvent.RefreshTimes) },
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+            modifier = Modifier.fillMaxSize(),
             topBar = {
                 LargeTopAppBar(
                     title = {
@@ -147,7 +155,7 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -228,6 +236,21 @@ fun HomeScreen(
         if (!hasSeenCoachmark) {
             CoachMarkOverlay(
                 targets = coachMarkTargets,
+                onStepChange = { step ->
+                    val rect = coachMarkTargets[step.target]
+                    if (rect != null) {
+                        val screenHeightPx = with(density) { config.screenHeightDp.dp.toPx() }
+                        // If target is offscreen at bottom (give some padding)
+                        if (rect.bottom > screenHeightPx - 100f) {
+                            val delta = rect.bottom - screenHeightPx + 300f 
+                            coroutineScope.launch { scrollState.animateScrollBy(delta) }
+                        } else if (rect.top < 200f) {
+                            // If target is offscreen at top (account for app bar)
+                            val delta = rect.top - 200f
+                            coroutineScope.launch { scrollState.animateScrollBy(delta) }
+                        }
+                    }
+                },
                 onDismiss = { mainVm.setCoachmarkShown(true) }
             )
         }

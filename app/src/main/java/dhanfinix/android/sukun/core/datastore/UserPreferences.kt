@@ -121,11 +121,11 @@ class UserPreferences(private val context: Context) {
     }
 
     val silenceMode: Flow<SilenceMode> = context.dataStore.data.map { prefs ->
-        val modeName = prefs[KEY_SILENCE_MODE] ?: SilenceMode.DND.name
+        val modeName = prefs[KEY_SILENCE_MODE] ?: SilenceMode.SILENT.name
         try {
             SilenceMode.valueOf(modeName)
-        } catch (e: Exception) {
-            SilenceMode.DND
+        } catch (e: IllegalArgumentException) {
+            SilenceMode.SILENT
         }
     }
 

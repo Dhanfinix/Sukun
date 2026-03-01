@@ -54,14 +54,6 @@ class SilenceWorker(
 
         // 2. Enable selected Silence Mode
         when (silenceMode) {
-            SilenceMode.DND -> {
-                if (notifManager.isNotificationPolicyAccessGranted) {
-                    notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
-                } else {
-                    // Fallback to Silent if no DND permission (shouldn't happen with our UI checks)
-                    audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
-                }
-            }
             SilenceMode.SILENT -> {
                 audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
             }
@@ -70,7 +62,7 @@ class SilenceWorker(
             }
         }
 
-        // 3. Also set all volumes to 0 for maximum silence (except for ringer/notif if vibrating)
+        // 3. Set volumes to 0 for maximum silence
         try {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, 0, 0)

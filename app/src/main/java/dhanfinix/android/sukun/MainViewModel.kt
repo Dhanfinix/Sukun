@@ -53,6 +53,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun setOnboardingCompleted(completed: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setOnboardingCompleted(completed)
+        }
+    }
+
     fun setCoachmarkShown(shown: Boolean) {
         viewModelScope.launch {
             userPrefs.setHomeCoachmarkShown(shown)

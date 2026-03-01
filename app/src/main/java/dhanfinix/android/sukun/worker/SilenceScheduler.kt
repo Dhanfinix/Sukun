@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.work.WorkManager
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
+import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Calendar
 
@@ -19,16 +20,35 @@ class SilenceScheduler(private val context: Context) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private val workManager = WorkManager.getInstance(context)
 
-    fun scheduleAll(prayers: List<PrayerInfo>, durationMin: Int) {
+    /**
+     * Schedules the NEXT occurrence of each enabled prayer across a rolling 24-hour window.
+     */
+    fun scheduleAll(
+        prayersToday: List<PrayerInfo>,
+        prayersTomorrow: List<PrayerInfo>,
+        durationMin: Int
+    ) {
         cancelAll()
 
         val now = LocalTime.now()
 
-        prayers
-            .filter { it.isEnabled }
-            .forEach { prayer ->
-                scheduleSinglePrayer(prayer, durationMin, now)
+        // For each prayer, we decide whether to schedule today's instance or tomorrow's.
+        prayersToday.forEach { todayPrayer ->
+            if (!todayPrayer.isEnabled) return@forEach
+
+            val todayTime = parseTime(todayPrayer.time) ?: return@forEach
+            
+            if (todayTime.isAfter(now)) {
+                // Today's adhan is still in the future
+                scheduleSinglePrayer(todayPrayer, durationMin, LocalDate.now())
+            } else {
+                // Today's adhan passed, schedule tomorrow's instead
+                val tomorrowPrayer = prayersTomorrow.find { it.name == todayPrayer.name }
+                if (tomorrowPrayer?.isEnabled == true) {
+                    scheduleSinglePrayer(tomorrowPrayer, durationMin, LocalDate.now().plusDays(1))
+                }
             }
+        }
         
         scheduleMidnightReset()
     }
@@ -77,11 +97,13 @@ class SilenceScheduler(private val context: Context) {
         }
     }
 
-    private fun scheduleSinglePrayer(prayer: PrayerInfo, durationMin: Int, now: LocalTime) {
+    private fun scheduleSinglePrayer(prayer: PrayerInfo, durationMin: Int, date: LocalDate) {
         val prayerTime = parseTime(prayer.time) ?: return
-        if (prayerTime.isBefore(now)) return
 
         val calendar = Calendar.getInstance().apply {
+            set(Calendar.YEAR, date.year)
+            set(Calendar.MONTH, date.monthValue - 1)
+            set(Calendar.DAY_OF_MONTH, date.dayOfMonth)
             set(Calendar.HOUR_OF_DAY, prayerTime.hour)
             set(Calendar.MINUTE, prayerTime.minute)
             set(Calendar.SECOND, 0)
