@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.toArgb
 import dhanfinix.android.sukun.core.datastore.AppTheme
 
 private val DarkColorScheme = darkColorScheme(
@@ -45,6 +46,20 @@ fun SukunTheme(
         }
         isAppInDarkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }
+
+    val view = androidx.compose.ui.platform.LocalView.current
+    if (!view.isInEditMode) {
+        androidx.compose.runtime.SideEffect {
+            val window = (view.context as android.app.Activity).window
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+            androidx.core.view.WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = !isAppInDarkTheme
+                isAppearanceLightNavigationBars = !isAppInDarkTheme
+            }
+        }
     }
 
     MaterialTheme(

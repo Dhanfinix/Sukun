@@ -7,7 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import dhanfinix.android.sukun.MainViewModel
 import dhanfinix.android.sukun.feature.home.HomeScreen
@@ -24,18 +24,20 @@ fun AppNavigation(
     isReady: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    // Determine which screen to show based on state
+    // ── Navigation holds on splash until the splash ITSELF calls onSplashFinished ──
+    // isReady merely unblocks the animation sequence inside SplashScreen;
+    // we don't switch screens until the full animation has run.
+    var splashFinished by remember { mutableStateOf(false) }
+
     AnimatedContent(
         targetState = when {
-            !isReady -> Screen.Splash
+            !splashFinished -> Screen.Splash
             !isOnboardingCompleted -> Screen.Onboarding
             else -> Screen.Home
         },
         transitionSpec = {
-            // Smooth crossfade between major screens
             if (initialState == Screen.Splash && targetState != Screen.Splash) {
-                // Slower fade out for splash screen
-                fadeIn(animationSpec = tween(500)) togetherWith fadeOut(animationSpec = tween(500))
+                fadeIn(animationSpec = tween(600)) togetherWith fadeOut(animationSpec = tween(400))
             } else {
                 fadeIn() togetherWith fadeOut()
             }
@@ -48,7 +50,7 @@ fun AppNavigation(
                 Screen.Splash -> {
                     SplashScreen(
                         isReady = isReady,
-                        onSplashFinished = { /* State changes will trigger navigation automatically due to AnimatedContent */ }
+                        onSplashFinished = { splashFinished = true }
                     )
                 }
                 Screen.Onboarding -> {
@@ -59,7 +61,7 @@ fun AppNavigation(
                 Screen.Home -> {
                     HomeScreen(
                         mainVm = mainVm,
-                        onShowOnboarding = { mainVm.setOnboardingCompleted(false) } // For re-configuring permissions
+                        onShowOnboarding = { mainVm.setOnboardingCompleted(false) }
                     )
                 }
             }

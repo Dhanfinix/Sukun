@@ -21,7 +21,9 @@ data class VolumeUiState(
     val sukunLabel: String? = null,
     val hasExactAlarmPermission: Boolean = true,
     val isIgnoringBatteryOptimizations: Boolean = true,
-    val silenceMode: dhanfinix.android.sukun.core.datastore.SilenceMode = dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT
+    val silenceMode: dhanfinix.android.sukun.core.datastore.SilenceMode = dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT,
+    // Pending silence duration that is waiting for overwrite confirmation
+    val pendingOverwriteDurationMin: Int? = null
 )
 
 /**
@@ -41,4 +43,7 @@ sealed class VolumeEvent {
     data object RequestExactAlarm : VolumeEvent()
     data object RequestIgnoreBattery : VolumeEvent()
     data class SilenceModeChanged(val mode: dhanfinix.android.sukun.core.datastore.SilenceMode) : VolumeEvent()
+    // Overwrite confirmation
+    data object ConfirmOverwrite : VolumeEvent()
+    data object DismissOverwrite : VolumeEvent()
 }

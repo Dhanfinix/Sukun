@@ -53,11 +53,13 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             is VolumeEvent.AlarmChanged -> setAlarmVolume(event.volume)
             is VolumeEvent.NotifLinkToggled -> toggleNotifLink()
             is VolumeEvent.Refresh, is VolumeEvent.OnResume -> loadCurrentVolumes()
-            is VolumeEvent.StartManualSilence -> startManualSilence(event.durationMin)
+            is VolumeEvent.StartManualSilence -> startManualSilenceOrConfirm(event.durationMin)
             is VolumeEvent.StopSilence -> stopSilence()
             is VolumeEvent.RequestExactAlarm -> reliabilityManager.openExactAlarmSettings()
             is VolumeEvent.RequestIgnoreBattery -> reliabilityManager.requestIgnoreBatteryOptimizations()
             is VolumeEvent.SilenceModeChanged -> setSilenceMode(event.mode)
+            is VolumeEvent.ConfirmOverwrite -> confirmOverwrite()
+            is VolumeEvent.DismissOverwrite -> _uiState.update { it.copy(pendingOverwriteDurationMin = null) }
         }
     }
 
@@ -266,6 +268,22 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
         wasSukunActive = isActive
+    }
+
+    private fun startManualSilenceOrConfirm(durationMin: Int) {
+        if (_uiState.value.isSukunActive) {
+            // A silence is already running — ask the user to confirm before overwriting
+            _uiState.update { it.copy(pendingOverwriteDurationMin = durationMin) }
+        } else {
+            startManualSilence(durationMin)
+        }
+    }
+
+    private fun confirmOverwrite() {
+        val pending = _uiState.value.pendingOverwriteDurationMin ?: return
+        _uiState.update { it.copy(pendingOverwriteDurationMin = null) }
+        stopSilence()
+        startManualSilence(pending)
     }
 
     private fun startManualSilence(durationMin: Int) {

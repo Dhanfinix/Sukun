@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dhanfinix.android.sukun.core.designsystem.shimmer
 import dhanfinix.android.sukun.feature.prayer.data.model.LocationSuggestion
@@ -329,7 +331,17 @@ fun PrayerTile(
         label = "pulse_scale"
     )
 
-    ElevatedCard(
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse_alpha"
+    )
+
+    Card(
         onClick = { onToggle(prayer.name) },
         modifier = modifier
             .height(72.dp)
@@ -338,26 +350,38 @@ fun PrayerTile(
                 scaleX = currentScale
                 scaleY = currentScale
             },
-        colors = androidx.compose.material3.CardDefaults.elevatedCardColors(
+        colors = CardDefaults.cardColors(
             containerColor = backgroundColor
-        )
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp,
+            pressedElevation = 1.dp
+        ),
+        border = if (isNext) {
+            androidx.compose.foundation.BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = pulseAlpha)
+            )
+        } else null
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+        Box(modifier = Modifier.fillMaxSize().padding(4.dp)) {
+            // Icon in the top right corner
+            Icon(
+                imageVector = if (prayer.isEnabled) Icons.Rounded.NotificationsOff else Icons.Rounded.NotificationsActive,
+                contentDescription = if (prayer.isEnabled) "Silencing Enabled" else "Silencing Disabled",
+                tint = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
+                modifier = Modifier
+                    .padding(2.dp)
+                    .size(12.dp)
+                    .align(Alignment.TopEnd)
+            )
+
+            // Centered Text content
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    imageVector = if (prayer.isEnabled) Icons.Rounded.NotificationsOff else Icons.Rounded.NotificationsActive,
-                    contentDescription = if (prayer.isEnabled) "Silencing Enabled" else "Silencing Disabled",
-                    tint = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
-                    modifier = Modifier.size(14.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = prayer.name.displayName,
                     style = MaterialTheme.typography.labelSmall,
@@ -366,16 +390,16 @@ fun PrayerTile(
                     maxLines = 1,
                     textAlign = TextAlign.Center
                 )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = prayer.time,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
+                    textDecoration = if (prayer.isEnabled) TextDecoration.None else TextDecoration.LineThrough,
+                    textAlign = TextAlign.Center,
+                    modifier = if (isLoading) Modifier.width(36.dp).shimmer() else Modifier
+                )
             }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = prayer.time,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
-                textDecoration = if (prayer.isEnabled) TextDecoration.None else TextDecoration.LineThrough,
-                textAlign = TextAlign.Center,
-                modifier = if (isLoading) Modifier.width(36.dp).shimmer() else Modifier
-            )
         }
     }
 }
@@ -388,65 +412,32 @@ fun NextPrayerCard(
     countdown: String,
     locationName: String,
     isDetectingLocation: Boolean,
+    isSukunActive: Boolean = false,
+    sukunEndTime: Long = 0L,
+    sukunLabel: String? = null,
+    onStopSilence: () -> Unit = {},
     onLocationClick: () -> Unit,
     onSearchClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val containerColor by animateColorAsState(
+        targetValue = if (isSukunActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+        label = "NextPrayerCard_ContainerColor"
+    )
+
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            containerColor = containerColor,
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(20.dp)
         ) {
-            
-            // ── Large Clock Display ──
-            Text(
-                text = currentTime,
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.ExtraBold,
-                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // ── Next Prayer & Countdown ──
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.NotificationsActive,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = nextPrayerName?.let { "$it in $countdown" } ?: "Loading Schedule...",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ── Location & Controls ──
+            // ── Top Row: Location & Controls ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -460,16 +451,16 @@ fun NextPrayerCard(
                         imageVector = Icons.Rounded.LocationOn,
                         contentDescription = "Location",
                         tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = if (isDetectingLocation) "Detecting..." else locationName,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         modifier = if (isDetectingLocation) Modifier
-                            .width(100.dp)
+                            .width(80.dp)
                             .shimmer() else Modifier
                     )
                 }
@@ -477,30 +468,172 @@ fun NextPrayerCard(
                 Row {
                     IconButton(
                         onClick = onLocationClick,
-                        modifier = Modifier.size(36.dp),
+                        modifier = Modifier.size(32.dp),
                         enabled = !isDetectingLocation
                     ) {
                         if (isDetectingLocation) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
                         } else {
                             Icon(
                                 imageVector = Icons.Rounded.MyLocation,
                                 contentDescription = "Update Location",
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
                     IconButton(
                         onClick = onSearchClick,
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Search,
                             contentDescription = "Search Location",
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // ── Main Dashboard: Time & Countdown ──
+            var activeRemainingTimeStr by remember { mutableStateOf("") }
+            LaunchedEffect(isSukunActive, sukunEndTime) {
+                while (isSukunActive && sukunEndTime > System.currentTimeMillis()) {
+                    val remainingMs = sukunEndTime - System.currentTimeMillis()
+                    val totalSecs = (remainingMs / 1000).toInt()
+                    
+                    val hours = totalSecs / 3600
+                    val minutes = (totalSecs % 3600) / 60
+                    val seconds = totalSecs % 60
+                    
+                    activeRemainingTimeStr = if (hours > 0) {
+                        String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                    } else {
+                        String.format("%02d:%02d", minutes, seconds)
+                    }
+                    
+                    kotlinx.coroutines.delay(1000)
+                }
+            }
+
+            AnimatedContent(
+                targetState = isSukunActive,
+                transitionSpec = {
+                    (fadeIn(animationSpec = tween(400)) +
+                        slideInVertically(animationSpec = tween(400)) { if (targetState) it / 4 else -it / 4 })
+                        .togetherWith(
+                            fadeOut(animationSpec = tween(300)) +
+                                slideOutVertically(animationSpec = tween(300)) { if (targetState) -it / 4 else it / 4 }
+                        )
+                },
+                label = "NextPrayerCard_StateTransition"
+            ) { active ->
+                if (active) {
+                    // ── Active State: Centered Vertical Layout ──
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Label chip
+                        Surface(
+                            shape = MaterialTheme.shapes.small,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.VolumeOff,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = sukunLabel ?: "Manual",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        // Big remaining time
+                        Text(
+                            text = if (activeRemainingTimeStr.isNotEmpty()) activeRemainingTimeStr else "00:00",
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+
+                        // Subtitle
+                        Text(
+                            text = "Silent Active — you can pray in peace",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Stop Button
+                        FilledTonalButton(
+                            onClick = onStopSilence,
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Stop,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Stop Silence", fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                } else {
+                    // ── Normal State: Horizontal Layout ──
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = currentTime,
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Text(
+                                text = "Next: ${nextPrayerName ?: "--"}",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.End
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = countdown,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.End
+                            )
+                        }
                     }
                 }
             }

@@ -98,6 +98,10 @@ import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 @Composable
 fun PrayerSection(
     state: PrayerUiState,
+    isSukunActive: Boolean = false,
+    sukunEndTime: Long = 0L,
+    sukunLabel: String? = null,
+    onStopSilence: () -> Unit = {},
     onEvent: (PrayerEvent) -> Unit,
     modifier: Modifier = Modifier,
     onTargetPositioned: ((CoachMarkTarget, Rect) -> Unit)? = null
@@ -146,6 +150,10 @@ fun PrayerSection(
             countdown = state.nextPrayerCountdown,
             locationName = state.locationName ?: "${state.latitude}, ${state.longitude}",
             isDetectingLocation = state.isDetectingLocation,
+            isSukunActive = isSukunActive,
+            sukunEndTime = sukunEndTime,
+            sukunLabel = sukunLabel,
+            onStopSilence = onStopSilence,
             onLocationClick = onLocationClick,
             onSearchClick = { showSearchDialog = true },
             modifier = Modifier

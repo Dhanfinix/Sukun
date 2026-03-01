@@ -22,6 +22,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.outlined.Info
@@ -50,6 +53,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.gestures.animateScrollBy
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -114,6 +118,7 @@ fun HomeScreen(
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
             topBar = {
                 LargeTopAppBar(
                     title = {
@@ -143,7 +148,11 @@ fun HomeScreen(
                         onClick = { showManualSilenceSheet = true },
                         modifier = Modifier.onGloballyPositioned { coordinates ->
                             coachMarkTargets[CoachMarkTarget.MANUAL_SILENCE_FAB] = coordinates.boundsInWindow()
-                        },
+                        }.padding(
+                            bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars
+                                .asPaddingValues()
+                                .calculateBottomPadding()
+                        ),
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ) {
@@ -157,11 +166,20 @@ fun HomeScreen(
                     .fillMaxSize()
                     .verticalScroll(scrollState)
                     .padding(innerPadding)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(
+                        bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars
+                            .asPaddingValues()
+                            .calculateBottomPadding()
+                    ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 PrayerSection(
                     state = prayerState,
+                    isSukunActive = volumeState.isSukunActive,
+                    sukunEndTime = volumeState.sukunEndTime,
+                    sukunLabel = volumeState.sukunLabel,
+                    onStopSilence = { volumeVm.onEvent(VolumeEvent.StopSilence) },
                     onEvent = prayerVm::onEvent,
                     onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
                 )
@@ -217,7 +235,7 @@ fun HomeScreen(
                         onShowTutorial = { mainVm.setCoachmarkShown(false) }
                     )
                 }
-                
+
                 if (showThemeSheet) {
                     ThemeSelectionSheet(
                         currentTheme = appTheme,
@@ -232,22 +250,30 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
-        
+
         if (!hasSeenCoachmark) {
             CoachMarkOverlay(
                 targets = coachMarkTargets,
                 onStepChange = { step ->
+                    if (step.target == CoachMarkTarget.MANUAL_SILENCE_FAB) return@CoachMarkOverlay
+                    
                     val rect = coachMarkTargets[step.target]
                     if (rect != null) {
                         val screenHeightPx = with(density) { config.screenHeightDp.dp.toPx() }
                         // If target is offscreen at bottom (give some padding)
                         if (rect.bottom > screenHeightPx - 100f) {
                             val delta = rect.bottom - screenHeightPx + 300f 
-                            coroutineScope.launch { scrollState.animateScrollBy(delta) }
+                            coroutineScope.launch { 
+                                delay(300)
+                                scrollState.animateScrollBy(delta) 
+                            }
                         } else if (rect.top < 200f) {
                             // If target is offscreen at top (account for app bar)
                             val delta = rect.top - 200f
-                            coroutineScope.launch { scrollState.animateScrollBy(delta) }
+                            coroutineScope.launch { 
+                                delay(300)
+                                scrollState.animateScrollBy(delta) 
+                            }
                         }
                     }
                 },

@@ -54,6 +54,9 @@ class SilenceScheduler(private val context: Context) {
     }
 
     fun scheduleManual(durationMin: Int) {
+        // Cancel any prior manual restore alarm before scheduling a new one
+        cancelManualAlarms()
+
         // For manual, we start silence IMMEDIATELY and schedule restore in the future
         val startIntent = Intent(context, SilenceReceiver::class.java).apply {
             action = SilenceReceiver.ACTION_START_SILENCE
@@ -63,7 +66,7 @@ class SilenceScheduler(private val context: Context) {
         context.sendBroadcast(startIntent)
 
         val restoreTimeMs = System.currentTimeMillis() + (durationMin * 60 * 1000L)
-        val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE)
+        val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE)
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
@@ -73,12 +76,22 @@ class SilenceScheduler(private val context: Context) {
     }
 
     fun stopSilence() {
-        cancelAll()
+        // Only cancel the manual restore alarm — do NOT touch prayer-scheduled alarms!
+        cancelManualAlarms()
         // Immediately restore volumes
         val stopIntent = Intent(context, SilenceReceiver::class.java).apply {
             action = SilenceReceiver.ACTION_STOP_SILENCE
         }
         context.sendBroadcast(stopIntent)
+    }
+
+    private fun cancelManualAlarms() {
+        workManager.cancelAllWorkByTag(SilenceScheduler.TAG_SUKUN)
+        // requestCode 0 was the old default for manual alarms
+        alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_START_SILENCE, 0))
+        alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, 0))
+        // New dedicated request code for manual restore
+        alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE))
     }
 
     fun cancelAll() {
@@ -203,5 +216,7 @@ class SilenceScheduler(private val context: Context) {
 
     companion object {
         const val TAG_SUKUN = "sukun_silence"
+        // Dedicated request code for manual silence restore alarm (distinct from prayer codes 0..N+100)
+        const val REQUEST_CODE_MANUAL_RESTORE = 9000
     }
 }

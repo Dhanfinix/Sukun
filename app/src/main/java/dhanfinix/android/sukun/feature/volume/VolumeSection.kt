@@ -32,44 +32,42 @@ fun VolumeSection(
     modifier: Modifier = Modifier,
     onTargetPositioned: ((CoachMarkTarget, Rect) -> Unit)? = null
 ) {
+    // ── Overwrite Confirmation Dialog ──
+    if (state.pendingOverwriteDurationMin != null) {
+        AlertDialog(
+            onDismissRequest = { onEvent(VolumeEvent.DismissOverwrite) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = { Text("Silence Already Active") },
+            text = {
+                Text(
+                    text = "A silence session \"${state.sukunLabel ?: "Unknown"}\" is currently running. Do you want to stop it and start a new ${state.pendingOverwriteDurationMin}-minute manual silence?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(onClick = { onEvent(VolumeEvent.ConfirmOverwrite) }) {
+                    Text("Yes, Overwrite")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onEvent(VolumeEvent.DismissOverwrite) }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // ── Countdown Overlay ──
-        AnimatedVisibility(
-            visible = state.isSukunActive,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
-        ) {
-            var remainingTimeStr by remember { mutableStateOf("") }
-
-            LaunchedEffect(state.sukunEndTime) {
-                while (state.isSukunActive && state.sukunEndTime > System.currentTimeMillis()) {
-                    val remainingMs = state.sukunEndTime - System.currentTimeMillis()
-                    val totalSecs = (remainingMs / 1000).toInt()
-                    
-                    val hours = totalSecs / 3600
-                    val minutes = (totalSecs % 3600) / 60
-                    val seconds = totalSecs % 60
-                    
-                    remainingTimeStr = if (hours > 0) {
-                        String.format("%02d:%02d:%02d", hours, minutes, seconds)
-                    } else {
-                        String.format("%02d:%02d", minutes, seconds)
-                    }
-                    
-                    kotlinx.coroutines.delay(1000)
-                }
-            }
-
-            SilenceCountdownOverlay(
-                label = state.sukunLabel ?: "Active",
-                remainingTimeStr = remainingTimeStr,
-                onStop = { onEvent(VolumeEvent.StopSilence) }
-            )
-        }
-        
+        // ── Silence Mode Selection ──
         // ── Silence Mode Selection ──
         Column(
             modifier = Modifier.fillMaxWidth(),
