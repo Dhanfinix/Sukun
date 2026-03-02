@@ -1,46 +1,46 @@
 :root {
-    /* Basic Colors */
-    --md-sys-color-background: #141218;
-    --md-sys-color-on-background: #E6E0E9;
-    --md-sys-color-surface: #1D1B20;
-    --md-sys-color-surface-dim: #141218;
-    --md-sys-color-surface-bright: #3B383E;
-    --md-sys-color-surface-container: #211F26;
-    --md-sys-color-surface-container-high: #2B2930;
-    --md-sys-color-surface-container-highest: #36343B;
-    --md-sys-color-on-surface: #E6E0E9;
-    --md-sys-color-on-surface-variant: #CAC4D0;
-    --md-sys-color-outline: #938F99;
-    --md-sys-color-outline-variant: #49454F;
+    /* Basic Colors (Súkun Earth Tone Light Theme) */
+    --md-sys-color-background: #FAF6F0;
+    --md-sys-color-on-background: #1C1611;
+    --md-sys-color-surface: #FAF6F0;
+    --md-sys-color-surface-dim: #D8CFC8;
+    --md-sys-color-surface-bright: #FFFFFF;
+    --md-sys-color-surface-container: #F0EAE3;
+    --md-sys-color-surface-container-high: #EAE4DD;
+    --md-sys-color-surface-container-highest: #E4DDD7;
+    --md-sys-color-on-surface: #1C1611;
+    --md-sys-color-on-surface-variant: #514741;
+    --md-sys-color-outline: #837470;
+    --md-sys-color-outline-variant: #CFC8C1;
 
-    /* Primary (Purple) */
-    --md-sys-color-primary: #D0BCFF;
-    --md-sys-color-on-primary: #381E72;
-    --md-sys-color-primary-container: #4F378B;
-    --md-sys-color-on-primary-container: #EADDFF;
+    /* Primary (Warm Brown) */
+    --md-sys-color-primary: #6B5042;
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-primary-container: #F3EAD8;
+    --md-sys-color-on-primary-container: #231108;
 
-    /* Secondary */
-    --md-sys-color-secondary: #CCC2DC;
-    --md-sys-color-on-secondary: #332D41;
-    --md-sys-color-secondary-container: #4A4458;
-    --md-sys-color-on-secondary-container: #E8DEF8;
+    /* Secondary (Taupe) */
+    --md-sys-color-secondary: #7D7063;
+    --md-sys-color-on-secondary: #FFFFFF;
+    --md-sys-color-secondary-container: #D8CFC8;
+    --md-sys-color-on-secondary-container: #2C2219;
 
-    /* Tertiary */
-    --md-sys-color-tertiary: #EFB8C8;
-    --md-sys-color-on-tertiary: #492532;
-    --md-sys-color-tertiary-container: #633B48;
-    --md-sys-color-on-tertiary-container: #FFD8E4;
+    /* Tertiary (Khaki) */
+    --md-sys-color-tertiary: #6C6740;
+    --md-sys-color-on-tertiary: #FFFFFF;
+    --md-sys-color-tertiary-container: #F4EDBA;
+    --md-sys-color-on-tertiary-container: #221F02;
 
     /* Error */
-    --md-sys-color-error: #F2B8B5;
-    --md-sys-color-on-error: #601410;
-    --md-sys-color-error-container: #8C1D18;
-    --md-sys-color-on-error-container: #F9DEDC;
+    --md-sys-color-error: #BA1A1A;
+    --md-sys-color-on-error: #FFFFFF;
+    --md-sys-color-error-container: #FFFFDAD6;
+    --md-sys-color-on-error-container: #410002;
 
     /* Elevation */
-    --md-sys-elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-    --md-sys-elevation-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
-    --md-sys-elevation-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+    --md-sys-elevation-1: 0px 1px 2px 0px rgba(107, 80, 66, 0.1), 0px 1px 3px 1px rgba(107, 80, 66, 0.05);
+    --md-sys-elevation-2: 0px 1px 2px 0px rgba(107, 80, 66, 0.1), 0px 2px 6px 2px rgba(107, 80, 66, 0.05);
+    --md-sys-elevation-3: 0px 1px 3px 0px rgba(107, 80, 66, 0.1), 0px 4px 8px 3px rgba(107, 80, 66, 0.05);
 
     /* Shape */
     --md-sys-shape-corner-medium: 12px;
@@ -123,8 +123,10 @@ a:hover {
     color: var(--md-sys-color-primary);
 }
 
-.logo .material-symbols-rounded {
-    font-size: 28px;
+.logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
 }
 
 .nav-links {
