@@ -6,15 +6,18 @@ Sukun is an Android app that helps you manage prayer times and automatically sil
 
 - **Prayer Times:** Gets accurate prayer times based on your location.
 - **Auto-Silence:** Automatically sets your phone to vibrate or silent mode during prayer times.
+- **Granular Durations:** Set custom silence durations explicitly for each prayer (e.g., 45m for Jumu'ah, 15m for Fajr), or use a uniform setting.
+- **Jumu'ah Automation:** Intelligently swaps Dhuhr with Jumu'ah on Fridays and applies khutbah-ready default silence windows.
+- **Hijri Date:** Proudly displays the perfectly localized Hijri calendar date alongside Gregorian tracking.
 - **Onboarding:** Simple setup to get started with location and notification permissions.
 
 ## Tech Stack
 
-- **UI:** Jetpack Compose
-- **Architecture:** MVVM (Model-View-ViewModel) + Clean Architecture principles
-- **Local Data:** Room Database for caching prayer times, DataStore for user preferences
-- **Network:** Retrofit + kotlinx.serialization for the Aladhan API
-- **Background Tasks:** AlarmManager for exact device silence scheduling and restoring volume
+- **UI:** Jetpack Compose (Material 3)
+- **Architecture:** MVVM (Model-View-ViewModel) + Clean Architecture
+- **Local Data:** Room Database for caching prayer times, DataStore for granular user preferences
+- **Network:** Retrofit + Gson for the Aladhan API
+- **Background Tasks:** Context-aware AlarmManager for exact device silence scheduling and restoring volume
 
 ## Getting Started
 
