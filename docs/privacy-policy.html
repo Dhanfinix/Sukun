@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukun - Privacy Policy</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .policy-container {
+            max-width: 800px;
+            margin: 120px auto 60px;
+            padding: 0 24px;
+            color: var(--on-surface, #1C1B1F);
+        }
+        .policy-container h1 {
+            color: var(--primary, #8C4A60);
+            margin-bottom: 24px;
+            font-size: 2.5rem;
+        }
+        .policy-container h2 {
+            margin-top: 32px;
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+            color: var(--on-surface);
+        }
+        .policy-container p, .policy-container li {
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+        }
+        .policy-container a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .policy-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer;">
+                <span class="material-symbols-rounded">mosque</span>
+                <span>Sukun</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="https://github.com/Dhanfinix/Sukun" class="btn btn-tonal" target="_blank">View on GitHub</a>
+            </div>
+            <button class="mobile-menu-btn">
+                <span class="material-symbols-rounded">menu</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="policy-container">
+        <h1>Privacy Policy</h1>
+        <p><strong>Effective Date: March 2, 2026</strong></p>
+
+        <p>Your privacy is critically important to us. This Privacy Policy outlines how Súkun ("we", "our", or "the app") collects, uses, and protects your information.</p>
+
+        <h2>1. Information We Collect</h2>
+        <p>Súkun is designed with a privacy-first approach. We only collect the minimal information necessary to provide the app’s core functionality:</p>
+        <ul>
+            <li><strong>Location Data:</strong> Súkun requires foreground and background access to your location data exclusively to calculate accurate local prayer times. This data is processed locally on your device.</li>
+            <li><strong>Device Settings:</strong> Súkun requires permission to access "Do Not Disturb" (DND) and volume controls to automatically silence your phone during prayer times.</li>
+        </ul>
+
+        <h2>2. How We Use Your Information</h2>
+        <p>We use your information strictly for operating the app:</p>
+        <ul>
+            <li>Your location coordinates (latitude and longitude) are sent directly to the public Aladhan API to fetch prayer schedules. We do not store, track, or share your location history on any external servers.</li>
+            <li>Your local settings (prayer configurations, exact silence durations, volume levels) are saved entirely locally on your device using Android encrypted DataStore and Room Database.</li>
+        </ul>
+
+        <h2>3. Data Sharing and Disclosure</h2>
+        <p>We do not sell, trade, or otherwise transfer your personal information to outside parties. All app preferences and data remain entirely isolated on your local device.</p>
+
+        <h2>4. Changes to This Privacy Policy</h2>
+        <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.</p>
+
+        <h2>5. Contact Us</h2>
+        <p>If you have any questions about this Privacy Policy, please open an issue on our <a href="https://github.com/Dhanfinix/Sukun/issues">GitHub repository</a>.</p>
+    </main>
+
+    <footer>
+        <div class="footer-bottom" style="text-align:center; padding: 24px;">
+            <p>&copy; 2026 Dhanfinix. Open source under the MIT License.</p>
+        </div>
+    </footer>
+</body>
+</html>
