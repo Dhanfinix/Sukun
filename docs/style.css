@@ -99,9 +99,9 @@ a:hover {
     top: 0;
     left: 0;
     right: 0;
-    background-color: rgba(250, 246, 240, 0.85); /* #FAF6F0 with opacity */
+    background-color: rgba(51, 42, 36, 0.85); /* Súkun Dark Brown */
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
     z-index: 100;
 }
 
@@ -120,7 +120,7 @@ a:hover {
     gap: 8px;
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--md-sys-color-primary);
+    color: #F3EAD8; /* primary-container light */
 }
 
 .logo-img {
@@ -136,14 +136,14 @@ a:hover {
 }
 
 .nav-links a:not(.btn) {
-    color: var(--md-sys-color-on-surface-variant);
+    color: #E4DDD7; /* light gray/brown */
     font-weight: 500;
     font-size: 1rem;
     transition: color 0.2s ease;
 }
 
 .nav-links a:not(.btn):hover {
-    color: var(--md-sys-color-on-surface);
+    color: #FFFFFF;
 }
 
 .mobile-menu-btn {
