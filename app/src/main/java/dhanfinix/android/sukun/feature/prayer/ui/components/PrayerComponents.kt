@@ -407,6 +407,7 @@ fun PrayerTile(
 
 @Composable
 fun NextPrayerCard(
+    currentDate: String,
     currentTime: String,
     nextPrayerName: String?,
     countdown: String,
@@ -437,7 +438,17 @@ fun NextPrayerCard(
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
-            // ── Top Row: Location & Controls ──
+            // ── Top Row: Date ──
+            if (currentDate.isNotEmpty()) {
+                Text(
+                    text = currentDate,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // ── Second Row: Location & Controls ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -628,7 +639,7 @@ fun NextPrayerCard(
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = countdown,
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
                                 textAlign = TextAlign.End

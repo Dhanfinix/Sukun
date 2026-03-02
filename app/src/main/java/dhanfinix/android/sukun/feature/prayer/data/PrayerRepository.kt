@@ -79,6 +79,7 @@ class PrayerRepository(context: Context) {
                         val timingsMap = mapOf(
                             PrayerName.FAJR to cleanTime(dayData.timings.fajr),
                             PrayerName.DHUHR to cleanTime(dayData.timings.dhuhr),
+                            PrayerName.JUMUAH to cleanTime(dayData.timings.dhuhr), // Same time as Dhuhr
                             PrayerName.ASR to cleanTime(dayData.timings.asr),
                             PrayerName.MAGHRIB to cleanTime(dayData.timings.maghrib),
                             PrayerName.ISHA to cleanTime(dayData.timings.isha)

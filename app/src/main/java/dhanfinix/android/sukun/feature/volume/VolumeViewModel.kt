@@ -39,6 +39,9 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
     private val _uiState = MutableStateFlow(VolumeUiState())
     val uiState: StateFlow<VolumeUiState> = _uiState.asStateFlow()
 
+    private var lastMediaVolumeRaw: Int = -1
+    private var lastUserRingSetTime: Long = 0L
+
     // ── Real-time volume observer (picks up hardware button presses) ──
     private val volumeObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
@@ -76,6 +79,7 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             is VolumeEvent.SilenceModeChanged -> setSilenceMode(event.mode)
             is VolumeEvent.ConfirmOverwrite -> confirmOverwrite()
             is VolumeEvent.DismissOverwrite -> _uiState.update { it.copy(pendingOverwriteDurationMin = null) }
+            is VolumeEvent.SnackbarMessageConsumed -> _uiState.update { it.copy(snackbarMessage = null) }
         }
     }
 
@@ -92,6 +96,17 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
 
         val isSystemLinked = checkSystemVolumeLinking()
 
+        var newSnackbarMsg = _uiState.value.snackbarMessage
+
+        if (lastMediaVolumeRaw != -1 && System.currentTimeMillis() - lastUserRingSetTime < 2000L) {
+            if (mediaCurrent == 0 && lastMediaVolumeRaw > 0 && ringCurrent == 0) {
+                newSnackbarMsg = "Media muted by Android System (Silent Mode)"
+            } else if (mediaCurrent > 0 && lastMediaVolumeRaw == 0 && ringCurrent > 0) {
+                newSnackbarMsg = "Media restored by Android System"
+            }
+        }
+        lastMediaVolumeRaw = mediaCurrent
+
         _uiState.update {
             it.copy(
                 mediaVolume = toPercent(mediaCurrent, mediaMax),
@@ -107,7 +122,8 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
                 // If system enforces it, we force our internal toggle to true as well
                 isNotifLinked = if (isSystemLinked) true else it.isNotifLinked,
                 hasExactAlarmPermission = reliabilityManager.isExactAlarmPermissionGranted(),
-                isIgnoringBatteryOptimizations = reliabilityManager.isIgnoringBatteryOptimizations()
+                isIgnoringBatteryOptimizations = reliabilityManager.isIgnoringBatteryOptimizations(),
+                snackbarMessage = newSnackbarMsg
             )
         }
     }
@@ -152,6 +168,8 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             showPermissionToast()
             return
         }
+        
+        lastUserRingSetTime = System.currentTimeMillis()
         
         try {
             val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)

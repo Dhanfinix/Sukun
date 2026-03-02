@@ -23,7 +23,8 @@ data class VolumeUiState(
     val isIgnoringBatteryOptimizations: Boolean = true,
     val silenceMode: dhanfinix.android.sukun.core.datastore.SilenceMode = dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT,
     // Pending silence duration that is waiting for overwrite confirmation
-    val pendingOverwriteDurationMin: Int? = null
+    val pendingOverwriteDurationMin: Int? = null,
+    val snackbarMessage: String? = null
 )
 
 /**
@@ -46,4 +47,5 @@ sealed class VolumeEvent {
     // Overwrite confirmation
     data object ConfirmOverwrite : VolumeEvent()
     data object DismissOverwrite : VolumeEvent()
+    data object SnackbarMessageConsumed : VolumeEvent()
 }

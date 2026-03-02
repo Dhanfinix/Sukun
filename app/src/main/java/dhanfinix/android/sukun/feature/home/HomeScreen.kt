@@ -71,6 +71,8 @@ import dhanfinix.android.sukun.feature.volume.VolumeEvent
 import dhanfinix.android.sukun.feature.volume.VolumeSection
 import dhanfinix.android.sukun.feature.volume.VolumeViewModel
 import dhanfinix.android.sukun.core.reliability.ReliabilityManager
+import dhanfinix.android.sukun.core.designsystem.components.TopSnackbar
+import androidx.compose.ui.Alignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -285,6 +287,19 @@ fun HomeScreen(
                 onDismiss = { mainVm.setCoachmarkShown(true) }
             )
         }
+
+        TopSnackbar(
+            message = prayerState.snackbarMessage ?: volumeState.snackbarMessage,
+            onDismiss = { 
+                if (prayerState.snackbarMessage != null) {
+                    prayerVm.onEvent(PrayerEvent.SnackbarMessageConsumed)
+                }
+                if (volumeState.snackbarMessage != null) {
+                    volumeVm.onEvent(VolumeEvent.SnackbarMessageConsumed)
+                }
+            },
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 

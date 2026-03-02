@@ -76,7 +76,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     fun onEvent(event: PrayerEvent) {
         when (event) {
             is PrayerEvent.TogglePrayer -> togglePrayer(event.prayer)
-            is PrayerEvent.DurationSelected -> setDuration(event.minutes)
+            is PrayerEvent.DurationSelected -> setDuration(event.prayer, event.minutes)
+            is PrayerEvent.UniformDurationToggled -> setUniformDuration(event.isUniform)
+            is PrayerEvent.AllDurationsSelected -> setAllDurations(event.minutes)
             is PrayerEvent.LocationUpdated -> {
                 viewModelScope.launch {
                     updateLocationSync(event.latitude, event.longitude)
@@ -103,6 +105,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             is PrayerEvent.ErrorMessageConsumed -> {
                 _uiState.update { it.copy(errorMessage = null) }
             }
+            is PrayerEvent.SnackbarMessageConsumed -> {
+                _uiState.update { it.copy(snackbarMessage = null) }
+            }
         }
     }
 
@@ -118,7 +123,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 val lngVal = withContext(Dispatchers.IO) { userPrefs.longitude.first() }
                 val locNameVal = withContext(Dispatchers.IO) { userPrefs.locationName.first() }
                 val methodVal = withContext(Dispatchers.IO) { userPrefs.calculationMethod.first() }
-                val durationVal = withContext(Dispatchers.IO) { userPrefs.silenceDurationMin.first() }
+                val durationsMapVal = withContext(Dispatchers.IO) { userPrefs.prayerDurations.first() }
+                val isUniformVal = withContext(Dispatchers.IO) { userPrefs.isDurationUniform.first() }
                 val enabledMapVal = withContext(Dispatchers.IO) { userPrefs.isPrayerEnabled.first() }
 
                 val today = LocalDate.now()
@@ -134,7 +140,12 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     val timesMapToday = resultToday.getOrThrow()
                     val timesMapTomorrow = resultTomorrow.getOrThrow()
                     
-                    val prayersToday = PrayerName.entries.map { name ->
+                    val isTodayFriday = today.dayOfWeek == java.time.DayOfWeek.FRIDAY
+                    val isTomorrowFriday = tomorrow.dayOfWeek == java.time.DayOfWeek.FRIDAY
+                    
+                    val prayersToday = PrayerName.entries.filter { 
+                        if (isTodayFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
+                    }.map { name ->
                         PrayerInfo(
                             name = name,
                             time = timesMapToday[name] ?: "--:--",
@@ -142,7 +153,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                         )
                     }
                     
-                    val prayersTomorrow = PrayerName.entries.map { name ->
+                    val prayersTomorrow = PrayerName.entries.filter { 
+                        if (isTomorrowFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
+                    }.map { name ->
                         PrayerInfo(
                             name = name,
                             time = timesMapTomorrow[name] ?: "--:--",
@@ -162,7 +175,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     _uiState.update { 
                         it.copy(
                             prayers = prayersToday,
-                            silenceDurationMin = durationVal,
+                            prayerDurations = durationsMapVal,
+                            isDurationUniform = isUniformVal,
                             latitude = latVal.toString(),
                             longitude = lngVal.toString(),
                             locationName = finalLocName,
@@ -172,7 +186,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                         )
                     }
                     
-                    scheduleWorkers(prayersToday, prayersTomorrow, durationVal)
+                    scheduleWorkers(prayersToday, prayersTomorrow, durationsMapVal)
                 } else {
                     val error = resultToday.exceptionOrNull() ?: resultTomorrow.exceptionOrNull()
                     _uiState.update {
@@ -210,7 +224,12 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             val updatedPrayers = currentState.prayers.map {
                 if (it.name == prayer) it.copy(isEnabled = !currentEnabled) else it
             }
-            _uiState.update { it.copy(prayers = updatedPrayers) }
+            
+            val status = if (!currentEnabled) "enabled" else "disabled"
+            _uiState.update { it.copy(
+                prayers = updatedPrayers,
+                snackbarMessage = "${prayer.displayName} silence $status"
+            ) }
             
             // Re-fetch tomorrow for scheduling
             val lat = userPrefs.latitude.first()
@@ -219,7 +238,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             val tomorrow = LocalDate.now().plusDays(1)
             val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method).getOrNull() ?: emptyMap()
             
-            val prayersTomorrow = PrayerName.entries.map { name ->
+            val isTomorrowFriday = tomorrow.dayOfWeek == java.time.DayOfWeek.FRIDAY
+            val prayersTomorrow = PrayerName.entries.filter { 
+                if (isTomorrowFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
+            }.map { name ->
                 PrayerInfo(
                     name = name,
                     time = timesMapTomorrow[name] ?: "--:--",
@@ -227,14 +249,15 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(updatedPrayers, prayersTomorrow, currentState.silenceDurationMin)
+            scheduleWorkers(updatedPrayers, prayersTomorrow, currentState.prayerDurations)
         }
     }
 
-    private fun setDuration(minutes: Int) {
+    private fun setDuration(prayer: PrayerName, minutes: Int) {
         viewModelScope.launch {
-            userPrefs.setSilenceDuration(minutes)
-            _uiState.update { it.copy(silenceDurationMin = minutes) }
+            userPrefs.setPrayerDuration(prayer, minutes)
+            val updatedDurations = _uiState.value.prayerDurations + (prayer to minutes)
+            _uiState.update { it.copy(prayerDurations = updatedDurations) }
             
             val lat = userPrefs.latitude.first()
             val lng = userPrefs.longitude.first()
@@ -242,7 +265,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             val tomorrow = LocalDate.now().plusDays(1)
             val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method).getOrNull() ?: emptyMap()
             
-            val prayersTomorrow = PrayerName.entries.map { name ->
+            val isTomorrowFriday = tomorrow.dayOfWeek == java.time.DayOfWeek.FRIDAY
+            val prayersTomorrow = PrayerName.entries.filter { 
+                if (isTomorrowFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
+            }.map { name ->
                 PrayerInfo(
                     name = name,
                     time = timesMapTomorrow[name] ?: "--:--",
@@ -250,7 +276,48 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, minutes)
+            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedDurations)
+        }
+    }
+
+    private fun setUniformDuration(isUniform: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setDurationUniform(isUniform)
+            _uiState.update { it.copy(isDurationUniform = isUniform) }
+            // If toggled to true, maybe we should sync them all to the first one?
+            // The UI will just use the Fajr value as the main slider.
+            // But we don't necessarily overwrite the DB until they move the slider.
+            // Oh wait, Súkun's previous design was a single duration. If the user turns ON uniform,
+            // we probably should overwrite everything to match immediately, or we can just wait for slider changes.
+            // A safer bet is just setting the state, and let `setAllDurations` do the datastore updates.
+        }
+    }
+
+    private fun setAllDurations(minutes: Int) {
+        viewModelScope.launch {
+            userPrefs.setAllPrayerDurations(minutes)
+            
+            val updatedMap = PrayerName.entries.associateWith { minutes }
+            _uiState.update { it.copy(prayerDurations = updatedMap) }
+            
+            val lat = userPrefs.latitude.first()
+            val lng = userPrefs.longitude.first()
+            val method = userPrefs.calculationMethod.first()
+            val tomorrow = LocalDate.now().plusDays(1)
+            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method).getOrNull() ?: emptyMap()
+            
+            val isTomorrowFriday = tomorrow.dayOfWeek == java.time.DayOfWeek.FRIDAY
+            val prayersTomorrow = PrayerName.entries.filter { 
+                if (isTomorrowFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
+            }.map { name ->
+                PrayerInfo(
+                    name = name,
+                    time = timesMapTomorrow[name] ?: "--:--",
+                    isEnabled = _uiState.value.prayers.find { it.name == name }?.isEnabled ?: true
+                )
+            }
+            
+            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedMap)
         }
     }
 
@@ -395,8 +462,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun scheduleWorkers(prayersToday: List<PrayerInfo>, prayersTomorrow: List<PrayerInfo>, durationMin: Int) {
-        silenceScheduler.scheduleAll(prayersToday, prayersTomorrow, durationMin)
+    private fun scheduleWorkers(prayersToday: List<PrayerInfo>, prayersTomorrow: List<PrayerInfo>, durations: Map<PrayerName, Int>) {
+        silenceScheduler.scheduleAll(prayersToday, prayersTomorrow, durations)
     }
 
     private fun startClockTicker() {
@@ -423,9 +490,16 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     String.format("-%02d:%02d:%02d", hours, minutes, seconds)
                 } ?: "--:--:--"
 
+                // Compute Hijri Date with Day of Week
+                val uLocale = android.icu.util.ULocale.forLocale(java.util.Locale.getDefault()).setKeywordValue("calendar", "islamic")
+                val islamicCalendar = android.icu.util.IslamicCalendar(uLocale)
+                val hijriFormatter = android.icu.text.SimpleDateFormat("EEEE, d MMMM yyyy", uLocale)
+                val hijriDateStr = hijriFormatter.format(islamicCalendar.time)
+
                 _uiState.update { 
                     it.copy(
                         currentTime = currentTimeStr,
+                        currentDate = hijriDateStr,
                         nextPrayerName = nextPrayerInfo?.first?.name?.displayName,
                         nextPrayerCountdown = countdownStr
                     )

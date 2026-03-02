@@ -67,58 +67,6 @@ fun VolumeSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // ── Silence Mode Selection ──
-        // ── Silence Mode Selection ──
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "Silence Mode",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = 4.dp, top = 8.dp)
-            )
-            Text(
-                text = "Choose how Sukun mutes your phone during prayers",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
-            )
-
-            SingleChoiceSegmentedButtonRow(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
-            ) {
-                val options = dhanfinix.android.sukun.core.datastore.SilenceMode.values()
-                options.forEachIndexed { index, mode ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
-                        onClick = { onEvent(VolumeEvent.SilenceModeChanged(mode)) },
-                        selected = state.silenceMode == mode
-                    ) {
-                        Text(
-                            text = when (mode) {
-                                dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT -> "Silent"
-                                dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE -> "Vibrate"
-                            }
-                        )
-                    }
-                }
-            }
-            
-            // Mode Description
-            Text(
-                text = when (state.silenceMode) {
-                    dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT -> "Mutes all sounds but allows visual notifications."
-                    dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE -> "Mutes sounds but keeps vibrations active."
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-            )
-        }
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         Text(
             text = "Volume Controls",
@@ -213,6 +161,35 @@ fun VolumeSection(
                     enabled = !state.isSukunActive
                 )
             }
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                Text(
+                    text = "Vibrate in Silence Mode",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Allow vibrations when phone is muted during prayers",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = state.silenceMode == dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE,
+                onCheckedChange = { isVibrate -> 
+                    val mode = if (isVibrate) dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE else dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT
+                    onEvent(VolumeEvent.SilenceModeChanged(mode))
+                },
+                enabled = !state.isSukunActive
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))

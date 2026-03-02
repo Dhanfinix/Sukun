@@ -23,42 +23,48 @@ class MidnightReceiver : BroadcastReceiver() {
         val prayerRepo = PrayerRepository(context)
         val scheduler = SilenceScheduler(context)
 
+        val pendingResult = goAsync()
+
         CoroutineScope(Dispatchers.IO).launch {
-            val lat = userPrefs.latitude.first()
-            val lng = userPrefs.longitude.first()
-            val method = userPrefs.calculationMethod.first()
-            val duration = userPrefs.silenceDurationMin.first()
-            val enabledMap = userPrefs.isPrayerEnabled.first()
+            try {
+                val lat = userPrefs.latitude.first()
+                val lng = userPrefs.longitude.first()
+                val method = userPrefs.calculationMethod.first()
+                val durations = userPrefs.prayerDurations.first()
+                val enabledMap = userPrefs.isPrayerEnabled.first()
 
-            // Fetching today and tomorrow
-            val today = LocalDate.now()
-            val tomorrow = today.plusDays(1)
-            
-            val resultToday = prayerRepo.getPrayerTimes(today, lat, lng, method)
-            val resultTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method)
+                // Fetching today and tomorrow
+                val today = LocalDate.now()
+                val tomorrow = today.plusDays(1)
+                
+                val resultToday = prayerRepo.getPrayerTimes(today, lat, lng, method)
+                val resultTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method)
 
-            if (resultToday.isSuccess && resultTomorrow.isSuccess) {
-                val timesMapToday = resultToday.getOrThrow()
-                val timesMapTomorrow = resultTomorrow.getOrThrow()
-                
-                val prayersToday = PrayerName.entries.map { name ->
-                    PrayerInfo(
-                        name = name,
-                        time = timesMapToday[name] ?: "--:--",
-                        isEnabled = enabledMap[name] ?: true
-                    )
+                if (resultToday.isSuccess && resultTomorrow.isSuccess) {
+                    val timesMapToday = resultToday.getOrThrow()
+                    val timesMapTomorrow = resultTomorrow.getOrThrow()
+                    
+                    val prayersToday = PrayerName.entries.map { name ->
+                        PrayerInfo(
+                            name = name,
+                            time = timesMapToday[name] ?: "--:--",
+                            isEnabled = enabledMap[name] ?: true
+                        )
+                    }
+                    
+                    val prayersTomorrow = PrayerName.entries.map { name ->
+                        PrayerInfo(
+                            name = name,
+                            time = timesMapTomorrow[name] ?: "--:--",
+                            isEnabled = enabledMap[name] ?: true
+                        )
+                    }
+                    
+                    // Re-schedule for the whole rolling 24h window
+                    scheduler.scheduleAll(prayersToday, prayersTomorrow, durations)
                 }
-                
-                val prayersTomorrow = PrayerName.entries.map { name ->
-                    PrayerInfo(
-                        name = name,
-                        time = timesMapTomorrow[name] ?: "--:--",
-                        isEnabled = enabledMap[name] ?: true
-                    )
-                }
-                
-                // Re-schedule for the whole rolling 24h window
-                scheduler.scheduleAll(prayersToday, prayersTomorrow, duration)
+            } finally {
+                pendingResult.finish()
             }
         }
     }

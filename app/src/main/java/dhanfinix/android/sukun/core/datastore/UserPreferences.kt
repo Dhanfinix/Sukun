@@ -37,7 +37,13 @@ class UserPreferences(private val context: Context) {
     private val KEY_ISHA_ENABLED = booleanPreferencesKey("isha_enabled")
 
     // ── Duration ──
-    private val KEY_SILENCE_DURATION = intPreferencesKey("silence_duration_min")
+    private val KEY_DUR_FAJR = intPreferencesKey("dur_fajr")
+    private val KEY_DUR_DHUHR = intPreferencesKey("dur_dhuhr")
+    private val KEY_DUR_JUMUAH = intPreferencesKey("dur_jumuah")
+    private val KEY_DUR_ASR = intPreferencesKey("dur_asr")
+    private val KEY_DUR_MAGHRIB = intPreferencesKey("dur_maghrib")
+    private val KEY_DUR_ISHA = intPreferencesKey("dur_isha")
+    private val KEY_UNIFORM_DURATIONS = booleanPreferencesKey("uniform_durations")
 
     // ── Location ──
     private val KEY_LATITUDE = doublePreferencesKey("latitude")
@@ -79,14 +85,26 @@ class UserPreferences(private val context: Context) {
         mapOf(
             PrayerName.FAJR to (prefs[KEY_FAJR_ENABLED] ?: true),
             PrayerName.DHUHR to (prefs[KEY_DHUHR_ENABLED] ?: true),
+            PrayerName.JUMUAH to (prefs[KEY_DHUHR_ENABLED] ?: true), // Jumu'ah inherits Dhuhr's toggle conceptually, but we can decouple it later if needed. For now it uses Dhuhr's enabled state or its own. Wait, let's give it its own toggle or share Dhuhr.
             PrayerName.ASR to (prefs[KEY_ASR_ENABLED] ?: true),
             PrayerName.MAGHRIB to (prefs[KEY_MAGHRIB_ENABLED] ?: true),
             PrayerName.ISHA to (prefs[KEY_ISHA_ENABLED] ?: true)
         )
     }
 
-    val silenceDurationMin: Flow<Int> = context.dataStore.data.map { prefs ->
-        prefs[KEY_SILENCE_DURATION] ?: 15
+    val prayerDurations: Flow<Map<PrayerName, Int>> = context.dataStore.data.map { prefs ->
+        mapOf(
+            PrayerName.FAJR to (prefs[KEY_DUR_FAJR] ?: 15),
+            PrayerName.DHUHR to (prefs[KEY_DUR_DHUHR] ?: 15),
+            PrayerName.JUMUAH to (prefs[KEY_DUR_JUMUAH] ?: 45), // Default to 45m for Jumu'ah
+            PrayerName.ASR to (prefs[KEY_DUR_ASR] ?: 15),
+            PrayerName.MAGHRIB to (prefs[KEY_DUR_MAGHRIB] ?: 15),
+            PrayerName.ISHA to (prefs[KEY_DUR_ISHA] ?: 15)
+        )
+    }
+
+    val isDurationUniform: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_UNIFORM_DURATIONS] ?: false
     }
 
     val latitude: Flow<Double> = context.dataStore.data.map { prefs ->
@@ -140,7 +158,7 @@ class UserPreferences(private val context: Context) {
     suspend fun setPrayerEnabled(prayer: PrayerName, enabled: Boolean) {
         val key = when (prayer) {
             PrayerName.FAJR -> KEY_FAJR_ENABLED
-            PrayerName.DHUHR -> KEY_DHUHR_ENABLED
+            PrayerName.DHUHR, PrayerName.JUMUAH -> KEY_DHUHR_ENABLED // Jumu'ah shares Dhuhr toggle
             PrayerName.ASR -> KEY_ASR_ENABLED
             PrayerName.MAGHRIB -> KEY_MAGHRIB_ENABLED
             PrayerName.ISHA -> KEY_ISHA_ENABLED
@@ -148,8 +166,31 @@ class UserPreferences(private val context: Context) {
         context.dataStore.edit { it[key] = enabled }
     }
 
-    suspend fun setSilenceDuration(minutes: Int) {
-        context.dataStore.edit { it[KEY_SILENCE_DURATION] = minutes }
+    suspend fun setPrayerDuration(prayer: PrayerName, minutes: Int) {
+        val key = when (prayer) {
+            PrayerName.FAJR -> KEY_DUR_FAJR
+            PrayerName.DHUHR -> KEY_DUR_DHUHR
+            PrayerName.JUMUAH -> KEY_DUR_JUMUAH
+            PrayerName.ASR -> KEY_DUR_ASR
+            PrayerName.MAGHRIB -> KEY_DUR_MAGHRIB
+            PrayerName.ISHA -> KEY_DUR_ISHA
+        }
+        context.dataStore.edit { it[key] = minutes }
+    }
+
+    suspend fun setDurationUniform(isUniform: Boolean) {
+        context.dataStore.edit { it[KEY_UNIFORM_DURATIONS] = isUniform }
+    }
+
+    suspend fun setAllPrayerDurations(minutes: Int) {
+        context.dataStore.edit {
+            it[KEY_DUR_FAJR] = minutes
+            it[KEY_DUR_DHUHR] = minutes
+            it[KEY_DUR_JUMUAH] = minutes
+            it[KEY_DUR_ASR] = minutes
+            it[KEY_DUR_MAGHRIB] = minutes
+            it[KEY_DUR_ISHA] = minutes
+        }
     }
 
     suspend fun setLocation(lat: Double, lng: Double, name: String? = null) {

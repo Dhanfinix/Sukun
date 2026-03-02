@@ -145,6 +145,7 @@ fun PrayerSection(
     ) {
         // ── Integrated Next Prayer & Location Dashboard ──
         NextPrayerCard(
+            currentDate = state.currentDate,
             currentTime = state.currentTime,
             nextPrayerName = state.nextPrayerName,
             countdown = state.nextPrayerCountdown,
@@ -201,7 +202,7 @@ fun PrayerSection(
             // Duration Card
             SettingCard(
                 label = "Silence",
-                currentValue = "${state.silenceDurationMin}m",
+                currentValue = "Duration",
                 icon = Icons.Rounded.Timer,
                 onClick = onSilenceClick,
                 modifier = Modifier.weight(1f)
@@ -224,15 +225,17 @@ fun PrayerSection(
 
     // ── Bottom Sheets ──
     if (showSilenceSheet) {
-        val options = listOf(10, 15, 20, 30)
-        SelectionBottomSheet(
-            title = "Silence Duration",
-            description = "How long your phone stays muted after each prayer time.",
-            options = options.map { it to "${it} Minutes" },
-            selectedValue = state.silenceDurationMin,
-            onSelect = { 
-                onEvent(PrayerEvent.DurationSelected(it))
-                showSilenceSheet = false
+        DurationsBottomSheet(
+            durations = state.prayerDurations,
+            isUniform = state.isDurationUniform,
+            onDurationChange = { prayer, duration ->
+                onEvent(PrayerEvent.DurationSelected(prayer, duration))
+            },
+            onUniformChange = {
+                onEvent(PrayerEvent.UniformDurationToggled(it))
+            },
+            onAllDurationsChange = {
+                onEvent(PrayerEvent.AllDurationsSelected(it))
             },
             onDismiss = { showSilenceSheet = false }
         )

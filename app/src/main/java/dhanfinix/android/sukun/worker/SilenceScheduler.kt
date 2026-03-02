@@ -26,7 +26,7 @@ class SilenceScheduler(private val context: Context) {
     fun scheduleAll(
         prayersToday: List<PrayerInfo>,
         prayersTomorrow: List<PrayerInfo>,
-        durationMin: Int
+        durations: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int>
     ) {
         cancelAll()
 
@@ -40,12 +40,12 @@ class SilenceScheduler(private val context: Context) {
             
             if (todayTime.isAfter(now)) {
                 // Today's adhan is still in the future
-                scheduleSinglePrayer(todayPrayer, durationMin, LocalDate.now())
+                scheduleSinglePrayer(todayPrayer, durations[todayPrayer.name] ?: 15, LocalDate.now())
             } else {
                 // Today's adhan passed, schedule tomorrow's instead
                 val tomorrowPrayer = prayersTomorrow.find { it.name == todayPrayer.name }
                 if (tomorrowPrayer?.isEnabled == true) {
-                    scheduleSinglePrayer(tomorrowPrayer, durationMin, LocalDate.now().plusDays(1))
+                    scheduleSinglePrayer(tomorrowPrayer, durations[tomorrowPrayer.name] ?: 15, LocalDate.now().plusDays(1))
                 }
             }
         }
@@ -60,19 +60,15 @@ class SilenceScheduler(private val context: Context) {
         // For manual, we start silence IMMEDIATELY and schedule restore in the future
         val startIntent = Intent(context, SilenceReceiver::class.java).apply {
             action = SilenceReceiver.ACTION_START_SILENCE
-            putExtra(SilenceWorker.KEY_PRAYER_NAME, "Manual")
-            putExtra(SilenceWorker.KEY_DURATION_MIN, durationMin)
+            putExtra(SilenceReceiver.KEY_PRAYER_NAME, "Manual")
+            putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
         }
         context.sendBroadcast(startIntent)
 
         val restoreTimeMs = System.currentTimeMillis() + (durationMin * 60 * 1000L)
         val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE)
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            restoreTimeMs,
-            pendingRestore
-        )
+        scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
     }
 
     fun stopSilence() {
@@ -86,20 +82,13 @@ class SilenceScheduler(private val context: Context) {
     }
 
     private fun cancelManualAlarms() {
-        workManager.cancelAllWorkByTag(SilenceScheduler.TAG_SUKUN)
-        // requestCode 0 was the old default for manual alarms
-        alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_START_SILENCE, 0))
-        alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, 0))
-        // New dedicated request code for manual restore
+        // Cancel the dedicated request code for manual restore
         alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE))
     }
 
     fun cancelAll() {
-        workManager.cancelAllWorkByTag(TAG_SUKUN)
-        
-        // Cancel default/manual intents (requestCode = 0)
-        alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_START_SILENCE, 0))
-        alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, 0))
+        // Cancel manual restore intent
+        cancelManualAlarms()
 
         // Cancel specific prayer scheduled intents
         dhanfinix.android.sukun.feature.prayer.data.model.PrayerName.entries.forEach { prayerName ->
@@ -125,8 +114,8 @@ class SilenceScheduler(private val context: Context) {
 
         val startIntent = Intent(context, SilenceReceiver::class.java).apply {
             action = SilenceReceiver.ACTION_START_SILENCE
-            putExtra(SilenceWorker.KEY_PRAYER_NAME, prayer.name.displayName)
-            putExtra(SilenceWorker.KEY_DURATION_MIN, durationMin)
+            putExtra(SilenceReceiver.KEY_PRAYER_NAME, prayer.name.displayName)
+            putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
         }
         
         // We use different request codes if we wanted multiple concurrent alarms, 
@@ -138,14 +127,10 @@ class SilenceScheduler(private val context: Context) {
             context,
             requestCode,
             startIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            pendingStart
-        )
+        scheduleExactAlarmSafely(calendar.timeInMillis, pendingStart)
 
         // Schedule Restore (Adhan + Duration)
         val restoreTimeMs = calendar.timeInMillis + (durationMin * 60 * 1000L)
@@ -153,14 +138,10 @@ class SilenceScheduler(private val context: Context) {
             context,
             requestCode + 100, // Offset to avoid collision
             getRestoreIntent(),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            restoreTimeMs,
-            pendingRestore
-        )
+        scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
     }
 
     private fun getPendingIntent(action: String, requestCode: Int = 0): PendingIntent {
@@ -171,7 +152,7 @@ class SilenceScheduler(private val context: Context) {
             context,
             requestCode,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
 
@@ -195,14 +176,19 @@ class SilenceScheduler(private val context: Context) {
             context,
             999, // Unique ID for midnight
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            pendingIntent
-        )
+        scheduleExactAlarmSafely(calendar.timeInMillis, pendingIntent)
+    }
+
+    private fun scheduleExactAlarmSafely(timeMs: Long, pendingIntent: PendingIntent) {
+        try {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMs, pendingIntent)
+        } catch (e: SecurityException) {
+            // Fallback to inexact alarm if the exact permission was revoked
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMs, pendingIntent)
+        }
     }
 
     private fun parseTime(timeStr: String): LocalTime? {

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Stable
 enum class PrayerName(val displayName: String) {
     FAJR("Fajr"),
     DHUHR("Dhuhr"),
+    JUMUAH("Jumu'ah"),
     ASR("Asr"),
     MAGHRIB("Maghrib"),
     ISHA("Isha")
