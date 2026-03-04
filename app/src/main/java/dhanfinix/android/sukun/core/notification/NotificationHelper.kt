@@ -17,7 +17,7 @@ import dhanfinix.android.sukun.worker.SilenceReceiver
 object NotificationHelper {
 
     private const val CHANNEL_ID = "sukun_silence_channel"
-    private const val NOTIFICATION_ID = 1001
+    const val NOTIFICATION_ID = 1001
 
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
@@ -31,10 +31,14 @@ object NotificationHelper {
         manager.createNotificationChannel(channel)
     }
 
-    fun showSilenceNotification(context: Context, prayerName: String, endTimeMs: Long) {
+    fun showSilenceNotification(
+        context: Context,
+        prayerName: String,
+        startTimeMs: Long,   // when silence began — needed to compute progress
+        endTimeMs: Long
+    ) {
         createChannel(context)
 
-        // Tap notification → open app
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -43,7 +47,6 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Action: Stop Mute
         val stopIntent = Intent(context, SilenceReceiver::class.java).apply {
             action = SilenceReceiver.ACTION_STOP_SILENCE
         }
@@ -53,19 +56,24 @@ object NotificationHelper {
         )
 
         val remoteViews = RemoteViews(context.packageName, R.layout.notification_sukun_countdown)
+
+        // Prayer name
         remoteViews.setTextViewText(R.id.notification_text, prayerName)
-        
-        // Chronometer expects a base in SystemClock.elapsedRealtime() (time since boot), 
-        // not System.currentTimeMillis() (epoch time).
+
+        // Chronometer base (elapsed realtime domain)
         val remainingMs = endTimeMs - System.currentTimeMillis()
         val chronometerBase = android.os.SystemClock.elapsedRealtime() + remainingMs
-        
         remoteViews.setChronometer(
             R.id.notification_chronometer,
             chronometerBase,
             "%s",
             true
         )
+
+        // Progress: 100 = just started, 0 = finished (drains as time passes)
+        val totalMs = (endTimeMs - startTimeMs).coerceAtLeast(1L)
+        val progress = ((remainingMs.toFloat() / totalMs) * 100).toInt().coerceIn(0, 100)
+        remoteViews.setProgressBar(R.id.notification_progress, 100, progress, false)
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
@@ -75,16 +83,15 @@ object NotificationHelper {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setContentIntent(openAppPending)
-            .addAction(R.drawable.ic_notification, context.getString(R.string.stop_silence), stopPending)
-            // Safety net: auto-dismiss the notification when silence ends,
-            // in case RestoreWorker is delayed by Doze/battery saver.
-            // This prevents the Chronometer from going into negative values.
+            .addAction(
+                R.drawable.ic_notification,
+                context.getString(R.string.stop_silence),
+                stopPending
+            )
             .setTimeoutAfter(remainingMs)
 
-        val notification = builder.build()
-
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(NOTIFICATION_ID, notification)
+        manager.notify(NOTIFICATION_ID, builder.build())
     }
 
     fun cancelNotification(context: Context) {

@@ -150,4 +150,10 @@
     <string name="err_location_timeout">Location detection timed out</string>
     <string name="err_location_not_found">Location not found</string>
     <string name="err_search_location">Error searching location</string>
+
+
+    <string name="notif_title">Phone is silenced</string>
+    <string name="notif_for_prefix">for </string>
+    <string name="notif_ends_in">Ends in</string>
+    <string name="notif_icon_desc">Prayer</string>
 </resources>

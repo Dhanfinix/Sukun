@@ -1,56 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Sukun notification custom view — must be RemoteViews safe.
-    No custom colors, no alpha on Views (unreliable in RemoteViews).
-    Layout: left column (headline + prayer name), right column (large countdown).
+    Sukun notification custom view — RemoteViews safe.
+    <View> NOT allowed — use <TextView> for decorative shapes.
+    <ProgressBar> IS allowed and set via remoteViews.setProgressBar().
 -->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp"
-    android:minHeight="48dp">
+    android:orientation="vertical"
+    android:paddingTop="6dp"
+    android:paddingBottom="8dp"
+    android:paddingStart="2dp"
+    android:paddingEnd="4dp">
 
-    <!-- Countdown — anchored end, vertically centered to parent -->
-    <Chronometer
-        android:id="@+id/notification_chronometer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:countDown="true"
-        android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
-        android:textStyle="bold"
-        android:fontFamily="monospace" />
-
-    <!-- Left text column — takes remaining space, centered vertically -->
+    <!-- Top row: icon | texts | divider | countdown -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_toStartOf="@id/notification_chronometer"
-        android:layout_marginEnd="12dp"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:minHeight="48dp">
 
+        <!-- Left accent bar -->
         <TextView
+            android:layout_width="3dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="10dp"
+            android:background="@android:color/white" />
+
+        <!-- Prayer icon -->
+        <ImageView
+            android:id="@+id/notification_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/ic_notification"
+            android:contentDescription="@string/notif_icon_desc"
+            android:scaleType="fitCenter" />
+
+        <!-- Left text column -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/notif_title"
+                android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/notif_for_prefix"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
+                    android:maxLines="1" />
+
+                <TextView
+                    android:id="@+id/notification_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fajr"
+                    android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Vertical divider -->
+        <TextView
+            android:layout_width="1dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="12dp"
+            android:background="@android:color/white" />
+
+        <!-- Right column: label + countdown -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Your phone is silenced"
-            android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end" />
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
 
-        <TextView
-            android:id="@+id/notification_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:text="Fajr"
-            android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
-            android:maxLines="1"
-            android:ellipsize="end" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/notif_ends_in"
+                android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
+                android:maxLines="1" />
+
+            <Chronometer
+                android:id="@+id/notification_chronometer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:countDown="true"
+                android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+                android:textStyle="bold"
+                android:fontFamily="monospace" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</RelativeLayout>
+    <!-- Progress bar — updated via remoteViews.setProgressBar() -->
+    <ProgressBar
+        android:id="@+id/notification_progress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="13dp"
+        android:max="100"
+        android:progress="60" />
+
+</LinearLayout>

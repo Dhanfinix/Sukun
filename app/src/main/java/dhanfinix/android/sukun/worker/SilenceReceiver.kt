@@ -96,11 +96,12 @@ class SilenceReceiver : BroadcastReceiver() {
         }
 
         // 4. Update UI/metadata
-        val endTime = System.currentTimeMillis() + (durationMin * 60 * 1000L)
-        userPrefs.setSilenceMetadata(endTime, prayerName)
+        val startTime = System.currentTimeMillis()
+        val endTime = startTime + (durationMin * 60 * 1000L)
+        userPrefs.setSilenceMetadata(startTime, endTime, prayerName)
 
         // 5. Show ongoing notification with working chronometer
-        NotificationHelper.showSilenceNotification(context, prayerName, endTime)
+        NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime)
     }
 
     private suspend fun handleStopSilence(context: Context) {

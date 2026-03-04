@@ -68,6 +68,7 @@ class UserPreferences(private val context: Context) {
     private val KEY_SAVED_INTERRUPTION_FILTER = intPreferencesKey("saved_interruption_filter")
 
     // ── Silence Metadata ──
+    private val KEY_SILENCE_START_TIME = longPreferencesKey("silence_start_time")
     private val KEY_SILENCE_END_TIME = longPreferencesKey("silence_end_time")
     private val KEY_SILENCE_LABEL = stringPreferencesKey("silence_label")
     private val KEY_SILENCE_MODE = stringPreferencesKey("silence_mode")
@@ -251,6 +252,10 @@ class UserPreferences(private val context: Context) {
         )
     }
 
+    val silenceStartTime: Flow<Long> = context.dataStore.data.map { prefs ->
+        prefs[KEY_SILENCE_START_TIME] ?: 0L
+    }
+
     val silenceEndTime: Flow<Long> = context.dataStore.data.map { prefs ->
         prefs[KEY_SILENCE_END_TIME] ?: 0L
     }
@@ -259,8 +264,9 @@ class UserPreferences(private val context: Context) {
         prefs[KEY_SILENCE_LABEL]
     }
 
-    suspend fun setSilenceMetadata(endTime: Long, label: String?) {
+    suspend fun setSilenceMetadata(startTime: Long, endTime: Long, label: String?) {
         context.dataStore.edit {
+            it[KEY_SILENCE_START_TIME] = startTime
             it[KEY_SILENCE_END_TIME] = endTime
             if (label != null) {
                 it[KEY_SILENCE_LABEL] = label
@@ -298,6 +304,7 @@ class UserPreferences(private val context: Context) {
 
     suspend fun clearSilenceState() {
         context.dataStore.edit {
+            it[KEY_SILENCE_START_TIME] = 0L
             it[KEY_SILENCE_END_TIME] = 0L
             it.remove(KEY_SILENCE_LABEL)
             it.remove(KEY_SAVED_MEDIA)
