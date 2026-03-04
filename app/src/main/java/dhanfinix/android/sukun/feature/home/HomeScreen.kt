@@ -19,8 +19,11 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,6 +35,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -93,11 +98,13 @@ fun HomeScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var hasAllPermissions by remember { mutableStateOf(checkAllPermissions(context)) }
+    var hasDndPermission by remember { mutableStateOf(checkDndPermission(context)) }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 hasAllPermissions = checkAllPermissions(context)
+                hasDndPermission = checkDndPermission(context)
                 volumeVm.onEvent(VolumeEvent.OnResume)
             }
         }
@@ -182,6 +189,7 @@ fun HomeScreen(
                     isSukunActive = volumeState.isSukunActive,
                     sukunEndTime = volumeState.sukunEndTime,
                     sukunLabel = volumeState.sukunLabel,
+                    hasDndPermission = hasDndPermission,
                     onStopSilence = { volumeVm.onEvent(VolumeEvent.StopSilence) },
                     onEvent = prayerVm::onEvent,
                     onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
@@ -193,27 +201,36 @@ fun HomeScreen(
                     enter = slideInVertically() + fadeIn(),
                     exit = slideOutVertically() + fadeOut()
                 ) {
-                    Button(
+                    ElevatedCard(
                         onClick = onShowOnboarding,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            contentColor = MaterialTheme.colorScheme.onSurface
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
                         ),
                         shape = MaterialTheme.shapes.medium
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = stringResource(R.string.enable_permissions_banner_title),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold
+                            Icon(
+                                imageVector = Icons.Rounded.Warning,
+                                contentDescription = null,
+                                modifier = Modifier.size(28.dp)
                             )
-                            Text(
-                                text = stringResource(R.string.enable_permissions_banner_desc),
-                                style = MaterialTheme.typography.bodySmall
-                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.enable_permissions_banner_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = stringResource(R.string.enable_permissions_banner_desc),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                         }
                     }
                 }
@@ -295,4 +312,9 @@ private fun checkAllPermissions(context: Context): Boolean {
     return hasDnd && hasLocation && hasNotif &&
             ReliabilityManager(context).isExactAlarmPermissionGranted() &&
             ReliabilityManager(context).isIgnoringBatteryOptimizations()
+}
+
+private fun checkDndPermission(context: Context): Boolean {
+    val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    return nm.isNotificationPolicyAccessGranted
 }

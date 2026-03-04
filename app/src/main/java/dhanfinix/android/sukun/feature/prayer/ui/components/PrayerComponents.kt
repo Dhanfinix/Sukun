@@ -299,12 +299,15 @@ fun <T> SelectionBottomSheet(
 fun PrayerTile(
     prayer: PrayerInfo,
     isNext: Boolean = false,
+    isDndGranted: Boolean = true,
     onToggle: (PrayerName) -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (prayer.isEnabled) {
+        targetValue = if (!isDndGranted) {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        } else if (prayer.isEnabled) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
@@ -313,7 +316,9 @@ fun PrayerTile(
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (prayer.isEnabled) {
+        targetValue = if (!isDndGranted) {
+            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+        } else if (prayer.isEnabled) {
             MaterialTheme.colorScheme.primary
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
@@ -344,11 +349,11 @@ fun PrayerTile(
     )
 
     Card(
-        onClick = { onToggle(prayer.name) },
+        onClick = { if (isDndGranted) onToggle(prayer.name) },
         modifier = modifier
             .height(72.dp)
             .graphicsLayer {
-                val currentScale = if (isNext) pulseScale else 1f
+                val currentScale = if (isNext && isDndGranted) pulseScale else 1f
                 scaleX = currentScale
                 scaleY = currentScale
             },
@@ -359,7 +364,7 @@ fun PrayerTile(
             defaultElevation = 1.dp,
             pressedElevation = 1.dp
         ),
-        border = if (isNext) {
+        border = if (isNext && isDndGranted) {
             androidx.compose.foundation.BorderStroke(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = pulseAlpha)
@@ -371,7 +376,7 @@ fun PrayerTile(
             Icon(
                 imageVector = if (prayer.isEnabled) Icons.Rounded.NotificationsOff else Icons.Rounded.NotificationsActive,
                 contentDescription = if (prayer.isEnabled) stringResource(R.string.silencing_enabled) else stringResource(R.string.silencing_disabled),
-                tint = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
+                tint = contentColor.copy(alpha = if (prayer.isEnabled && isDndGranted) 1f else 0.5f),
                 modifier = Modifier
                     .padding(2.dp)
                     .size(12.dp)
@@ -388,7 +393,7 @@ fun PrayerTile(
                     text = stringResource(prayer.name.nameRes),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.6f),
+                    color = contentColor.copy(alpha = if (prayer.isEnabled && isDndGranted) 1f else 0.6f),
                     maxLines = 1,
                     textAlign = TextAlign.Center
                 )
@@ -396,8 +401,8 @@ fun PrayerTile(
                 Text(
                     text = prayer.time,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
-                    textDecoration = if (prayer.isEnabled) TextDecoration.None else TextDecoration.LineThrough,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (prayer.isEnabled && isDndGranted) 1f else 0.5f),
+                    textDecoration = if (prayer.isEnabled && isDndGranted) TextDecoration.None else TextDecoration.LineThrough,
                     textAlign = TextAlign.Center,
                     modifier = if (isLoading) Modifier.width(36.dp).shimmer() else Modifier
                 )

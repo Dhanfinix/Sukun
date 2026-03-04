@@ -241,12 +241,8 @@ fun OnboardingScreen(
             
             Button(
                 onClick = {
-                    if (hasDndPermission) {
-                        viewModel.markOnboardingCompleted()
-                        onComplete()
-                    } else {
-                        Toast.makeText(context, R.string.grant_dnd_to_continue, Toast.LENGTH_LONG).show()
-                    }
+                    viewModel.markOnboardingCompleted()
+                    onComplete()
                 },
                 modifier = Modifier
                     .fillMaxWidth()

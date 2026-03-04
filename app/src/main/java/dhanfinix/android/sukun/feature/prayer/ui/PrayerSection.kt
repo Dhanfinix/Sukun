@@ -103,6 +103,7 @@ fun PrayerSection(
     isSukunActive: Boolean = false,
     sukunEndTime: Long = 0L,
     sukunLabel: String? = null,
+    hasDndPermission: Boolean = true,
     onStopSilence: () -> Unit = {},
     onEvent: (PrayerEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -196,6 +197,7 @@ fun PrayerSection(
                     PrayerTile(
                         prayer = prayer,
                         isNext = isHighlighted,
+                        isDndGranted = hasDndPermission,
                         onToggle = onTogglePrayer,
                         isLoading = state.isLoading,
                         modifier = Modifier.weight(1f)
