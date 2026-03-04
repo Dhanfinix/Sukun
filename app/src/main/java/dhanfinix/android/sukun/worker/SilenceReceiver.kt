@@ -72,24 +72,9 @@ class SilenceReceiver : BroadcastReceiver() {
             userPrefs.saveAllVolumes(currentMedia, currentRing, currentNotif, currentAlarm, currentRingerMode, currentFilter)
         }
 
-        // 2. Apply chosen Silence Mode
-        try {
-            when (silenceMode) {
-                SilenceMode.SILENT -> audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
-                SilenceMode.VIBRATE -> {
-                    audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
-                    // Explicitly turn off DND (Interruption Filter) so vibrations can come through.
-                    // If DND is left on, it acts as a "stronger silent" and suppresses vibrations.
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
-                    }
-                }
-            }
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Not allowed to change Do Not Disturb state", e)
-        }
-
-        // 3. Mute streams
+        // 2. Mute streams FIRST. 
+        // Why? On many Android versions, setting stream volume to 0 automatically triggers 
+        // the OS to switch the ringer mode to Silent. We must do this before setting our desired mode.
         try {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, 0, 0)
@@ -100,6 +85,28 @@ class SilenceReceiver : BroadcastReceiver() {
             }
         } catch (e: SecurityException) {
             Log.e(TAG, "Missing permission to mute streams", e)
+        }
+
+        // 3. Apply chosen Silence Mode LAST to ensure it overrides any OS-level side effects.
+        try {
+            when (silenceMode) {
+                SilenceMode.SILENT -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
+                    }
+                    audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                }
+                SilenceMode.VIBRATE -> {
+                    // Turn off DND FIRST
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+                    }
+                    // Set ringer mode to VIBRATE LAST
+                    audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                }
+            }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Not allowed to change Do Not Disturb state", e)
         }
 
         // 4. Update UI/metadata
