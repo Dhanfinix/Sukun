@@ -76,7 +76,14 @@ class SilenceReceiver : BroadcastReceiver() {
         try {
             when (silenceMode) {
                 SilenceMode.SILENT -> audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
-                SilenceMode.VIBRATE -> audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                SilenceMode.VIBRATE -> {
+                    audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                    // Explicitly turn off DND (Interruption Filter) so vibrations can come through.
+                    // If DND is left on, it acts as a "stronger silent" and suppresses vibrations.
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+                    }
+                }
             }
         } catch (e: SecurityException) {
             Log.e(TAG, "Not allowed to change Do Not Disturb state", e)
