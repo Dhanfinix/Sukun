@@ -203,7 +203,7 @@ fun HomeScreen(
                         shape = MaterialTheme.shapes.medium
                     ) {
                         Column(
-                            modifier = Modifier.padding(vertical = 4.dp),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         ) {
                             Text(
                                 text = stringResource(R.string.enable_permissions_banner_title),

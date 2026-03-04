@@ -1,45 +1,45 @@
 <resources>
     <string name="app_name">Sukun</string>
 
-    <string name="landing_tagline">Pray in peace. undisturbed.</string>
+    <string name="landing_tagline">Pray in peace. Undisturbed.</string>
     <string name="feature_silence_title">Automatic Silence</string>
-    <string name="feature_silence_desc">Phone silences precisely at Adhan time and restores when prayer ends.</string>
+    <string name="feature_silence_desc">Silences at Adhan time, restores when prayer ends.</string>
     <string name="feature_location_title">Location-Aware</string>
-    <string name="feature_location_desc">Prayer times calculated from your exact location, always accurate.</string>
+    <string name="feature_location_desc">Prayer times from your exact location, always accurate.</string>
     <string name="feature_timing_title">Precise Scheduling</string>
-    <string name="feature_timing_desc">Exact alarms ensure silence triggers on time, even when the app is closed.</string>
+    <string name="feature_timing_desc">Silence triggers on time, even when the app is closed.</string>
     <string name="feature_custom_title">Fully Customizable</string>
     <string name="feature_custom_desc">Choose which prayers to silence and for how long. You\'re in control.</string>
-    <string name="btn_get_started">Start Pray in Peace</string>
+    <string name="btn_get_started">Start Praying in Peace</string>
 
     <!-- Onboarding / Permissions -->
     <string name="permissions_title">Permissions</string>
     <string name="app_reliability_title">App Reliability</string>
-    <string name="app_reliability_desc">Configure permissions and settings to ensure Sukun works reliably in the background.</string>
+    <string name="app_reliability_desc">Set up permissions so Sukun works reliably in the background.</string>
     <string name="notifications_title">Notifications</string>
-    <string name="notifications_desc">Required to show a countdown banner when silence is active.</string>
+    <string name="notifications_desc">Shows a countdown banner while silence is active.</string>
     <string name="dnd_title">Do Not Disturb</string>
-    <string name="dnd_desc">Required to instantly mute your phone when Adhan time arrives.</string>
+    <string name="dnd_desc">Mutes your phone instantly when Adhan time arrives.</string>
     <string name="location_title">Location</string>
-    <string name="location_desc">Required to automatically fetch accurate prayer times for your city.</string>
+    <string name="location_desc">Fetches accurate prayer times for your location.</string>
     <string name="exact_alarms_title">Exact Alarms</string>
-    <string name="exact_alarms_desc">Required for precise silence timing on Android 12+.</string>
+    <string name="exact_alarms_desc">Ensures precise silence timing on Android 12+.</string>
     <string name="battery_optimization_title">Battery Optimization</string>
-    <string name="battery_optimization_desc">Prevent the system from killing the app in the background.</string>
+    <string name="battery_optimization_desc">Keeps Sukun running smoothly in the background.</string>
     <string name="btn_start_using">Start Using Sukun</string>
-    <string name="btn_skip_for_now">Skip For Now</string>
+    <string name="btn_skip_for_now">Skip for Now</string>
     <string name="btn_fix">FIX</string>
     <string name="permission_granted">Granted</string>
     <string name="btn_next">Next</string>
     <string name="btn_got_it">Got it!</string>
     <string name="coach_mark_prayer_title">Automatic Silencing</string>
-    <string name="coach_mark_prayer_desc">Tap on any prayer tile to enable or disable automatic silencing. When enabled, your phone will mute automatically during that prayer time.</string>
+    <string name="coach_mark_prayer_desc">Tap any prayer to enable or disable auto-silence. When on, your phone mutes automatically during that prayer.</string>
     <string name="coach_mark_location_title">Accurate Timings</string>
-    <string name="coach_mark_location_desc">Keep your location updated in the Next Prayer card to ensure the countdowns and prayer times are always precise.</string>
+    <string name="coach_mark_location_desc">Keep your location updated so countdowns and prayer times stay accurate.</string>
     <string name="coach_mark_volume_title">Manual Controls</string>
-    <string name="coach_mark_volume_desc">Need to quickly adjust the volume without waiting for a prayer? Use the slider at the bottom as a handy add-on tool.</string>
+    <string name="coach_mark_volume_desc">Need to adjust volume quickly? Use the slider below anytime.</string>
     <string name="coach_mark_manual_title">Quick Silence</string>
-    <string name="coach_mark_manual_desc">In a meeting or entering a mosque right now? Tap this Floating Action Button to immediately trigger a manual silence countdown.</string>
+    <string name="coach_mark_manual_desc">In a meeting or entering a mosque? Tap this button to start a manual silence countdown right away.</string>
 
     <!-- Home Screen -->
     <string name="change_theme">Change Theme</string>
@@ -53,8 +53,8 @@
     <string name="btn_start_silence">Start Silence</string>
     <string name="content_desc_settings">Settings</string>
     <string name="show_desc">Show description</string>
-    <string name="enable_permissions_banner_title">Enable permissions to ensure all features work correctly</string>
-    <string name="enable_permissions_banner_desc">Tap to re-configure location, DND, and notifications</string>
+    <string name="enable_permissions_banner_title">Some permissions are missing</string>
+    <string name="enable_permissions_banner_desc">Tap to fix location, DND, and notifications</string>
 
     <!-- Prayer Section -->
     <string name="next_prayer">Next Prayer</string>
@@ -62,7 +62,7 @@
     <string name="silence_ends_at">ends at %s</string>
     <string name="stop_silence">Stop</string>
     <string name="calculation_method">Calculation Method</string>
-    <string name="calculation_method_desc">Different organizations calculate prayer times using slightly different conventions. Choose the one commonly used in your region.</string>
+    <string name="calculation_method_desc">Different organizations use slightly different conventions. Pick the one common in your region.</string>
     <string name="search_location">Search Location</string>
     <string name="detect_location">Detect Location</string>
     <string name="unknown_location">Unknown Location</string>
@@ -87,22 +87,22 @@
     <string name="media_volume_desc">Music, videos, games, and other media</string>
     <string name="ring_volume">Ring</string>
     <string name="ringer_notif_volume">Ring &amp; Notifications</string>
-    <string name="ring_volume_desc">Incoming phone calls and SMS tones</string>
+    <string name="ring_volume_desc">Incoming calls and SMS tones</string>
     <string name="notification_volume">Notifications</string>
     <string name="notification_volume_desc">App notifications, emails, and chat messages</string>
     <string name="alarm_volume">Alarm</string>
     <string name="alarm_volume_desc">Scheduled alarms and timers</string>
     <string name="link_ringer_notif">Link Ringer &amp; Notification</string>
-    <string name="sync_streams_desc">Synchronize both volume streams</string>
+    <string name="sync_streams_desc">Keep ringer and notification volume in sync</string>
     <string name="vibrate_in_silence">Vibrate in Silence Mode</string>
-    <string name="vibrate_in_silence_desc">Allow vibrations when phone is muted during prayers</string>
+    <string name="vibrate_in_silence_desc">Allow vibrations while muted during prayers</string>
     <string name="silence_already_active_title">Silence Already Active</string>
-    <string name="confirm_overwrite_silence">A silence session \"%1$s\" is currently running. Do you want to stop it and start a new %2$d-minute manual silence?</string>
-    <string name="btn_yes_overwrite">Yes, Overwrite</string>
+    <string name="confirm_overwrite_silence">"%1$s" silence is running. Replace it with a %2$d-minute manual silence?</string>
+    <string name="btn_yes_overwrite">Yes, Replace</string>
     <string name="btn_cancel">Cancel</string>
-    <string name="grant_dnd_access">Please grant Do Not Disturb access to change this volume</string>
-    <string name="uniform_silence">Uniform All Prayers</string>
-    <string name="uniform_silence_desc">Set how long your phone stays muted after each specific prayer time.</string>
+    <string name="grant_dnd_access">Grant Do Not Disturb access to adjust this volume</string>
+    <string name="uniform_silence">Apply to All Prayers</string>
+    <string name="uniform_silence_desc">Set how long your phone stays muted after each prayer.</string>
     <string name="all_prayers">All Prayers</string>
 
     <!-- Theme Selection -->
@@ -119,20 +119,20 @@
     <string name="settings_title">Settings</string>
     <string name="section_general">General</string>
     <string name="show_onboarding">Show Onboarding</string>
-    <string name="show_onboarding_desc">Explore the main features of Sukun again</string>
+    <string name="show_onboarding_desc">Take another look at Sukun\'s main features</string>
 
     <!-- About Dialog -->
-    <string name="about_desc">Sukun is your companion for focused prayer. It helps you maintain tranquility by automatically managing your device\'s volume during prayer times.</string>
+    <string name="about_desc">Sukun helps you pray without distraction — automatically silencing your phone at prayer times and restoring it right after.</string>
     <string name="key_features">Key Features</string>
-    <string name="features_list">• Automatic prayer time updates based on location.\n• Precise background silencing using exact alarms.\n• Manual silence mode for extra-long focus sessions.\n• Centralized volume dashboard (Media &amp; Ringer).</string>
+    <string name="features_list">• Automatic prayer times based on your location.\n• Precise background silencing using exact alarms.\n• Manual silence for focus sessions anytime.\n• Centralized volume dashboard (Media &amp; Ringer).</string>
     <string name="how_it_works_title">How it Works</string>
-    <string name="how_it_works_desc">Sukun schedules exact alarms for each prayer time. When the time arrives, it records your current volume levels, enters Do Not Disturb mode, and mutes your phone for the selected duration. Once finished, it restores everything exactly as it was.</string>
+    <string name="how_it_works_desc">Sukun schedules an alarm for each prayer. When it arrives, it saves your volume, enters Do Not Disturb, and mutes your phone. Once done, everything is restored exactly as it was.</string>
     <string name="version_format">Version %s</string>
     <string name="btn_close">Close</string>
     <string name="btn_show_tutorial">Show Tutorial</string>
 
     <string name="notif_channel_name">Sukun Silence</string>
-    <string name="notif_channel_desc">Shows when Sukun prayer silence is active</string>
+    <string name="notif_channel_desc">Shows when Sukun silence is active</string>
 
     <!-- Snackbars / Messages -->
     <string name="silence_enabled_format">%s silence enabled</string>
