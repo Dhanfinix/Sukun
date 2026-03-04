@@ -1,6 +1,8 @@
 package dhanfinix.android.sukun.feature.volume
 
 import dhanfinix.android.sukun.feature.volume.components.*
+import androidx.compose.ui.res.stringResource
+import dhanfinix.android.sukun.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -43,21 +45,25 @@ fun VolumeSection(
                     tint = MaterialTheme.colorScheme.primary
                 )
             },
-            title = { Text("Silence Already Active") },
+            title = { Text(stringResource(R.string.silence_already_active_title)) },
             text = {
                 Text(
-                    text = "A silence session \"${state.sukunLabel ?: "Unknown"}\" is currently running. Do you want to stop it and start a new ${state.pendingOverwriteDurationMin}-minute manual silence?",
+                    text = stringResource(
+                        R.string.confirm_overwrite_silence,
+                        state.sukunLabel ?: stringResource(R.string.label_unknown),
+                        state.pendingOverwriteDurationMin ?: 0
+                    ),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             confirmButton = {
                 Button(onClick = { onEvent(VolumeEvent.ConfirmOverwrite) }) {
-                    Text("Yes, Overwrite")
+                    Text(stringResource(R.string.btn_yes_overwrite))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { onEvent(VolumeEvent.DismissOverwrite) }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.btn_cancel))
                 }
             }
         )
@@ -69,7 +75,7 @@ fun VolumeSection(
     ) {
 
         Text(
-            text = "Volume Controls",
+            text = stringResource(R.string.volume_controls),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -86,8 +92,8 @@ fun VolumeSection(
         ) {
             VolumeCard(
                 icon = Icons.Rounded.MusicNote,
-                label = "Media",
-                tooltip = "Music, videos, games, and other media",
+                label = stringResource(R.string.media_volume),
+                tooltip = stringResource(R.string.media_volume_desc),
                 value = state.mediaVolume,
                 maxSteps = state.maxMedia,
                 onValueChange = { onEvent(VolumeEvent.MediaChanged(it)) },
@@ -98,8 +104,8 @@ fun VolumeSection(
         // ── Ringer Volume ──
         VolumeCard(
             icon = Icons.Rounded.RingVolume,
-            label = if (state.isNotifLinked) "Ring & Notifications" else "Ring",
-            tooltip = "Incoming phone calls and SMS tones",
+            label = if (state.isNotifLinked) stringResource(R.string.ringer_notif_volume) else stringResource(R.string.ring_volume),
+            tooltip = stringResource(R.string.ring_volume_desc),
             value = state.ringVolume,
             maxSteps = state.maxRing,
             onValueChange = { onEvent(VolumeEvent.RingChanged(it)) },
@@ -114,8 +120,8 @@ fun VolumeSection(
         ) {
             VolumeCard(
                 icon = Icons.Rounded.Notifications,
-                label = "Notifications",
-                tooltip = "App notifications, emails, and chat messages",
+                label = stringResource(R.string.notification_volume),
+                tooltip = stringResource(R.string.notification_volume_desc),
                 value = state.notificationVolume,
                 maxSteps = state.maxNotif,
                 onValueChange = { onEvent(VolumeEvent.NotificationChanged(it)) },
@@ -126,8 +132,8 @@ fun VolumeSection(
         // ── Alarm Volume ──
         VolumeCard(
             icon = Icons.Rounded.Alarm,
-            label = "Alarm",
-            tooltip = "Scheduled alarms and timers",
+            label = stringResource(R.string.alarm_volume),
+            tooltip = stringResource(R.string.alarm_volume_desc),
             value = state.alarmVolume,
             maxSteps = state.maxAlarm,
             onValueChange = { onEvent(VolumeEvent.AlarmChanged(it)) },
@@ -145,12 +151,12 @@ fun VolumeSection(
             ) {
                 Column {
                     Text(
-                        text = "Link Ringer & Notification",
+                        text = stringResource(R.string.link_ringer_notif),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "Synchronize both volume streams",
+                        text = stringResource(R.string.sync_streams_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -172,12 +178,12 @@ fun VolumeSection(
         ) {
             Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                 Text(
-                    text = "Vibrate in Silence Mode",
+                    text = stringResource(R.string.vibrate_in_silence),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = "Allow vibrations when phone is muted during prayers",
+                    text = stringResource(R.string.vibrate_in_silence_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

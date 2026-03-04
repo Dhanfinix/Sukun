@@ -8,6 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,13 +33,13 @@ fun DurationsBottomSheet(
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                "Silence Durations",
+                stringResource(R.string.feature_silence_title),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Set how long your phone stays muted after each specific prayer time.",
+                stringResource(R.string.uniform_silence_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -51,7 +53,7 @@ fun DurationsBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Uniform All Prayers",
+                    text = stringResource(R.string.uniform_silence),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
@@ -72,7 +74,7 @@ fun DurationsBottomSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "All Prayers",
+                        text = stringResource(R.string.all_prayers),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.weight(1f)
                     )
@@ -103,7 +105,7 @@ fun DurationsBottomSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = prayer.displayName,
+                            text = stringResource(prayer.nameRes),
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.weight(1f)
                         )

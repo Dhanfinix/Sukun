@@ -21,6 +21,12 @@ enum class AppTheme {
     DARK
 }
 
+enum class AppLanguage {
+    EN,
+    ID,
+    SYSTEM
+}
+
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "sukun_prefs")
 
 /**
@@ -78,6 +84,7 @@ class UserPreferences(private val context: Context) {
     private val KEY_HOME_COACH_MARK_SHOWN = booleanPreferencesKey("home_coachmark_shown")
     private val KEY_USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
     private val KEY_HAS_SEEN_LANDING = booleanPreferencesKey("has_seen_landing")
+    private val KEY_APP_LANGUAGE = stringPreferencesKey("app_language")
 
     // ── Flows ──
 
@@ -137,6 +144,15 @@ class UserPreferences(private val context: Context) {
             AppTheme.valueOf(themeName)
         } catch (e: Exception) {
             AppTheme.SYSTEM
+        }
+    }
+
+    val appLanguage: Flow<AppLanguage> = context.dataStore.data.map { prefs ->
+        val langName = prefs[KEY_APP_LANGUAGE] ?: AppLanguage.SYSTEM.name
+        try {
+            AppLanguage.valueOf(langName)
+        } catch (e: Exception) {
+            AppLanguage.SYSTEM
         }
     }
 
@@ -296,6 +312,12 @@ class UserPreferences(private val context: Context) {
     suspend fun setAppTheme(theme: AppTheme) {
         context.dataStore.edit { prefs ->
             prefs[KEY_APP_THEME] = theme.name
+        }
+    }
+
+    suspend fun setAppLanguage(language: AppLanguage) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_APP_LANGUAGE] = language.name
         }
     }
 

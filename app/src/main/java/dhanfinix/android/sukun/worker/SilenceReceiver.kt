@@ -7,6 +7,7 @@ import android.content.Intent
 import android.media.AudioManager
 import android.os.Build
 import android.util.Log
+import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.SilenceMode
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.core.notification.NotificationHelper
@@ -29,7 +30,8 @@ class SilenceReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 if (action == ACTION_START_SILENCE) {
-                    val prayerName = intent.getStringExtra(KEY_PRAYER_NAME) ?: "Prayer"
+                    val prayerResId = intent.getIntExtra(KEY_PRAYER_NAME, R.string.app_name)
+                    val prayerName = context.getString(prayerResId)
                     val durationMin = intent.getIntExtra(KEY_DURATION_MIN, 15)
                     handleStartSilence(context, prayerName, durationMin)
                 } 

@@ -11,9 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import dhanfinix.android.sukun.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,13 +33,13 @@ fun ManualSilenceBottomSheet(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Manual Silence",
+                text = stringResource(R.string.manual_silence_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Temporarily silence your phone",
+                text = stringResource(R.string.manual_silence_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -45,7 +47,7 @@ fun ManualSilenceBottomSheet(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "${duration.toInt()} Minutes",
+                text = stringResource(R.string.minutes_format, duration.toInt()),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -65,7 +67,7 @@ fun ManualSilenceBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large
             ) {
-                Text("Start Silence")
+                Text(stringResource(R.string.btn_start_silence))
             }
         }
     }
@@ -131,7 +133,7 @@ fun VolumeCard(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Info,
-                            contentDescription = "Show description",
+                            contentDescription = stringResource(R.string.show_desc),
                             tint = MaterialTheme.colorScheme.outline,
                             modifier = Modifier.size(16.dp)
                         )

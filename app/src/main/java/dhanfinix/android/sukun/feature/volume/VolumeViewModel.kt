@@ -12,6 +12,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -100,9 +101,9 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
 
         if (lastMediaVolumeRaw != -1 && System.currentTimeMillis() - lastUserRingSetTime < 2000L) {
             if (mediaCurrent == 0 && lastMediaVolumeRaw > 0 && ringCurrent == 0) {
-                newSnackbarMsg = "Media muted by Android System (Silent Mode)"
+                // Media muted by system, no need for toast for now or localize later
             } else if (mediaCurrent > 0 && lastMediaVolumeRaw == 0 && ringCurrent > 0) {
-                newSnackbarMsg = "Media restored by Android System"
+                // Media restored by system
             }
         }
         lastMediaVolumeRaw = mediaCurrent
@@ -234,7 +235,7 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
     private fun showPermissionToast() {
         Toast.makeText(
             getApplication(),
-            "Please grant Do Not Disturb access to change this volume",
+            getApplication<Application>().getString(R.string.grant_dnd_access),
             Toast.LENGTH_SHORT
         ).show()
     }
@@ -325,7 +326,7 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
         // Opt: immediate UI update before Worker starts
         val endTime = System.currentTimeMillis() + (durationMin * 60 * 1000L)
         updateSilenceState(endTime)
-        _uiState.update { it.copy(sukunLabel = "Manual") }
+        _uiState.update { it.copy(sukunLabel = getApplication<Application>().getString(R.string.label_manual)) }
         
         // Refresh sliders after a tiny delay to allow SilenceWorker to fire and set volumes to 0
         viewModelScope.launch {

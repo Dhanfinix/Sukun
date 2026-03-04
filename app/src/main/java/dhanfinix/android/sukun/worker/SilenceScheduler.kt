@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.work.WorkManager
+import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import java.time.LocalDate
 import java.time.LocalTime
@@ -60,7 +61,7 @@ class SilenceScheduler(private val context: Context) {
         // For manual, we start silence IMMEDIATELY and schedule restore in the future
         val startIntent = Intent(context, SilenceReceiver::class.java).apply {
             action = SilenceReceiver.ACTION_START_SILENCE
-            putExtra(SilenceReceiver.KEY_PRAYER_NAME, "Manual")
+            putExtra(SilenceReceiver.KEY_PRAYER_NAME, R.string.label_manual)
             putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
         }
         context.sendBroadcast(startIntent)
@@ -114,7 +115,7 @@ class SilenceScheduler(private val context: Context) {
 
         val startIntent = Intent(context, SilenceReceiver::class.java).apply {
             action = SilenceReceiver.ACTION_START_SILENCE
-            putExtra(SilenceReceiver.KEY_PRAYER_NAME, prayer.name.displayName)
+            putExtra(SilenceReceiver.KEY_PRAYER_NAME, prayer.name.nameRes)
             putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
         }
         

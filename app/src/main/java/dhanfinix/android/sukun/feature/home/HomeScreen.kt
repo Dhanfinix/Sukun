@@ -61,6 +61,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
+import dhanfinix.android.sukun.R
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dhanfinix.android.sukun.feature.prayer.ui.PrayerEvent
 import dhanfinix.android.sukun.feature.prayer.ui.PrayerSection
@@ -79,6 +81,7 @@ import androidx.compose.ui.Alignment
 fun HomeScreen(
     mainVm: MainViewModel,
     onShowOnboarding: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val volumeVm: VolumeViewModel = viewModel()
@@ -104,8 +107,6 @@ fun HomeScreen(
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     var showManualSilenceSheet by remember { mutableStateOf(false) }
-    var showAboutDialog by remember { mutableStateOf(false) }
-    var showThemeSheet by remember { mutableStateOf(false) }
 
     val appTheme by mainVm.appTheme.collectAsState()
     val useDynamicColor by mainVm.useDynamicColor.collectAsState()
@@ -128,16 +129,13 @@ fun HomeScreen(
                 LargeTopAppBar(
                     title = {
                         Text(
-                            text = "Sukun",
+                            text = stringResource(R.string.app_name),
                             fontWeight = FontWeight.Bold
                         )
                     },
                     actions = {
-                        IconButton(onClick = { showThemeSheet = true }) {
-                            Icon(Icons.Rounded.Palette, contentDescription = "Change Theme")
-                        }
-                        IconButton(onClick = { showAboutDialog = true }) {
-                            Icon(Icons.Rounded.Info, contentDescription = "About Sukun")
+                        IconButton(onClick = onOpenSettings) {
+                            Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.content_desc_settings))
                         }
                     },
                     scrollBehavior = scrollBehavior
@@ -161,7 +159,7 @@ fun HomeScreen(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ) {
-                        Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = "Manual Silence")
+                        Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = stringResource(R.string.manual_silence))
                     }
                 }
             }
@@ -208,12 +206,12 @@ fun HomeScreen(
                             modifier = Modifier.padding(vertical = 4.dp),
                         ) {
                             Text(
-                                text = "Enable permissions to ensure all features work correctly",
+                                text = stringResource(R.string.enable_permissions_banner_title),
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Tap to re-configure location, DND, and notifications",
+                                text = stringResource(R.string.enable_permissions_banner_desc),
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
@@ -233,26 +231,6 @@ fun HomeScreen(
                     onManualSilenceDismiss = { showManualSilenceSheet = false },
                     onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
                 )
-
-                if (showAboutDialog) {
-                    AboutDialog(
-                        onDismiss = { showAboutDialog = false },
-                        onShowTutorial = { mainVm.setCoachmarkShown(false) }
-                    )
-                }
-
-                if (showThemeSheet) {
-                    ThemeSelectionSheet(
-                        currentTheme = appTheme,
-                        useDynamicColor = useDynamicColor,
-                        onThemeSelect = { theme ->
-                            mainVm.setTheme(theme)
-                            showThemeSheet = false
-                        },
-                        onDynamicColorToggle = { mainVm.setUseDynamicColor(it) },
-                        onDismiss = { showThemeSheet = false }
-                    )
-                }
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -300,167 +278,6 @@ fun HomeScreen(
             },
             modifier = Modifier.align(Alignment.TopCenter)
         )
-    }
-}
-
-@Composable
-private fun AboutDialog(
-    onDismiss: () -> Unit,
-    onShowTutorial: (() -> Unit)? = null
-) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val versionName = remember(context) {
-        try { context.packageManager.getPackageInfo(context.packageName, 0).versionName }
-        catch (e: Exception) { "—" }
-    }
-    androidx.compose.material3.AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text("Close")
-            }
-        },
-        dismissButton = {
-            if (onShowTutorial != null) {
-                androidx.compose.material3.TextButton(onClick = {
-                    onShowTutorial()
-                    onDismiss()
-                }) {
-                    Text("Show Tutorial")
-                }
-            }
-        },
-        icon = { Icon(Icons.Rounded.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-        title = { Text("About Sukun", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.verticalScroll(rememberScrollState())
-            ) {
-                Text(
-                    text = "Sukun is your companion for focused prayer. It helps you maintain tranquility by automatically managing your device's volume during prayer times.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                
-                Text("Key Features", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
-                Text(
-                    text = "• Automatic prayer time updates based on location.\n" +
-                           "• Precise background silencing using exact alarms.\n" +
-                           "• Manual silence mode for extra-long focus sessions.\n" +
-                           "• Centralized volume dashboard (Media & Ringer).",
-                    style = MaterialTheme.typography.bodySmall
-                )
-
-                Text("How it Works", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
-                Text(
-                    text = "Sukun schedules exact alarms for each prayer time. When the time arrives, it records your current volume levels, enters Do Not Disturb mode, and mutes your phone for the selected duration. Once finished, it restores everything exactly as it was.",
-                    style = MaterialTheme.typography.bodySmall
-                )
-
-                Text(
-                    text = "Version $versionName",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-        }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ThemeSelectionSheet(
-    currentTheme: AppTheme,
-    useDynamicColor: Boolean,
-    onThemeSelect: (AppTheme) -> Unit,
-    onDynamicColorToggle: (Boolean) -> Unit,
-    onDismiss: () -> Unit
-) {
-    androidx.compose.material3.ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = "App Theme",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 12.dp, start = 8.dp)
-            )
-
-            val options = listOf(
-                AppTheme.SYSTEM to "System Default",
-                AppTheme.LIGHT to "Light Mode",
-                AppTheme.DARK to "Dark Mode"
-            )
-
-            options.forEach { (value, label) ->
-                val isSelected = value == currentTheme
-                androidx.compose.material3.Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable { onThemeSelect(value) },
-                    shape = MaterialTheme.shapes.medium,
-                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent
-                ) {
-                    androidx.compose.foundation.layout.Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                        )
-                        if (isSelected) {
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = "Selected",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Dynamic Color toggle — only shown on Android 12+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-                androidx.compose.foundation.layout.Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onDynamicColorToggle(!useDynamicColor) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Dynamic Color",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Use wallpaper colors (Material You)",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Switch(
-                        checked = useDynamicColor,
-                        onCheckedChange = onDynamicColorToggle
-                    )
-                }
-            }
-        }
     }
 }
 

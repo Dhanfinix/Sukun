@@ -62,6 +62,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
+import dhanfinix.android.sukun.R
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,10 +137,10 @@ fun OnboardingScreen(
         topBar = {
             if (showBackButton) {
                 CenterAlignedTopAppBar(
-                    title = { Text("Permissions", style = MaterialTheme.typography.titleMedium) },
+                    title = { Text(stringResource(R.string.permissions_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)},
                     navigationIcon = {
                         IconButton(onClick = { onBack?.invoke() }) {
-                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.btn_cancel))
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -158,7 +160,7 @@ fun OnboardingScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "App Reliability",
+                text = stringResource(R.string.app_reliability_title),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -166,7 +168,7 @@ fun OnboardingScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Configure permissions and settings to ensure Sukun works reliably in the background.",
+                text = stringResource(R.string.app_reliability_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -178,8 +180,8 @@ fun OnboardingScreen(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 PermissionCard(
                     icon = Icons.Rounded.Notifications,
-                    title = "Notifications",
-                    description = "Required to show a countdown banner when silence is active.",
+                    title = stringResource(R.string.notifications_title),
+                    description = stringResource(R.string.notifications_desc),
                     isGranted = hasNotificationPermission,
                     onRequest = { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }
                 )
@@ -188,8 +190,8 @@ fun OnboardingScreen(
             // 2. Do Not Disturb Access
             PermissionCard(
                 icon = Icons.Rounded.DoNotDisturbOn,
-                title = "Do Not Disturb",
-                description = "Required to instantly mute your phone when Adhan time arrives.",
+                title = stringResource(R.string.dnd_title),
+                description = stringResource(R.string.dnd_desc),
                 isGranted = hasDndPermission,
                 onRequest = {
                     val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
@@ -200,8 +202,8 @@ fun OnboardingScreen(
             // 3. Location Access
             PermissionCard(
                 icon = Icons.Rounded.LocationOn,
-                title = "Location",
-                description = "Required to automatically fetch accurate prayer times for your city.",
+                title = stringResource(R.string.location_title),
+                description = stringResource(R.string.location_desc),
                 isGranted = hasLocationPermission,
                 onRequest = {
                     locationLauncher.launch(
@@ -216,8 +218,8 @@ fun OnboardingScreen(
             // 4. Exact Alarms
             PermissionCard(
                 icon = Icons.Rounded.Timer,
-                title = "Exact Alarms",
-                description = "Required for precise silence timing on Android 12+.",
+                title = stringResource(R.string.exact_alarms_title),
+                description = stringResource(R.string.exact_alarms_desc),
                 isGranted = hasExactAlarmPermission,
                 onRequest = { reliabilityManager.openExactAlarmSettings() }
             )
@@ -225,8 +227,8 @@ fun OnboardingScreen(
             // 5. Battery Optimization
             PermissionCard(
                 icon = Icons.Rounded.BatteryChargingFull,
-                title = "Battery Optimization",
-                description = "Prevent the system from killing the app in the background.",
+                title = stringResource(R.string.battery_optimization_title),
+                description = stringResource(R.string.battery_optimization_desc),
                 isGranted = isIgnoringBatteryOptimizations,
                 onRequest = { reliabilityManager.requestIgnoreBatteryOptimizations() }
             )
@@ -250,7 +252,7 @@ fun OnboardingScreen(
                     label = "start_button_text"
                 ) { granted ->
                     Text(
-                        text = if (granted) "Start Using Sukun" else "Skip For Now",
+                        text = if (granted) stringResource(R.string.btn_start_using) else stringResource(R.string.btn_skip_for_now),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -307,13 +309,13 @@ private fun PermissionCard(
                 if (granted) {
                     Icon(
                         imageVector = Icons.Rounded.CheckCircle,
-                        contentDescription = "Granted",
+                        contentDescription = stringResource(R.string.permission_granted),
                         tint = Color(0xFF4CAF50), // Green check
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
                     Text(
-                        text = "FIX",
+                        text = stringResource(R.string.btn_fix),
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.labelLarge

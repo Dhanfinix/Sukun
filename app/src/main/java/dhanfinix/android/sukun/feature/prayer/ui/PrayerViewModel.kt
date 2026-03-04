@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
+import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.feature.prayer.data.model.LocationSuggestion
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
@@ -164,9 +165,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     }
                     
                     val finalLocName = locNameVal ?: if (latVal == -6.2088 && lngVal == 106.8456) {
-                        "Jakarta"
+                        getApplication<Application>().getString(R.string.jakarta)
                     } else {
-                        withContext(Dispatchers.IO) { reverseGeocode(latVal, lngVal) } ?: "Unknown Location"
+                        withContext(Dispatchers.IO) { reverseGeocode(latVal, lngVal) } ?: getApplication<Application>().getString(R.string.unknown_location)
                     }
                     
                     val elapsed = System.currentTimeMillis() - startTime
@@ -192,7 +193,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = error?.localizedMessage ?: "Failed to load prayer times"
+                            errorMessage = error?.localizedMessage ?: getApplication<Application>().getString(R.string.err_load_prayer_times)
                         )
                     }
                 }
@@ -201,7 +202,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "Unexpected error: ${e.localizedMessage}"
+                            errorMessage = getApplication<Application>().getString(R.string.err_unexpected, e.localizedMessage ?: "")
                         )
                     }
                 }
@@ -225,10 +226,12 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 if (it.name == prayer) it.copy(isEnabled = !currentEnabled) else it
             }
             
-            val status = if (!currentEnabled) "enabled" else "disabled"
+            val resId = if (!currentEnabled) R.string.silence_enabled_format else R.string.silence_disabled_format
+            val prayerNameStr = getApplication<Application>().getString(prayer.nameRes)
+            
             _uiState.update { it.copy(
                 prayers = updatedPrayers,
-                snackbarMessage = "${prayer.displayName} silence $status"
+                snackbarMessage = getApplication<Application>().getString(resId, prayerNameStr)
             ) }
             
             // Re-fetch tomorrow for scheduling
@@ -337,7 +340,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private suspend fun detectLocationSync() {
         val nm = getApplication<Application>().checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
         if (nm != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Location permission denied") }
+            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_permission_denied)) }
             return
         }
 
@@ -362,15 +365,15 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             if (location != null) {
                 updateLocationSync(location.latitude.toString(), location.longitude.toString())
             } else {
-                _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Location not found via GPS") }
+                _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_location_not_found_gps)) }
             }
         } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Location detection timed out") }
+            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_location_timeout)) }
         } catch (e: SecurityException) {
-            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Location permission denied") }
+            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_permission_denied)) }
         } catch (e: Exception) {
             if (e !is kotlinx.coroutines.CancellationException) {
-                _uiState.update { it.copy(isDetectingLocation = false, errorMessage = "Failed to detect location") }
+                _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_search_location)) }
             }
         }
     }
@@ -390,10 +393,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     _uiState.update { it.copy(isDetectingLocation = false) }
                     loadPrayerTimes()
                 } else {
-                    _uiState.update { it.copy(isDetectingLocation = false, isLoading = false, errorMessage = "Location not found") }
+                    _uiState.update { it.copy(isDetectingLocation = false, isLoading = false, errorMessage = getApplication<Application>().getString(R.string.err_location_not_found)) }
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isDetectingLocation = false, isLoading = false, errorMessage = "Error searching location") }
+                _uiState.update { it.copy(isDetectingLocation = false, isLoading = false, errorMessage = getApplication<Application>().getString(R.string.err_search_location)) }
             }
         }
     }
@@ -500,7 +503,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     it.copy(
                         currentTime = currentTimeStr,
                         currentDate = hijriDateStr,
-                        nextPrayerName = nextPrayerInfo?.first?.name?.displayName,
+                        nextPrayer = nextPrayerInfo?.first?.name,
                         nextPrayerCountdown = countdownStr
                     )
                 }

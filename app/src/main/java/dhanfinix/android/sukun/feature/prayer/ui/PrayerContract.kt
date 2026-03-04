@@ -23,7 +23,7 @@ data class PrayerUiState(
     val errorMessage: String? = null,
     val snackbarMessage: String? = null,
     val currentTime: String = "--:--:--",
-    val nextPrayerName: String? = null,
+    val nextPrayer: PrayerName? = null,
     val nextPrayerCountdown: String = "--:--:--",
     val locationSuggestions: List<LocationSuggestion> = emptyList(),
     val isSearchingSuggestions: Boolean = false

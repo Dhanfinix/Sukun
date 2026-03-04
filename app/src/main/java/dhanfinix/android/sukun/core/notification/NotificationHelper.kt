@@ -22,10 +22,10 @@ object NotificationHelper {
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Sukun Silence",
+            context.getString(R.string.notif_channel_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Shows when Sukun prayer silence is active"
+            description = context.getString(R.string.notif_channel_desc)
         }
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(channel)
@@ -75,7 +75,7 @@ object NotificationHelper {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setContentIntent(openAppPending)
-            .addAction(R.drawable.ic_notification, "Stop Mute", stopPending)
+            .addAction(R.drawable.ic_notification, context.getString(R.string.stop_silence), stopPending)
             // Safety net: auto-dismiss the notification when silence ends,
             // in case RestoreWorker is delayed by Doze/battery saver.
             // This prevents the Chronometer from going into negative values.

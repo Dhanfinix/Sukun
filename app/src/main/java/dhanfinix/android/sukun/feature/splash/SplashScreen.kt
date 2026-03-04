@@ -19,6 +19,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -100,12 +101,12 @@ fun SplashScreen(
                 stiffness = Spring.StiffnessMedium
             )
         )
-        delay(200)
+        delay(100)
         nameAlpha.animateTo(1f, tween(500))
         dividerScale.animateTo(1f, tween(600, easing = FastOutSlowInEasing))
-        delay(200)
+        delay(100)
         taglineAlpha.animateTo(1f, tween(600))
-        delay(300) // hold the finished state briefly
+        delay(200) // hold the finished state briefly
         animsCompleted = true
     }
 
@@ -186,7 +187,7 @@ fun SplashScreen(
             with(sharedTransitionScope) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = "Sukun Logo",
+                    contentDescription = stringResource(R.string.app_name),
                     modifier = Modifier
                         .size(148.dp)
                         .sharedElement(
@@ -202,7 +203,7 @@ fun SplashScreen(
 
             // App name — wide letter spacing, bold reveal
             Text(
-                text = "Sukun",
+                text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = 14.sp,
@@ -237,7 +238,7 @@ fun SplashScreen(
             // Tagline
             with(sharedTransitionScope) {
                 Text(
-                    text = "Pray in peace, undisturbed.",
+                    text = stringResource(R.string.landing_tagline),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Normal,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

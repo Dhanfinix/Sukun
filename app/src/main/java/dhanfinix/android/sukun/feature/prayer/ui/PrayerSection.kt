@@ -87,6 +87,8 @@ import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.res.stringResource
+import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 
@@ -147,7 +149,7 @@ fun PrayerSection(
         NextPrayerCard(
             currentDate = state.currentDate,
             currentTime = state.currentTime,
-            nextPrayerName = state.nextPrayerName,
+            nextPrayer = state.nextPrayer,
             countdown = state.nextPrayerCountdown,
             locationName = state.locationName ?: "${state.latitude}, ${state.longitude}",
             isDetectingLocation = state.isDetectingLocation,
@@ -183,9 +185,17 @@ fun PrayerSection(
         ) {
             displayPrayers.forEach { prayer ->
                 key(prayer.name) {
+                    val isSilenced = isSukunActive && sukunLabel == stringResource(prayer.name.nameRes)
+                    val isManualSilence = isSukunActive && sukunLabel == stringResource(R.string.label_manual)
+                    val isHighlighted = if (isSukunActive && !isManualSilence) {
+                        isSilenced
+                    } else {
+                        prayer.name.nameRes == state.nextPrayer?.nameRes
+                    }
+
                     PrayerTile(
                         prayer = prayer,
-                        isNext = (prayer.name.displayName == state.nextPrayerName),
+                        isNext = isHighlighted,
                         onToggle = onTogglePrayer,
                         isLoading = state.isLoading,
                         modifier = Modifier.weight(1f)
@@ -201,8 +211,8 @@ fun PrayerSection(
         ) {
             // Duration Card
             SettingCard(
-                label = "Silence",
-                currentValue = "Duration",
+                label = stringResource(R.string.feature_silence_title),
+                currentValue = stringResource(R.string.duration_label),
                 icon = Icons.Rounded.Timer,
                 onClick = onSilenceClick,
                 modifier = Modifier.weight(1f)
@@ -214,8 +224,8 @@ fun PrayerSection(
                 3 to "MWL", 1 to "Karachi", 5 to "Egypt"
             )
             SettingCard(
-                label = "Method",
-                currentValue = methods.find { it.first == state.method }?.second ?: "Auto",
+                label = stringResource(R.string.calculation_method),
+                currentValue = methods.find { it.first == state.method }?.second ?: stringResource(R.string.auto_label),
                 icon = Icons.Rounded.Calculate,
                 onClick = onMethodClick,
                 modifier = Modifier.weight(1f)
@@ -247,8 +257,8 @@ fun PrayerSection(
             3 to "MWL", 1 to "Karachi", 5 to "Egypt"
         )
         SelectionBottomSheet(
-            title = "Calculation Method",
-            description = "Different organizations calculate prayer times using slightly different conventions. Choose the one commonly used in your region.",
+            title = stringResource(R.string.calculation_method),
+            description = stringResource(R.string.calculation_method_desc),
             options = methods,
             selectedValue = state.method,
             onSelect = { 

@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.designsystem.shimmer
 import dhanfinix.android.sukun.feature.prayer.data.model.LocationSuggestion
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
@@ -67,7 +69,7 @@ fun ManualLocationBottomSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Search Location",
+                text = stringResource(R.string.search_location),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -80,8 +82,8 @@ fun ManualLocationBottomSheet(
                         query = it
                         onQueryChange(it)
                     },
-                    label = { Text("City, Area, or Country") },
-                    placeholder = { Text("e.g. Jakarta, London") },
+                    label = { Text(stringResource(R.string.search_location)) },
+                    placeholder = { Text(stringResource(R.string.search_location_placeholder)) },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -94,7 +96,7 @@ fun ManualLocationBottomSheet(
                                 query = ""
                                 onQueryChange("")
                             }) {
-                                Icon(Icons.Rounded.Close, contentDescription = "Clear")
+                                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.btn_cancel))
                             }
                         }
                     },
@@ -157,7 +159,7 @@ fun ManualLocationBottomSheet(
                 }
             } else if (query.isNotBlank() && !isSearching) {
                 Text(
-                    "Press Search or enter more characters",
+                    stringResource(R.string.enable_permissions_banner_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 4.dp)
@@ -170,7 +172,7 @@ fun ManualLocationBottomSheet(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = MaterialTheme.shapes.large
             ) {
-                Text("Search Location", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.search_location), style = MaterialTheme.typography.titleMedium)
             }
         }
     }
@@ -220,7 +222,7 @@ fun SettingCard(
             }
             Icon(
                 imageVector = Icons.Rounded.KeyboardArrowDown,
-                contentDescription = "Select",
+                contentDescription = stringResource(R.string.app_theme),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
@@ -282,7 +284,7 @@ fun <T> SelectionBottomSheet(
                         if (isSelected) {
                             Icon(
                                 imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = "Selected",
+                                contentDescription = stringResource(R.string.permission_granted),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -368,7 +370,7 @@ fun PrayerTile(
             // Icon in the top right corner
             Icon(
                 imageVector = if (prayer.isEnabled) Icons.Rounded.NotificationsOff else Icons.Rounded.NotificationsActive,
-                contentDescription = if (prayer.isEnabled) "Silencing Enabled" else "Silencing Disabled",
+                contentDescription = if (prayer.isEnabled) stringResource(R.string.silencing_enabled) else stringResource(R.string.silencing_disabled),
                 tint = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
                 modifier = Modifier
                     .padding(2.dp)
@@ -383,7 +385,7 @@ fun PrayerTile(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = prayer.name.displayName,
+                    text = stringResource(prayer.name.nameRes),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.6f),
@@ -409,7 +411,7 @@ fun PrayerTile(
 fun NextPrayerCard(
     currentDate: String,
     currentTime: String,
-    nextPrayerName: String?,
+    nextPrayer: PrayerName?,
     countdown: String,
     locationName: String,
     isDetectingLocation: Boolean,
@@ -460,13 +462,13 @@ fun NextPrayerCard(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.LocationOn,
-                        contentDescription = "Location",
+                        contentDescription = stringResource(R.string.location_title),
                         tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (isDetectingLocation) "Detecting..." else locationName,
+                        text = if (isDetectingLocation) stringResource(R.string.detect_location) else locationName,
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -487,7 +489,7 @@ fun NextPrayerCard(
                         } else {
                             Icon(
                                 imageVector = Icons.Rounded.MyLocation,
-                                contentDescription = "Update Location",
+                                contentDescription = stringResource(R.string.detect_location),
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -499,7 +501,7 @@ fun NextPrayerCard(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Search,
-                            contentDescription = "Search Location",
+                            contentDescription = stringResource(R.string.search_location),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
@@ -568,7 +570,7 @@ fun NextPrayerCard(
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Text(
-                                    text = sukunLabel ?: "Manual",
+                                    text = sukunLabel ?: stringResource(R.string.manual_silence),
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -586,7 +588,7 @@ fun NextPrayerCard(
 
                         // Subtitle
                         Text(
-                            text = "Silent Active — you can pray in peace",
+                            text = stringResource(R.string.silence_active),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                             textAlign = TextAlign.Center
@@ -608,7 +610,7 @@ fun NextPrayerCard(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Stop Silence", fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.stop_silence), fontWeight = FontWeight.SemiBold)
                         }
                     }
                 } else {
@@ -631,7 +633,7 @@ fun NextPrayerCard(
                             horizontalAlignment = Alignment.End
                         ) {
                             Text(
-                                text = "Next: ${nextPrayerName ?: "--"}",
+                                text = "${stringResource(R.string.next_prayer)}: ${nextPrayer?.let { stringResource(it.nameRes) } ?: "--"}",
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.End

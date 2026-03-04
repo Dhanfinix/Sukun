@@ -30,10 +30,12 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import dhanfinix.android.sukun.R
 
 enum class CoachMarkTarget {
     PRAYER_TOGGLES,
@@ -44,34 +46,34 @@ enum class CoachMarkTarget {
 
 data class CoachMarkStep(
     val target: CoachMarkTarget,
-    val title: String,
-    val description: String,
+    val titleRes: Int,
+    val descriptionRes: Int,
     val icon: ImageVector
 )
 
 val HomeCoachMarkSteps = listOf(
     CoachMarkStep(
         target = CoachMarkTarget.PRAYER_TOGGLES,
-        title = "Automatic Silencing",
-        description = "Tap on any prayer tile to enable or disable automatic silencing. When enabled, your phone will mute automatically during that prayer time.",
+        titleRes = R.string.coach_mark_prayer_title,
+        descriptionRes = R.string.coach_mark_prayer_desc,
         icon = Icons.Rounded.NotificationsOff
     ),
     CoachMarkStep(
         target = CoachMarkTarget.NEXT_PRAYER,
-        title = "Accurate Timings",
-        description = "Keep your location updated in the Next Prayer card to ensure the countdowns and prayer times are always precise.",
+        titleRes = R.string.coach_mark_location_title,
+        descriptionRes = R.string.coach_mark_location_desc,
         icon = Icons.Rounded.LocationOn
     ),
     CoachMarkStep(
         target = CoachMarkTarget.VOLUME_SLIDER,
-        title = "Manual Controls",
-        description = "Need to quickly adjust the volume without waiting for a prayer? Use the slider at the bottom as a handy add-on tool.",
+        titleRes = R.string.coach_mark_volume_title,
+        descriptionRes = R.string.coach_mark_volume_desc,
         icon = Icons.AutoMirrored.Rounded.VolumeUp
     ),
     CoachMarkStep(
         target = CoachMarkTarget.MANUAL_SILENCE_FAB,
-        title = "Quick Silence",
-        description = "In a meeting or entering a mosque right now? Tap this Floating Action Button to immediately trigger a manual silence countdown.",
+        titleRes = R.string.coach_mark_manual_title,
+        descriptionRes = R.string.coach_mark_manual_desc,
         icon = Icons.AutoMirrored.Rounded.VolumeOff
     )
 )
@@ -207,7 +209,7 @@ fun CoachMarkOverlay(
                             Spacer(modifier = Modifier.height(24.dp))
 
                             Text(
-                                text = step.title,
+                                text = stringResource(step.titleRes),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -217,7 +219,7 @@ fun CoachMarkOverlay(
                             Spacer(modifier = Modifier.height(12.dp))
 
                             Text(
-                                text = step.description,
+                                text = stringResource(step.descriptionRes),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
@@ -257,7 +259,7 @@ fun CoachMarkOverlay(
                                 }
                             }
                         ) {
-                            Text(if (currentStep < HomeCoachMarkSteps.size - 1) "Next" else "Got it!")
+                            Text(if (currentStep < HomeCoachMarkSteps.size - 1) stringResource(R.string.btn_next) else stringResource(R.string.btn_got_it))
                         }
                     }
                 }

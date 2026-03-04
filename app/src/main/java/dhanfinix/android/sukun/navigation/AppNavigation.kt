@@ -15,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import dhanfinix.android.sukun.MainViewModel
 import dhanfinix.android.sukun.feature.home.HomeScreen
+import dhanfinix.android.sukun.feature.settings.SettingsScreen
+import dhanfinix.android.sukun.feature.settings.AboutScreen
 import dhanfinix.android.sukun.feature.landing.LandingScreen
 import dhanfinix.android.sukun.feature.onboarding.OnboardingScreen
 import dhanfinix.android.sukun.feature.splash.SplashScreen
@@ -39,11 +41,15 @@ fun AppNavigation(
     val hasSeenLanding by mainVm.hasSeenLanding.collectAsState()
     var splashFinished by remember { mutableStateOf(false) }
     var showPermission by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
+    var showAbout by remember { mutableStateOf(false) }
 
     val screen = when {
         !splashFinished                          -> Screen.Splash
         !hasSeenLanding && !showPermission       -> Screen.Landing
-        !hasSeenLanding && showPermission        -> Screen.Onboarding
+        showPermission                           -> Screen.Onboarding
+        showAbout                                -> Screen.About
+        showSettings                             -> Screen.Settings
         else                                     -> Screen.Home
     }
 
@@ -55,10 +61,17 @@ fun AppNavigation(
                     initialState == Screen.Splash ->
                         fadeIn(tween(600)) togetherWith fadeOut(tween(400))
                     (initialState == Screen.Landing && targetState == Screen.Onboarding) ||
-                    (initialState == Screen.Onboarding && targetState == Screen.Home) ->
+                    (initialState == Screen.Onboarding && targetState == Screen.Home && !hasSeenLanding) ||
+                    (initialState == Screen.Home && targetState == Screen.Onboarding) ||
+                    (initialState == Screen.Home && targetState == Screen.Settings) ||
+                    (initialState == Screen.Settings && targetState == Screen.About) ->
                         (slideInHorizontally(tween(350)) { it } + fadeIn(tween(350))) togetherWith
                                 (slideOutHorizontally(tween(300)) { -it } + fadeOut(tween(300)))
-                    initialState == Screen.Onboarding && targetState == Screen.Landing ->
+                    
+                    (initialState == Screen.Onboarding && targetState == Screen.Landing) ||
+                    (initialState == Screen.Onboarding && targetState == Screen.Home && hasSeenLanding) ||
+                    (initialState == Screen.Settings && targetState == Screen.Home) ||
+                    (initialState == Screen.About && targetState == Screen.Settings) ->
                         (slideInHorizontally(tween(350)) { -it } + fadeIn(tween(350))) togetherWith
                                 (slideOutHorizontally(tween(300)) { it } + fadeOut(tween(300)))
                     else -> fadeIn() togetherWith fadeOut()
@@ -78,6 +91,7 @@ fun AppNavigation(
                     }
                     Screen.Landing -> {
                         LandingScreen(
+                            mainVm = mainVm,
                             onGetStarted = { showPermission = true },
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this@AnimatedContent
@@ -90,13 +104,27 @@ fun AppNavigation(
                             onComplete = {
                                 mainVm.setHasSeenLanding(true)
                                 mainVm.setOnboardingCompleted(true)
+                                showPermission = false
                             }
                         )
                     }
                     Screen.Home -> {
                         HomeScreen(
                             mainVm = mainVm,
-                            onShowOnboarding = { mainVm.setOnboardingCompleted(false) }
+                            onShowOnboarding = { showPermission = true },
+                            onOpenSettings = { showSettings = true }
+                        )
+                    }
+                    Screen.Settings -> {
+                        SettingsScreen(
+                            mainVm = mainVm,
+                            onOpenAbout = { showAbout = true },
+                            onBack = { showSettings = false }
+                        )
+                    }
+                    Screen.About -> {
+                        AboutScreen(
+                            onBack = { showAbout = false }
                         )
                     }
                 }
@@ -106,5 +134,5 @@ fun AppNavigation(
 }
 
 private enum class Screen {
-    Splash, Landing, Onboarding, Home
+    Splash, Landing, Onboarding, Home, Settings, About
 }

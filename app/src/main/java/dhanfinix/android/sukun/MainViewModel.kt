@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dhanfinix.android.sukun.core.datastore.AppTheme
+import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -47,6 +48,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = false
         )
 
+    val appLanguage: StateFlow<AppLanguage> = userPrefs.appLanguage
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AppLanguage.SYSTEM
+        )
+
     val hasSeenLanding: StateFlow<Boolean> = userPrefs.hasSeenLanding
         .stateIn(
             scope = viewModelScope,
@@ -64,6 +72,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch {
             userPrefs.setAppTheme(theme)
+        }
+    }
+
+    fun setLanguage(language: AppLanguage) {
+        viewModelScope.launch {
+            userPrefs.setAppLanguage(language)
         }
     }
 

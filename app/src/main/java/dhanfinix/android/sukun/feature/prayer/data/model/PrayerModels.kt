@@ -1,18 +1,19 @@
 package dhanfinix.android.sukun.feature.prayer.data.model
 
 import androidx.compose.runtime.Stable
+import dhanfinix.android.sukun.R
 
 /**
  * Represents the five daily prayers with their display names.
  */
 @Stable
-enum class PrayerName(val displayName: String) {
-    FAJR("Fajr"),
-    DHUHR("Dhuhr"),
-    JUMUAH("Jumu'ah"),
-    ASR("Asr"),
-    MAGHRIB("Maghrib"),
-    ISHA("Isha")
+enum class PrayerName(val nameRes: Int) {
+    FAJR(R.string.prayer_fajr),
+    DHUHR(R.string.prayer_dhuhr),
+    JUMUAH(R.string.prayer_jumuah),
+    ASR(R.string.prayer_asr),
+    MAGHRIB(R.string.prayer_maghrib),
+    ISHA(R.string.prayer_isha)
 }
 
 /**
