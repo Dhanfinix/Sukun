@@ -307,7 +307,7 @@ fun PrayerTile(
     isLoading: Boolean = false
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (prayer.isEnabled) {
+        targetValue = if (prayer.isEnabled && isDndGranted) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
@@ -316,7 +316,7 @@ fun PrayerTile(
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (prayer.isEnabled) {
+        targetValue = if (prayer.isEnabled && isDndGranted) {
             MaterialTheme.colorScheme.primary
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
@@ -378,10 +378,11 @@ fun PrayerTile(
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(4.dp)) {
             // Icon in the top right corner
+            val isVisuallyEnabled = prayer.isEnabled && isDndGranted
             Icon(
-                imageVector = if (prayer.isEnabled) Icons.Rounded.NotificationsOff else Icons.Rounded.NotificationsActive,
-                contentDescription = if (prayer.isEnabled) stringResource(R.string.silencing_enabled) else stringResource(R.string.silencing_disabled),
-                tint = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
+                imageVector = if (isVisuallyEnabled) Icons.Rounded.NotificationsOff else Icons.Rounded.NotificationsActive,
+                contentDescription = if (isVisuallyEnabled) stringResource(R.string.silencing_enabled) else stringResource(R.string.silencing_disabled),
+                tint = contentColor.copy(alpha = if (isVisuallyEnabled) 1f else 0.5f),
                 modifier = Modifier
                     .padding(2.dp)
                     .size(12.dp)
@@ -398,7 +399,7 @@ fun PrayerTile(
                     text = stringResource(prayer.name.nameRes),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.6f),
+                    color = contentColor.copy(alpha = if (isVisuallyEnabled) 1f else 0.6f),
                     maxLines = 1,
                     textAlign = TextAlign.Center
                 )
@@ -406,8 +407,8 @@ fun PrayerTile(
                 Text(
                     text = prayer.time,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
-                    textDecoration = if (prayer.isEnabled) TextDecoration.None else TextDecoration.LineThrough,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (isVisuallyEnabled) 1f else 0.5f),
+                    textDecoration = if (isVisuallyEnabled) TextDecoration.None else TextDecoration.LineThrough,
                     textAlign = TextAlign.Center,
                     modifier = if (isLoading) Modifier.width(36.dp).shimmer() else Modifier
                 )
