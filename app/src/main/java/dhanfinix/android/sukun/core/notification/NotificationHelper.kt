@@ -52,25 +52,19 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val remoteViews = RemoteViews(context.packageName, R.layout.notification_sukun_countdown)
-        remoteViews.setTextViewText(R.id.notification_text, prayerName)
-        
-        // Chronometer expects a base in SystemClock.elapsedRealtime() (time since boot), 
-        // not System.currentTimeMillis() (epoch time).
         val remainingMs = endTimeMs - System.currentTimeMillis()
         val chronometerBase = android.os.SystemClock.elapsedRealtime() + remainingMs
-        
-        remoteViews.setChronometer(
-            R.id.notification_chronometer,
-            chronometerBase,
-            "%s",
-            true
-        )
+
+        val formattedTime = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date(endTimeMs))
+        val contentText = "$prayerName • ${context.getString(R.string.silence_ends_at, formattedTime)}"
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            .setCustomContentView(remoteViews)
+            .setContentTitle(context.getString(R.string.silence_active))
+            .setContentText(contentText)
+            .setWhen(chronometerBase)
+            .setUsesChronometer(true)
+            .setChronometerCountDown(true)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
