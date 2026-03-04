@@ -614,14 +614,40 @@ fun NextPrayerCard(
                             )
                         }
 
+                        // Pulse Animation for the Stop Button
+                        val infiniteTransition = rememberInfiniteTransition(label = "PulseTransition")
+                        val pulseScale by infiniteTransition.animateFloat(
+                            initialValue = 1f,
+                            targetValue = 1.1f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(1000, easing = FastOutSlowInEasing),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            label = "PulseScale"
+                        )
+                        val pulseAlpha by infiniteTransition.animateFloat(
+                            initialValue = 0.15f,
+                            targetValue = 0.35f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(1000, easing = FastOutSlowInEasing),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            label = "PulseAlpha"
+                        )
+
                         // Large Circular Stop Button
                         FilledTonalButton(
                             onClick = onStopSilence,
-                            modifier = Modifier.size(64.dp),
+                            modifier = Modifier
+                                .size(64.dp)
+                                .graphicsLayer {
+                                    scaleX = pulseScale
+                                    scaleY = pulseScale
+                                },
                             shape = androidx.compose.foundation.shape.CircleShape,
                             contentPadding = PaddingValues(0.dp),
                             colors = ButtonDefaults.filledTonalButtonColors(
-                                containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
+                                containerColor = MaterialTheme.colorScheme.error.copy(alpha = pulseAlpha),
                                 contentColor = MaterialTheme.colorScheme.error
                             )
                         ) {
