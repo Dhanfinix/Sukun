@@ -152,8 +152,9 @@
     <string name="err_search_location">Kesalahan saat mencari lokasi</string>
 
 
-    <string name="notif_title">Ponsel diheningkan</string>
+    <string name="notif_title">Ponsel diheningkan untuk</string>
     <string name="notif_for_prefix">untuk </string>
     <string name="notif_ends_in">Berakhir</string>
+    <string name="notif_ends_at">Berakhir pukul %s</string>
     <string name="notif_icon_desc">Salat</string>
 </resources>

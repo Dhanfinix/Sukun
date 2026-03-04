@@ -152,8 +152,9 @@
     <string name="err_search_location">Error searching location</string>
 
 
-    <string name="notif_title">Phone is silenced</string>
+    <string name="notif_title">Phone is silenced for</string>
     <string name="notif_for_prefix">for </string>
     <string name="notif_ends_in">Ends in</string>
+    <string name="notif_ends_at">Ends at %s</string>
     <string name="notif_icon_desc">Prayer</string>
 </resources>
