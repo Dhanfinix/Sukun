@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -305,9 +307,7 @@ fun PrayerTile(
     isLoading: Boolean = false
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (!isDndGranted) {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        } else if (prayer.isEnabled) {
+        targetValue = if (prayer.isEnabled) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
@@ -316,9 +316,7 @@ fun PrayerTile(
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (!isDndGranted) {
-            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-        } else if (prayer.isEnabled) {
+        targetValue = if (prayer.isEnabled) {
             MaterialTheme.colorScheme.primary
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
@@ -348,12 +346,19 @@ fun PrayerTile(
         label = "pulse_alpha"
     )
 
+    val context = LocalContext.current
     Card(
-        onClick = { if (isDndGranted) onToggle(prayer.name) },
+        onClick = {
+            if (isDndGranted) {
+                onToggle(prayer.name)
+            } else {
+                Toast.makeText(context, R.string.grant_dnd_to_continue, Toast.LENGTH_LONG).show()
+            }
+        },
         modifier = modifier
             .height(72.dp)
             .graphicsLayer {
-                val currentScale = if (isNext && isDndGranted) pulseScale else 1f
+                val currentScale = if (isNext) pulseScale else 1f
                 scaleX = currentScale
                 scaleY = currentScale
             },
@@ -364,7 +369,7 @@ fun PrayerTile(
             defaultElevation = 1.dp,
             pressedElevation = 1.dp
         ),
-        border = if (isNext && isDndGranted) {
+        border = if (isNext) {
             androidx.compose.foundation.BorderStroke(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = pulseAlpha)
@@ -376,7 +381,7 @@ fun PrayerTile(
             Icon(
                 imageVector = if (prayer.isEnabled) Icons.Rounded.NotificationsOff else Icons.Rounded.NotificationsActive,
                 contentDescription = if (prayer.isEnabled) stringResource(R.string.silencing_enabled) else stringResource(R.string.silencing_disabled),
-                tint = contentColor.copy(alpha = if (prayer.isEnabled && isDndGranted) 1f else 0.5f),
+                tint = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
                 modifier = Modifier
                     .padding(2.dp)
                     .size(12.dp)
@@ -393,7 +398,7 @@ fun PrayerTile(
                     text = stringResource(prayer.name.nameRes),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = contentColor.copy(alpha = if (prayer.isEnabled && isDndGranted) 1f else 0.6f),
+                    color = contentColor.copy(alpha = if (prayer.isEnabled) 1f else 0.6f),
                     maxLines = 1,
                     textAlign = TextAlign.Center
                 )
@@ -401,8 +406,8 @@ fun PrayerTile(
                 Text(
                     text = prayer.time,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (prayer.isEnabled && isDndGranted) 1f else 0.5f),
-                    textDecoration = if (prayer.isEnabled && isDndGranted) TextDecoration.None else TextDecoration.LineThrough,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (prayer.isEnabled) 1f else 0.5f),
+                    textDecoration = if (prayer.isEnabled) TextDecoration.None else TextDecoration.LineThrough,
                     textAlign = TextAlign.Center,
                     modifier = if (isLoading) Modifier.width(36.dp).shimmer() else Modifier
                 )
