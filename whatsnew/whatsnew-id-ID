@@ -1,4 +1,4 @@
-✨ Tampilan notifikasi "Silence Active" baru! Usap ke bawah untuk melihat tata letak yang lebih luas dengan penghitung waktu mundur besar, info waktu berakhir, dan tombol berhenti cepat.
-🖌️ Penyempurnaan tampilan senyap di Beranda menjadi lebih ringkas dengan tombol berhenti melingkar yang berdenyut (pulsing).
-🛡️ Memperbaiki kerusakan latar belakang (crash) yang terjadi jika izin Jangan Ganggu (DND) tiba-tiba dicabut.
-📱 Berbagai penyempurnaan UI, termasuk teks kartu pengaturan yang dipersingkat agar lebih rapi.
+✨ Notifikasi "Silence Active" baru dengan tata letak luas, waktu mundur besar, dan tombol berhenti cepat.
+🖌️ Tampilan senyap di Beranda lebih ringkas dengan tombol melingkar.
+🛡️ Perbaikan crash saat izin Jangan Ganggu (DND) dicabut.
+📱 Berbagai penyempurnaan UI agar lebih rapi.

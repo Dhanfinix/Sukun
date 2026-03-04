@@ -1,4 +1,4 @@
-✨ Brand new "Silence Active" notification! Swipe down to see a beautiful expanded layout with a large countdown timer, end-time text, and a dedicated quick-stop button.
-🖌️ Refined the Home screen active silence state to be more compact with a pulsing circular stop button.
-🛡️ Fixed background crashes that occurred when Do Not Disturb permission was unexpectedly revoked.
-📱 Various UI polishes, including shorter settings card text to prevent awkward wrapping.
+✨ New "Silence Active" notification with expanded layout, large countdown, and quick-stop button.
+🖌️ Compact Home screen active silence state with circular stop button.
+🛡️ Fixed background crashes when Do Not Disturb permission is revoked.
+📱 Various UI polishes and layout fixes.
