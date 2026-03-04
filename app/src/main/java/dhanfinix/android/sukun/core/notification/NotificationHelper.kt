@@ -91,11 +91,6 @@ object NotificationHelper {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setContentIntent(openAppPending)
-            .addAction(
-                R.drawable.ic_notification,
-                context.getString(R.string.stop_silence),
-                stopPending
-            )
             .setTimeoutAfter(remainingMs)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
