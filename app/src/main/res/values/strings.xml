@@ -57,7 +57,7 @@
     <string name="enable_permissions_banner_desc">Tap to fix location, DND, and notifications</string>
 
     <!-- Prayer Section -->
-    <string name="next_prayer">Next Prayer</string>
+    <string name="next_prayer">Next</string>
     <string name="silence_active">Silence Active</string>
     <string name="silence_ends_at">ends at %s</string>
     <string name="stop_silence">Stop</string>

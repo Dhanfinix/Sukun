@@ -57,13 +57,13 @@
     <string name="enable_permissions_banner_desc">Ketuk untuk memperbaiki lokasi, DND, dan notifikasi</string>
 
     <!-- Prayer Section -->
-    <string name="next_prayer">Salat Berikutnya</string>
+    <string name="next_prayer">Berikutnya</string>
     <string name="silence_active">Mode Senyap Aktif</string>
     <string name="silence_ends_at">berakhir pada %s</string>
     <string name="stop_silence">Berhenti</string>
     <string name="calculation_method">Metode Perhitungan</string>
     <string name="setting_auto_silence">Senyap Otomatis</string>
-    <string name="setting_calc_method">Metode Salat</string>
+    <string name="setting_calc_method">Perhitungan</string>
     <string name="calculation_method_desc">Setiap organisasi menggunakan konvensi yang sedikit berbeda. Pilih yang umum di wilayah Anda.</string>
     <string name="search_location">Cari Lokasi</string>
     <string name="detect_location">Deteksi Lokasi</string>

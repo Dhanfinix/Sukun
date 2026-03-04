@@ -562,58 +562,64 @@ fun NextPrayerCard(
                 label = "NextPrayerCard_StateTransition"
             ) { active ->
                 if (active) {
-                    // ── Active State: Centered Vertical Layout ──
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    // ── Active State: Compact Horizontal Layout ──
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Label chip
-                        Surface(
-                            shape = MaterialTheme.shapes.small,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            contentColor = MaterialTheme.colorScheme.primary
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        Column {
+                            // Label chip
+                            Surface(
+                                shape = MaterialTheme.shapes.small,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                contentColor = MaterialTheme.colorScheme.primary
                             ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.VolumeOff,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Text(
-                                    text = sukunLabel ?: stringResource(R.string.manual_silence),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.VolumeOff,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Text(
+                                        text = sukunLabel ?: stringResource(R.string.manual_silence),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // Big remaining time
+                            Text(
+                                text = if (activeRemainingTimeStr.isNotEmpty()) activeRemainingTimeStr else "00:00",
+                                style = MaterialTheme.typography.displayMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+
+                            Spacer(modifier = Modifier.height(2.dp))
+
+                            // Subtitle
+                            Text(
+                                text = stringResource(R.string.silence_active),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                            )
                         }
 
-                        // Big remaining time
-                        Text(
-                            text = if (activeRemainingTimeStr.isNotEmpty()) activeRemainingTimeStr else "00:00",
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-
-                        // Subtitle
-                        Text(
-                            text = stringResource(R.string.silence_active),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Stop Button
+                        // Large Circular Stop Button
                         FilledTonalButton(
                             onClick = onStopSilence,
+                            modifier = Modifier.size(64.dp),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            contentPadding = PaddingValues(0.dp),
                             colors = ButtonDefaults.filledTonalButtonColors(
                                 containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
                                 contentColor = MaterialTheme.colorScheme.error
@@ -621,11 +627,9 @@ fun NextPrayerCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Stop,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
+                                contentDescription = stringResource(R.string.stop_silence),
+                                modifier = Modifier.size(32.dp)
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(R.string.stop_silence), fontWeight = FontWeight.SemiBold)
                         }
                     }
                 } else {
@@ -648,7 +652,7 @@ fun NextPrayerCard(
                             horizontalAlignment = Alignment.End
                         ) {
                             Text(
-                                text = "${stringResource(R.string.next_prayer)}: ${nextPrayer?.let { stringResource(it.nameRes) } ?: "--"}",
+                                text = nextPrayer?.let { stringResource(it.nameRes) } ?: "--",
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.End
