@@ -14,18 +14,20 @@ android {
         applicationId = "dhanfinix.android.sukun"
         minSdk = 26
         targetSdk = 36
-        versionCode = 10
-        versionName = "1.0.9"
+        versionCode = 11
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         create("release") {
-            storeFile = file("sukun.jks")
-            storePassword = "sukun123"
-            keyAlias = "sukun"
-            keyPassword = "sukun123"
+            // In CI: read from environment variables injected by GitHub Actions
+            // Locally: fall back to hardcoded values for convenience
+            storeFile = file(System.getenv("STORE_FILE") ?: "sukun.jks")
+            storePassword = System.getenv("STORE_PASSWORD") ?: "sukun123"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "sukun"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "sukun123"
         }
     }
 
