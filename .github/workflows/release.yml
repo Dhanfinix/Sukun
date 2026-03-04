@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'          # Triggers on any tag like v1.1.0, v2.0.0-beta, etc.
 
+permissions:
+  contents: write   # Required to create GitHub Releases and upload assets
+
 jobs:
   build-and-release:
     name: Build & Publish
