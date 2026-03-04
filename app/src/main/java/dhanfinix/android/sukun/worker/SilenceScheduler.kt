@@ -1,6 +1,7 @@
 package dhanfinix.android.sukun.worker
 
 import android.app.AlarmManager
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -30,6 +31,12 @@ class SilenceScheduler(private val context: Context) {
         durations: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int>
     ) {
         cancelAll()
+
+        val notifManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (!notifManager.isNotificationPolicyAccessGranted) {
+            // Do not schedule anything if DND permission is missing
+            return
+        }
 
         val now = LocalTime.now()
 

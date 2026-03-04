@@ -47,6 +47,13 @@ class SilenceReceiver : BroadcastReceiver() {
     private suspend fun handleStartSilence(context: Context, prayerName: String, durationMin: Int) {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val notifManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        // Prevent execution if permission was revoked after the alarm was scheduled
+        if (!notifManager.isNotificationPolicyAccessGranted) {
+            Log.w(TAG, "SilenceReceiver aborted: DND permission is missing for $prayerName")
+            return
+        }
+
         val userPrefs = UserPreferences(context)
 
         val silenceMode = userPrefs.silenceMode.first()
