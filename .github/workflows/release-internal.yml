@@ -1,24 +1,19 @@
-name: Release to Play Store
+name: Internal Release
 
 on:
   push:
-    tags:
-      - 'v*'          # Triggers on any tag like v1.1.0, v2.0.0-beta, etc.
-
-permissions:
-  contents: write   # Required to create GitHub Releases and upload assets
+    branches:
+      - 'internal'
 
 jobs:
   build-and-release:
-    name: Build & Publish
+    name: Build & Publish to Internal
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Set up JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -26,16 +21,13 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      # 3. Decode the keystore from Base64 secret
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/sukun.jks
 
-      # 4. Grant gradlew execute permission
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # 5. Build signed release AAB
       - name: Build Release AAB
         env:
           STORE_FILE: sukun.jks
@@ -44,22 +36,13 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew bundleRelease
 
-      # 6. Upload AAB as a workflow artifact (useful for manual download/inspection)
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-aab
+          name: release-aab-internal
           path: app/build/outputs/bundle/release/*.aab
-          retention-days: 14
+          retention-days: 7
 
-      # 7. Create a GitHub Release and attach the AAB
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: app/build/outputs/bundle/release/*.aab
-          generate_release_notes: true
-
-      # 8. Upload to Google Play — internal testing track
       - name: Upload to Play Store (Internal Testing)
         uses: r0adkll/upload-google-play@v1
         with:
