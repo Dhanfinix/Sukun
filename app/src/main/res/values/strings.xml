@@ -125,7 +125,7 @@
     <string name="show_onboarding_desc">Take another look at Sukun\'s main features</string>
 
     <!-- About Dialog -->
-    <string name="about_desc">Sukun helps you pray without distraction — automatically silencing your phone at prayer times and restoring it right after.</string>
+    <string name="about_desc">Sukun helps you pray without distraction, automatically silencing your phone at prayer times and restoring it right after.</string>
     <string name="key_features">Key Features</string>
     <string name="features_list">• Automatic prayer times based on your location.\n• Precise background silencing using exact alarms.\n• Manual silence for focus sessions anytime.\n• Centralized volume dashboard (Media &amp; Ringer).</string>
     <string name="how_it_works_title">How it Works</string>

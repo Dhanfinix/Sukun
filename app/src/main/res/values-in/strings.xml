@@ -125,7 +125,7 @@
     <string name="show_onboarding_desc">Jelajahi kembali fitur-fitur unggulan Sukun</string>
 
     <!-- About Dialog -->
-    <string name="about_desc">Sukun membantu Anda beribadah tanpa gangguan — menyenyapkan ponsel otomatis saat waktu salat, lalu mengembalikannya seperti semula.</string>
+    <string name="about_desc">Sukun membantu Anda beribadah tanpa gangguan, menyenyapkan ponsel otomatis saat waktu salat, lalu mengembalikannya seperti semula.</string>
     <string name="key_features">Fitur Utama</string>
     <string name="features_list">• Waktu salat otomatis berdasarkan lokasi.\n• Senyap latar belakang yang presisi dengan alarm tepat waktu.\n• Mode senyap manual untuk fokus kapan saja.\n• Dasbor volume terpusat (Media &amp; Dering).</string>
     <string name="how_it_works_title">Cara Kerja</string>

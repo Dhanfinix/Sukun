@@ -7,85 +7,82 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingTop="12dp"
-    android:paddingBottom="4dp">
+    android:paddingBottom="4dp"
+    android:gravity="center_vertical">
 
-    <!-- Row 1: Prayer name badge + "Silence Active" label -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        <!-- Prayer name badge -->
-        <TextView
-            android:id="@+id/notif_expanded_prayer"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Prayer name badge -->
+            <TextView
+                android:id="@+id/notif_expanded_prayer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fajr"
+                android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" · "
+                android:textAppearance="@style/TextAppearance.Compat.Notification.Line2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/silence_active"
+                android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
+                android:maxLines="1" />
+
+        </LinearLayout>
+
+        <!-- Row 2: Giant countdown timer -->
+        <Chronometer
+            android:id="@+id/notif_expanded_chronometer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Fajr"
-            android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
+            android:layout_marginTop="4dp"
+            android:countDown="true"
+            android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
             android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end" />
+            android:fontFamily="monospace"
+            android:textSize="36sp" />
 
+        <!-- Row 3: "Ends at HH:mm" -->
         <TextView
+            android:id="@+id/notif_expanded_end_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=" · "
-            android:textAppearance="@style/TextAppearance.Compat.Notification.Line2" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/silence_active"
+            android:layout_marginTop="2dp"
+            android:text="Ends at 14:53"
             android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
             android:maxLines="1" />
-
     </LinearLayout>
 
-    <!-- Row 2: Giant countdown timer -->
-    <Chronometer
-        android:id="@+id/notif_expanded_chronometer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:countDown="true"
-        android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
-        android:textStyle="bold"
-        android:fontFamily="monospace"
-        android:textSize="36sp" />
-
-    <!-- Row 3: "Ends at HH:mm" -->
-    <TextView
-        android:id="@+id/notif_expanded_end_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="Ends at 14:53"
-        android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
-        android:maxLines="1" />
-
-    <!-- Stop: red circle button aligned to the right, tappable -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal"
-        android:gravity="end">
-
-        <ImageView
-            android:id="@+id/notif_expanded_stop"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_stop"
-            android:background="@drawable/bg_stop_circle"
-            android:padding="14dp"
-            android:contentDescription="@string/stop_silence"
-            android:scaleType="fitCenter" />
-
-    </LinearLayout>
+    <ImageView
+        android:id="@+id/notif_expanded_stop"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_stop"
+        android:background="@drawable/bg_stop_circle"
+        android:padding="14dp"
+        android:contentDescription="@string/stop_silence"
+        android:scaleType="fitCenter" />
 
 </LinearLayout>
