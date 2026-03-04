@@ -66,9 +66,13 @@ class SilenceReceiver : BroadcastReceiver() {
         }
 
         // 2. Apply chosen Silence Mode
-        when (silenceMode) {
-            SilenceMode.SILENT -> audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
-            SilenceMode.VIBRATE -> audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+        try {
+            when (silenceMode) {
+                SilenceMode.SILENT -> audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                SilenceMode.VIBRATE -> audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+            }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Not allowed to change Do Not Disturb state", e)
         }
 
         // 3. Mute streams

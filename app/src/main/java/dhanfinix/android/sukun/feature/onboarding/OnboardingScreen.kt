@@ -1,5 +1,6 @@
 package dhanfinix.android.sukun.feature.onboarding
 import dhanfinix.android.sukun.core.reliability.ReliabilityManager
+import android.widget.Toast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
@@ -240,8 +241,12 @@ fun OnboardingScreen(
             
             Button(
                 onClick = {
-                    viewModel.markOnboardingCompleted()
-                    onComplete()
+                    if (hasDndPermission) {
+                        viewModel.markOnboardingCompleted()
+                        onComplete()
+                    } else {
+                        Toast.makeText(context, R.string.grant_dnd_to_continue, Toast.LENGTH_LONG).show()
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()

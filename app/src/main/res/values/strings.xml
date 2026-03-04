@@ -101,6 +101,7 @@
     <string name="btn_yes_overwrite">Yes, Replace</string>
     <string name="btn_cancel">Cancel</string>
     <string name="grant_dnd_access">Grant Do Not Disturb access to adjust this volume</string>
+    <string name="grant_dnd_to_continue">Do Not Disturb permission is strictly required to use Sukun</string>
     <string name="uniform_silence">Apply to All Prayers</string>
     <string name="uniform_silence_desc">Set how long your phone stays muted after each prayer.</string>
     <string name="all_prayers">All Prayers</string>

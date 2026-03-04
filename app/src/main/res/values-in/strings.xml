@@ -100,7 +100,8 @@
     <string name="confirm_overwrite_silence">Sesi senyap \"%1$s\" sedang berjalan. Ganti dengan senyap manual %2$d menit?</string>
     <string name="btn_yes_overwrite">Ya, Ganti</string>
     <string name="btn_cancel">Batal</string>
-    <string name="grant_dnd_access">Berikan akses Jangan Ganggu untuk mengubah volume ini</string>
+    <string name="grant_dnd_access">Beri izin Jangan Ganggu untuk menyesuaikan volume ini</string>
+    <string name="grant_dnd_to_continue">Izin Jangan Ganggu wajib diberikan untuk menggunakan Sukun</string>
     <string name="uniform_silence">Terapkan ke Semua Salat</string>
     <string name="uniform_silence_desc">Atur berapa lama ponsel senyap setelah setiap waktu salat.</string>
     <string name="all_prayers">Semua Salat</string>

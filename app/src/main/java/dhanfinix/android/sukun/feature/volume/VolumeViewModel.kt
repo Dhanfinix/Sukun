@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import android.app.NotificationManager
+import android.content.Context
 import android.os.Build
 import android.provider.Settings
 import androidx.lifecycle.AndroidViewModel
@@ -322,6 +323,12 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun startManualSilence(durationMin: Int) {
+        val notifManager = getApplication<Application>().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (!notifManager.isNotificationPolicyAccessGranted) {
+            Toast.makeText(getApplication(), R.string.grant_dnd_access, Toast.LENGTH_LONG).show()
+            return // Abort if DND is missing to prevent crash
+        }
+
         silenceScheduler.scheduleManual(durationMin)
         // Opt: immediate UI update before Worker starts
         val endTime = System.currentTimeMillis() + (durationMin * 60 * 1000L)
