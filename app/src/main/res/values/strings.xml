@@ -62,6 +62,8 @@
     <string name="silence_ends_at">ends at %s</string>
     <string name="stop_silence">Stop</string>
     <string name="calculation_method">Calculation Method</string>
+    <string name="setting_auto_silence">Auto Silence</string>
+    <string name="setting_calc_method">Calculation</string>
     <string name="calculation_method_desc">Different organizations use slightly different conventions. Pick the one common in your region.</string>
     <string name="search_location">Search Location</string>
     <string name="detect_location">Detect Location</string>

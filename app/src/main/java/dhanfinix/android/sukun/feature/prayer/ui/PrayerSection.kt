@@ -213,7 +213,7 @@ fun PrayerSection(
         ) {
             // Duration Card
             SettingCard(
-                label = stringResource(R.string.feature_silence_title),
+                label = stringResource(R.string.setting_auto_silence),
                 currentValue = stringResource(R.string.duration_label),
                 icon = Icons.Rounded.Timer,
                 onClick = onSilenceClick,
@@ -226,7 +226,7 @@ fun PrayerSection(
                 3 to "MWL", 1 to "Karachi", 5 to "Egypt"
             )
             SettingCard(
-                label = stringResource(R.string.calculation_method),
+                label = stringResource(R.string.setting_calc_method),
                 currentValue = methods.find { it.first == state.method }?.second ?: stringResource(R.string.auto_label),
                 icon = Icons.Rounded.Calculate,
                 onClick = onMethodClick,
