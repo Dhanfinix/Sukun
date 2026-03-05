@@ -28,7 +28,8 @@ class SilenceScheduler(private val context: Context) {
     fun scheduleAll(
         prayersToday: List<PrayerInfo>,
         prayersTomorrow: List<PrayerInfo>,
-        durations: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int>
+        durations: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int>,
+        offsets: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int> = emptyMap()
     ) {
         cancelAll()
 

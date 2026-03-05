@@ -78,6 +78,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         when (event) {
             is PrayerEvent.TogglePrayer -> togglePrayer(event.prayer)
             is PrayerEvent.DurationSelected -> setDuration(event.prayer, event.minutes)
+            is PrayerEvent.OffsetSelected -> setOffset(event.prayer, event.offsetMinutes)
             is PrayerEvent.UniformDurationToggled -> setUniformDuration(event.isUniform)
             is PrayerEvent.AllDurationsSelected -> setAllDurations(event.minutes)
             is PrayerEvent.LocationUpdated -> {
@@ -104,10 +105,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             is PrayerEvent.SuggestionSelected -> selectSuggestion(event.suggestion)
             is PrayerEvent.ClearSuggestions -> clearSuggestions()
             is PrayerEvent.ErrorMessageConsumed -> {
-                _uiState.update { it.copy(errorMessage = null) }
+                _uiState.update { state -> state.copy(errorMessage = null) }
             }
             is PrayerEvent.SnackbarMessageConsumed -> {
-                _uiState.update { it.copy(snackbarMessage = null) }
+                _uiState.update { state -> state.copy(snackbarMessage = null) }
             }
         }
     }
@@ -115,7 +116,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private fun loadPrayerTimes(minDelay: Long = 0L) {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { state -> state.copy(isLoading = true, errorMessage = null) }
             val startTime = System.currentTimeMillis()
 
             try {
@@ -125,14 +126,15 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 val locNameVal = withContext(Dispatchers.IO) { userPrefs.locationName.first() }
                 val methodVal = withContext(Dispatchers.IO) { userPrefs.calculationMethod.first() }
                 val durationsMapVal = withContext(Dispatchers.IO) { userPrefs.prayerDurations.first() }
+                val offsetsMapVal = withContext(Dispatchers.IO) { userPrefs.prayerOffsets.first() }
                 val isUniformVal = withContext(Dispatchers.IO) { userPrefs.isDurationUniform.first() }
                 val enabledMapVal = withContext(Dispatchers.IO) { userPrefs.isPrayerEnabled.first() }
 
                 val today = LocalDate.now()
                 val tomorrow = today.plusDays(1)
                 
-                val deferredToday = async { prayerRepo.getPrayerTimes(today, latVal, lngVal, methodVal) }
-                val deferredTomorrow = async { prayerRepo.getPrayerTimes(tomorrow, latVal, lngVal, methodVal) }
+                val deferredToday = async { prayerRepo.getPrayerTimes(today, latVal, lngVal, methodVal, offsetsMapVal) }
+                val deferredTomorrow = async { prayerRepo.getPrayerTimes(tomorrow, latVal, lngVal, methodVal, offsetsMapVal) }
 
                 val resultToday = deferredToday.await()
                 val resultTomorrow = deferredTomorrow.await()
@@ -147,6 +149,14 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     val prayersToday = PrayerName.entries.filter { 
                         if (isTodayFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
                     }.map { name ->
+                        PrayerInfo(
+                            name = name,
+                            time = timesMapToday[name] ?: "--:--",
+                            isEnabled = enabledMapVal[name] ?: true
+                        )
+                    }
+                    
+                    val allPrayersToday = PrayerName.entries.map { name ->
                         PrayerInfo(
                             name = name,
                             time = timesMapToday[name] ?: "--:--",
@@ -173,10 +183,12 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     val elapsed = System.currentTimeMillis() - startTime
                     if (elapsed < minDelay) delay(minDelay - elapsed)
 
-                    _uiState.update { 
-                        it.copy(
+                    _uiState.update { state ->
+                        state.copy(
                             prayers = prayersToday,
+                            allPrayers = allPrayersToday,
                             prayerDurations = durationsMapVal,
+                            prayerOffsets = offsetsMapVal,
                             isDurationUniform = isUniformVal,
                             latitude = latVal.toString(),
                             longitude = lngVal.toString(),
@@ -190,8 +202,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     scheduleWorkers(prayersToday, prayersTomorrow, durationsMapVal)
                 } else {
                     val error = resultToday.exceptionOrNull() ?: resultTomorrow.exceptionOrNull()
-                    _uiState.update {
-                        it.copy(
+                    _uiState.update { state ->
+                        state.copy(
                             isLoading = false,
                             errorMessage = error?.localizedMessage ?: getApplication<Application>().getString(R.string.err_load_prayer_times)
                         )
@@ -199,8 +211,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             } catch (e: Exception) {
                 if (e !is kotlinx.coroutines.CancellationException) {
-                    _uiState.update {
-                        it.copy(
+                    _uiState.update { state ->
+                        state.copy(
                             isLoading = false,
                             errorMessage = getApplication<Application>().getString(R.string.err_unexpected, e.localizedMessage ?: "")
                         )
@@ -208,7 +220,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             } finally {
                 if (loadJob?.isActive == true) {
-                    _uiState.update { it.copy(isLoading = false) }
+                    _uiState.update { state -> state.copy(isLoading = false) }
                 }
             }
         }
@@ -229,7 +241,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             val resId = if (!currentEnabled) R.string.silence_enabled_format else R.string.silence_disabled_format
             val prayerNameStr = getApplication<Application>().getString(prayer.nameRes)
             
-            _uiState.update { it.copy(
+            _uiState.update { state -> state.copy(
                 prayers = updatedPrayers,
                 snackbarMessage = getApplication<Application>().getString(resId, prayerNameStr)
             ) }
@@ -239,7 +251,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             val lng = userPrefs.longitude.first()
             val method = userPrefs.calculationMethod.first()
             val tomorrow = LocalDate.now().plusDays(1)
-            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method).getOrNull() ?: emptyMap()
+            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method, currentState.prayerOffsets).getOrNull() ?: emptyMap()
             
             val isTomorrowFriday = tomorrow.dayOfWeek == java.time.DayOfWeek.FRIDAY
             val prayersTomorrow = PrayerName.entries.filter { 
@@ -260,13 +272,13 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             userPrefs.setPrayerDuration(prayer, minutes)
             val updatedDurations = _uiState.value.prayerDurations + (prayer to minutes)
-            _uiState.update { it.copy(prayerDurations = updatedDurations) }
+            _uiState.update { state -> state.copy(prayerDurations = updatedDurations) }
             
             val lat = userPrefs.latitude.first()
             val lng = userPrefs.longitude.first()
             val method = userPrefs.calculationMethod.first()
             val tomorrow = LocalDate.now().plusDays(1)
-            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method).getOrNull() ?: emptyMap()
+            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method, _uiState.value.prayerOffsets).getOrNull() ?: emptyMap()
             
             val isTomorrowFriday = tomorrow.dayOfWeek == java.time.DayOfWeek.FRIDAY
             val prayersTomorrow = PrayerName.entries.filter { 
@@ -283,10 +295,61 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    private fun setOffset(prayer: PrayerName, offset: Int) {
+        viewModelScope.launch {
+            userPrefs.setPrayerOffset(prayer, offset)
+            val updatedOffsets = _uiState.value.prayerOffsets + (prayer to offset)
+            
+            val lat = userPrefs.latitude.first()
+            val lng = userPrefs.longitude.first()
+            val method = userPrefs.calculationMethod.first()
+            
+            val today = LocalDate.now()
+            val timesMapToday = prayerRepo.getPrayerTimes(today, lat, lng, method, updatedOffsets).getOrNull() ?: emptyMap()
+            val isTodayFriday = today.dayOfWeek == java.time.DayOfWeek.FRIDAY
+            
+            val updatedPrayersToday = PrayerName.entries.filter { 
+                if (isTodayFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
+            }.map { name ->
+                PrayerInfo(
+                    name = name,
+                    time = timesMapToday[name] ?: "--:--",
+                    isEnabled = _uiState.value.prayers.find { it.name == name }?.isEnabled ?: true
+                )
+            }
+            
+            val updatedAllPrayersToday = PrayerName.entries.map { name ->
+                PrayerInfo(
+                    name = name,
+                    time = timesMapToday[name] ?: "--:--",
+                    isEnabled = _uiState.value.prayers.find { it.name == name }?.isEnabled ?: true
+                )
+            }
+            
+            _uiState.update { it.copy(prayerOffsets = updatedOffsets, prayers = updatedPrayersToday, allPrayers = updatedAllPrayersToday) }
+            
+            val tomorrow = today.plusDays(1)
+            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method, updatedOffsets).getOrNull() ?: emptyMap()
+            
+            val isTomorrowFriday = tomorrow.dayOfWeek == java.time.DayOfWeek.FRIDAY
+            val prayersTomorrow = PrayerName.entries.filter { 
+                if (isTomorrowFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
+            }.map { name ->
+                PrayerInfo(
+                    name = name,
+                    time = timesMapTomorrow[name] ?: "--:--",
+                    isEnabled = _uiState.value.prayers.find { it.name == name }?.isEnabled ?: true
+                )
+            }
+            
+            scheduleWorkers(updatedPrayersToday, prayersTomorrow, _uiState.value.prayerDurations)
+        }
+    }
+
     private fun setUniformDuration(isUniform: Boolean) {
         viewModelScope.launch {
             userPrefs.setDurationUniform(isUniform)
-            _uiState.update { it.copy(isDurationUniform = isUniform) }
+            _uiState.update { state -> state.copy(isDurationUniform = isUniform) }
             // If toggled to true, maybe we should sync them all to the first one?
             // The UI will just use the Fajr value as the main slider.
             // But we don't necessarily overwrite the DB until they move the slider.
@@ -301,7 +364,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             userPrefs.setAllPrayerDurations(minutes)
             
             val updatedMap = PrayerName.entries.associateWith { minutes }
-            _uiState.update { it.copy(prayerDurations = updatedMap) }
+            _uiState.update { state -> state.copy(prayerDurations = updatedMap) }
             
             val lat = userPrefs.latitude.first()
             val lng = userPrefs.longitude.first()
@@ -330,8 +393,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         
         val name = withContext(Dispatchers.IO) { reverseGeocode(lat, lng) }
         userPrefs.setLocation(lat, lng, name ?: "Unknown Location")
-        
-        _uiState.update { it.copy(isDetectingLocation = false, errorMessage = null) }
+        _uiState.update { state -> state.copy(isDetectingLocation = false, errorMessage = null) }
     }
 
     @RequiresPermission(
@@ -340,11 +402,11 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private suspend fun detectLocationSync() {
         val nm = getApplication<Application>().checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
         if (nm != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_permission_denied)) }
+            _uiState.update { state -> state.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_permission_denied)) }
             return
         }
 
-        _uiState.update { it.copy(isDetectingLocation = true, errorMessage = null) }
+        _uiState.update { state -> state.copy(isDetectingLocation = true, errorMessage = null) }
 
         try {
             // Quick 5-second timeout for first-run or explicit refresh
@@ -365,22 +427,22 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             if (location != null) {
                 updateLocationSync(location.latitude.toString(), location.longitude.toString())
             } else {
-                _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_location_not_found_gps)) }
+                _uiState.update { state -> state.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_location_not_found_gps)) }
             }
         } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_location_timeout)) }
+            _uiState.update { state -> state.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_location_timeout)) }
         } catch (e: SecurityException) {
-            _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_permission_denied)) }
+            _uiState.update { state -> state.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_permission_denied)) }
         } catch (e: Exception) {
             if (e !is kotlinx.coroutines.CancellationException) {
-                _uiState.update { it.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_search_location)) }
+                _uiState.update { state -> state.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_search_location)) }
             }
         }
     }
 
     private fun searchLocation(query: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isDetectingLocation = true, errorMessage = null) }
+            _uiState.update { state -> state.copy(isDetectingLocation = true, errorMessage = null) }
             try {
                 val addresses = withContext(Dispatchers.IO) {
                     val geocoder = Geocoder(getApplication())
@@ -390,13 +452,13 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     val address = addresses[0]
                     val locationName = address.locality ?: address.subAdminArea ?: address.adminArea ?: query
                     userPrefs.setLocation(address.latitude, address.longitude, locationName)
-                    _uiState.update { it.copy(isDetectingLocation = false) }
+                    _uiState.update { state -> state.copy(isDetectingLocation = false) }
                     loadPrayerTimes()
                 } else {
-                    _uiState.update { it.copy(isDetectingLocation = false, isLoading = false, errorMessage = getApplication<Application>().getString(R.string.err_location_not_found)) }
+                    _uiState.update { state -> state.copy(isDetectingLocation = false, isLoading = false, errorMessage = getApplication<Application>().getString(R.string.err_location_not_found)) }
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isDetectingLocation = false, isLoading = false, errorMessage = getApplication<Application>().getString(R.string.err_search_location)) }
+                _uiState.update { state -> state.copy(isDetectingLocation = false, isLoading = false, errorMessage = getApplication<Application>().getString(R.string.err_search_location)) }
             }
         }
     }
@@ -404,13 +466,13 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private fun fetchSuggestions(query: String) {
         searchJob?.cancel()
         if (query.length < 3) {
-            _uiState.update { it.copy(locationSuggestions = emptyList(), isSearchingSuggestions = false) }
+            _uiState.update { state -> state.copy(locationSuggestions = emptyList(), isSearchingSuggestions = false) }
             return
         }
 
         searchJob = viewModelScope.launch {
             delay(500)
-            _uiState.update { it.copy(isSearchingSuggestions = true) }
+            _uiState.update { state -> state.copy(isSearchingSuggestions = true) }
             try {
                 val addresses = withContext(Dispatchers.IO) {
                     val geocoder = Geocoder(getApplication())
@@ -435,14 +497,14 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private fun selectSuggestion(suggestion: LocationSuggestion) {
         viewModelScope.launch {
             userPrefs.setLocation(suggestion.latitude, suggestion.longitude, suggestion.name)
-            _uiState.update { it.copy(locationSuggestions = emptyList()) }
+            _uiState.update { state -> state.copy(locationSuggestions = emptyList()) }
             loadPrayerTimes()
         }
     }
 
     private fun clearSuggestions() {
         searchJob?.cancel()
-        _uiState.update { it.copy(locationSuggestions = emptyList(), isSearchingSuggestions = false) }
+        _uiState.update { state -> state.copy(locationSuggestions = emptyList(), isSearchingSuggestions = false) }
     }
 
     private fun reverseGeocode(lat: Double, lng: Double): String? {
@@ -466,7 +528,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun scheduleWorkers(prayersToday: List<PrayerInfo>, prayersTomorrow: List<PrayerInfo>, durations: Map<PrayerName, Int>) {
-        silenceScheduler.scheduleAll(prayersToday, prayersTomorrow, durations)
+        silenceScheduler.scheduleAll(prayersToday, prayersTomorrow, durations, _uiState.value.prayerOffsets)
     }
 
     private fun startClockTicker() {
@@ -499,8 +561,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 val hijriFormatter = android.icu.text.SimpleDateFormat("EEEE, d MMMM yyyy", uLocale)
                 val hijriDateStr = hijriFormatter.format(islamicCalendar.time)
 
-                _uiState.update { 
-                    it.copy(
+                _uiState.update { state ->
+                    state.copy(
                         currentTime = currentTimeStr,
                         currentDate = hijriDateStr,
                         nextPrayer = nextPrayerInfo?.first?.name,

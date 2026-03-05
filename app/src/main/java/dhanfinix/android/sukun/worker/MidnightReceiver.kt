@@ -31,14 +31,15 @@ class MidnightReceiver : BroadcastReceiver() {
                 val lng = userPrefs.longitude.first()
                 val method = userPrefs.calculationMethod.first()
                 val durations = userPrefs.prayerDurations.first()
+                val offsets = userPrefs.prayerOffsets.first()
                 val enabledMap = userPrefs.isPrayerEnabled.first()
 
                 // Fetching today and tomorrow
                 val today = LocalDate.now()
                 val tomorrow = today.plusDays(1)
                 
-                val resultToday = prayerRepo.getPrayerTimes(today, lat, lng, method)
-                val resultTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method)
+                val resultToday = prayerRepo.getPrayerTimes(today, lat, lng, method, offsets)
+                val resultTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method, offsets)
 
                 if (resultToday.isSuccess && resultTomorrow.isSuccess) {
                     val timesMapToday = resultToday.getOrThrow()
@@ -61,7 +62,7 @@ class MidnightReceiver : BroadcastReceiver() {
                     }
                     
                     // Re-schedule for the whole rolling 24h window
-                    scheduler.scheduleAll(prayersToday, prayersTomorrow, durations)
+                    scheduler.scheduleAll(prayersToday, prayersTomorrow, durations, offsets)
                 }
             } finally {
                 pendingResult.finish()

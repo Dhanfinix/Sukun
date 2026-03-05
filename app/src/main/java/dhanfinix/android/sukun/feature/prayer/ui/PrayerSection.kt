@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.MoreTime
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
@@ -127,6 +129,7 @@ fun PrayerSection(
 
     var showSilenceSheet by remember { mutableStateOf(false) }
     var showMethodSheet by remember { mutableStateOf(false) }
+    var showOffsetsSheet by remember { mutableStateOf(false) }
     var showSearchDialog by remember { mutableStateOf(false) }
 
     val currentOnEvent by rememberUpdatedState(onEvent)
@@ -141,6 +144,7 @@ fun PrayerSection(
 
     val onSilenceClick: () -> Unit = remember { { showSilenceSheet = true } }
     val onMethodClick: () -> Unit = remember { { showMethodSheet = true } }
+    val onOffsetsClick: () -> Unit = remember { { showOffsetsSheet = true } }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -162,6 +166,7 @@ fun PrayerSection(
             onSearchClick = { showSearchDialog = true },
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 16.dp)
                 .onGloballyPositioned { coordinates ->
                     onTargetPositioned?.invoke(CoachMarkTarget.NEXT_PRAYER, coordinates.boundsInWindow())
                 }
@@ -179,6 +184,7 @@ fun PrayerSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 16.dp)
                 .onGloballyPositioned { coordinates ->
                     onTargetPositioned?.invoke(CoachMarkTarget.PRAYER_TOGGLES, coordinates.boundsInWindow())
                 },
@@ -206,32 +212,48 @@ fun PrayerSection(
             }
         }
 
-        // ── Compact Settings Row ──
-        Row(
+        // ── Scrollable Settings Row ──
+        LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp)
         ) {
-            // Duration Card
-            SettingCard(
-                label = stringResource(R.string.setting_auto_silence),
-                currentValue = stringResource(R.string.duration_label),
-                icon = Icons.Rounded.Timer,
-                onClick = onSilenceClick,
-                modifier = Modifier.weight(1f)
-            )
+            item {
+                // Duration Card
+                SettingCard(
+                    label = stringResource(R.string.setting_auto_silence),
+                    currentValue = stringResource(R.string.duration_label),
+                    icon = Icons.Rounded.Timer,
+                    onClick = onSilenceClick,
+                    modifier = Modifier.width(160.dp)
+                )
+            }
 
-            // Method Card
-            val methods = listOf(
-                20 to "Kemenag", 4 to "Umm al-Qura", 2 to "ISNA",
-                3 to "MWL", 1 to "Karachi", 5 to "Egypt"
-            )
-            SettingCard(
-                label = stringResource(R.string.setting_calc_method),
-                currentValue = methods.find { it.first == state.method }?.second ?: stringResource(R.string.auto_label),
-                icon = Icons.Rounded.Calculate,
-                onClick = onMethodClick,
-                modifier = Modifier.weight(1f)
-            )
+            item {
+                // Method Card
+                val methods = listOf(
+                    20 to "Kemenag", 4 to "Umm al-Qura", 2 to "ISNA",
+                    3 to "MWL", 1 to "Karachi", 5 to "Egypt"
+                )
+                SettingCard(
+                    label = stringResource(R.string.setting_calc_method),
+                    currentValue = methods.find { it.first == state.method }?.second ?: stringResource(R.string.auto_label),
+                    icon = Icons.Rounded.Calculate,
+                    onClick = onMethodClick,
+                    modifier = Modifier.width(160.dp)
+                )
+            }
+
+            item {
+                // Offsets Card
+                SettingCard(
+                    label = stringResource(R.string.setting_time_adjustments_title),
+                    currentValue = stringResource(R.string.adjust_label),
+                    icon = Icons.Rounded.MoreTime,
+                    onClick = onOffsetsClick,
+                    modifier = Modifier.width(160.dp)
+                )
+            }
         }
     }
 
@@ -250,6 +272,17 @@ fun PrayerSection(
                 onEvent(PrayerEvent.AllDurationsSelected(it))
             },
             onDismiss = { showSilenceSheet = false }
+        )
+    }
+
+    if (showOffsetsSheet) {
+        OffsetsBottomSheet(
+            prayers = state.allPrayers,
+            offsets = state.prayerOffsets,
+            onOffsetChange = { prayer, offset ->
+                onEvent(PrayerEvent.OffsetSelected(prayer, offset))
+            },
+            onDismiss = { showOffsetsSheet = false }
         )
     }
 

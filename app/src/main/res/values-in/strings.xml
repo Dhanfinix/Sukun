@@ -157,4 +157,9 @@
     <string name="notif_ends_in">Berakhir</string>
     <string name="notif_ends_at">Berakhir pukul %s</string>
     <string name="notif_icon_desc">Salat</string>
+
+    <string name="setting_time_adjustments_title">Sesuaikan</string>
+    <string name="time_adjustments_title">Sesuaikan Waktu</string>
+    <string name="time_adjustments_desc">Sesuaikan waktu shalat lokal yang dihitung hingga ±30 menit untuk tepat sesuai dengan masjid setempat Anda.</string>
+    <string name="adjust_label">Waktu</string>
 </resources>

@@ -11,7 +11,9 @@ import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 @Stable
 data class PrayerUiState(
     val prayers: List<PrayerInfo> = emptyList(),
+    val allPrayers: List<PrayerInfo> = emptyList(),
     val prayerDurations: Map<PrayerName, Int> = emptyMap(),
+    val prayerOffsets: Map<PrayerName, Int> = emptyMap(),
     val isDurationUniform: Boolean = false,
     val currentDate: String = "",
     val latitude: String = "0.0",
@@ -35,6 +37,7 @@ data class PrayerUiState(
 sealed class PrayerEvent {
     data class TogglePrayer(val prayer: PrayerName) : PrayerEvent()
     data class DurationSelected(val prayer: PrayerName, val minutes: Int) : PrayerEvent()
+    data class OffsetSelected(val prayer: PrayerName, val offsetMinutes: Int) : PrayerEvent()
     data class UniformDurationToggled(val isUniform: Boolean) : PrayerEvent()
     data class AllDurationsSelected(val minutes: Int) : PrayerEvent()
     data class LocationUpdated(val latitude: String, val longitude: String) : PrayerEvent()

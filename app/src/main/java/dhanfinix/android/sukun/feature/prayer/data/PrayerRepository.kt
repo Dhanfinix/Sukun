@@ -46,7 +46,8 @@ class PrayerRepository(context: Context) {
         date: LocalDate,
         latitude: Double,
         longitude: Double,
-        method: Int = 20
+        method: Int = 20,
+        offsets: Map<PrayerName, Int> = emptyMap()
     ): Result<Map<PrayerName, String>> {
         val roundedLat = Math.round(latitude * 10000.0) / 10000.0
         val roundedLng = Math.round(longitude * 10000.0) / 10000.0
@@ -57,7 +58,8 @@ class PrayerRepository(context: Context) {
         // 1. Try Room cache (outside lock for speed)
         val cached = prayerDao.getPrayerDayById(id)
         if (cached != null) {
-            return Result.success(deserializeTimings(cached.timingsJson))
+            val timings = deserializeTimings(cached.timingsJson)
+            return Result.success(applyOffsets(timings, offsets))
         }
 
         // 2. Lock to prevent concurrent network fetches for the same month
@@ -65,7 +67,8 @@ class PrayerRepository(context: Context) {
             // Re-check cache inside lock
             val reCached = prayerDao.getPrayerDayById(id)
             if (reCached != null) {
-                return@withLock Result.success(deserializeTimings(reCached.timingsJson))
+                val timings = deserializeTimings(reCached.timingsJson)
+                return@withLock Result.success(applyOffsets(timings, offsets))
             }
 
             try {
@@ -99,7 +102,8 @@ class PrayerRepository(context: Context) {
 
                     val newCached = prayerDao.getPrayerDayById(id)
                     if (newCached != null) {
-                        Result.success(deserializeTimings(newCached.timingsJson))
+                        val timings = deserializeTimings(newCached.timingsJson)
+                        Result.success(applyOffsets(timings, offsets))
                     } else {
                         Result.failure(Exception("Date $dateStr not found in API response"))
                     }
@@ -138,5 +142,35 @@ class PrayerRepository(context: Context) {
      */
     private fun cleanTime(raw: String): String {
         return raw.trim().split(" ").first()
+    }
+
+    private fun applyOffsets(timings: Map<PrayerName, String>, offsets: Map<PrayerName, Int>): Map<PrayerName, String> {
+        if (offsets.isEmpty()) return timings
+        
+        return timings.mapValues { (prayer, timeStr) ->
+            val offsetMins = offsets[prayer] ?: 0
+            if (offsetMins == 0 || timeStr == "--:--") return@mapValues timeStr
+            
+            try {
+                val parts = timeStr.split(":")
+                var h = parts[0].toInt()
+                var m = parts[1].toInt()
+                
+                m += offsetMins
+                while (m < 0) {
+                    m += 60
+                    h -= 1
+                }
+                while (m >= 60) {
+                    m -= 60
+                    h += 1
+                }
+                h = (h % 24 + 24) % 24
+                
+                String.format("%02d:%02d", h, m)
+            } catch (e: Exception) {
+                timeStr
+            }
+        }
     }
 }

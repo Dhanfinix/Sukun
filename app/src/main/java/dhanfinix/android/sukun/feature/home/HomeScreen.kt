@@ -176,7 +176,7 @@ fun HomeScreen(
                     .fillMaxSize()
                     .verticalScroll(scrollState)
                     .padding(innerPadding)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(vertical = 12.dp)
                     .padding(
                         bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars
                             .asPaddingValues()
@@ -199,7 +199,8 @@ fun HomeScreen(
                 AnimatedVisibility(
                     visible = !hasAllPermissions,
                     enter = slideInVertically() + fadeIn(),
-                    exit = slideOutVertically() + fadeOut()
+                    exit = slideOutVertically() + fadeOut(),
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
                     ElevatedCard(
                         onClick = onShowOnboarding,
@@ -237,11 +238,12 @@ fun HomeScreen(
 
                 // ── Divider ──
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 4.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
 
                 VolumeSection(
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     state = volumeState,
                     onEvent = volumeVm::onEvent,
                     showManualSilenceSheet = showManualSilenceSheet,

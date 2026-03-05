@@ -157,4 +157,9 @@
     <string name="notif_ends_in">Ends in</string>
     <string name="notif_ends_at">Ends at %s</string>
     <string name="notif_icon_desc">Prayer</string>
+
+    <string name="setting_time_adjustments_title">Adjust</string>
+    <string name="time_adjustments_title">Time Adjustments</string>
+    <string name="time_adjustments_desc">Offset your local calculated prayer times by up to ±30 minutes to precisely match your local mosque.</string>
+    <string name="adjust_label">Time</string>
 </resources>

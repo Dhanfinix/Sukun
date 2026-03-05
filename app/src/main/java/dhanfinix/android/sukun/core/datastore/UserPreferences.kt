@@ -45,11 +45,19 @@ class UserPreferences(private val context: Context) {
     // ── Duration ──
     private val KEY_DUR_FAJR = intPreferencesKey("dur_fajr")
     private val KEY_DUR_DHUHR = intPreferencesKey("dur_dhuhr")
-    private val KEY_DUR_JUMUAH = intPreferencesKey("dur_jumuah")
+    private val KEY_DUR_JUMUAH = intPreferencesKey("dur_jumuah") // Default 45m
     private val KEY_DUR_ASR = intPreferencesKey("dur_asr")
     private val KEY_DUR_MAGHRIB = intPreferencesKey("dur_maghrib")
     private val KEY_DUR_ISHA = intPreferencesKey("dur_isha")
     private val KEY_UNIFORM_DURATIONS = booleanPreferencesKey("uniform_durations")
+
+    // ── Offsets ──
+    private val KEY_OFF_FAJR = intPreferencesKey("off_fajr")
+    private val KEY_OFF_DHUHR = intPreferencesKey("off_dhuhr")
+    private val KEY_OFF_JUMUAH = intPreferencesKey("off_jumuah")
+    private val KEY_OFF_ASR = intPreferencesKey("off_asr")
+    private val KEY_OFF_MAGHRIB = intPreferencesKey("off_maghrib")
+    private val KEY_OFF_ISHA = intPreferencesKey("off_isha")
 
     // ── Location ──
     private val KEY_LATITUDE = doublePreferencesKey("latitude")
@@ -108,6 +116,17 @@ class UserPreferences(private val context: Context) {
             PrayerName.ASR to (prefs[KEY_DUR_ASR] ?: 15),
             PrayerName.MAGHRIB to (prefs[KEY_DUR_MAGHRIB] ?: 15),
             PrayerName.ISHA to (prefs[KEY_DUR_ISHA] ?: 15)
+        )
+    }
+
+    val prayerOffsets: Flow<Map<PrayerName, Int>> = context.dataStore.data.map { prefs ->
+        mapOf(
+            PrayerName.FAJR to (prefs[KEY_OFF_FAJR] ?: 0),
+            PrayerName.DHUHR to (prefs[KEY_OFF_DHUHR] ?: 0),
+            PrayerName.JUMUAH to (prefs[KEY_OFF_JUMUAH] ?: 0),
+            PrayerName.ASR to (prefs[KEY_OFF_ASR] ?: 0),
+            PrayerName.MAGHRIB to (prefs[KEY_OFF_MAGHRIB] ?: 0),
+            PrayerName.ISHA to (prefs[KEY_OFF_ISHA] ?: 0)
         )
     }
 
@@ -193,6 +212,18 @@ class UserPreferences(private val context: Context) {
             PrayerName.ISHA -> KEY_DUR_ISHA
         }
         context.dataStore.edit { it[key] = minutes }
+    }
+
+    suspend fun setPrayerOffset(prayer: PrayerName, offset: Int) {
+        val key = when (prayer) {
+            PrayerName.FAJR -> KEY_OFF_FAJR
+            PrayerName.DHUHR -> KEY_OFF_DHUHR
+            PrayerName.JUMUAH -> KEY_OFF_JUMUAH
+            PrayerName.ASR -> KEY_OFF_ASR
+            PrayerName.MAGHRIB -> KEY_OFF_MAGHRIB
+            PrayerName.ISHA -> KEY_OFF_ISHA
+        }
+        context.dataStore.edit { it[key] = offset }
     }
 
     suspend fun setDurationUniform(isUniform: Boolean) {
