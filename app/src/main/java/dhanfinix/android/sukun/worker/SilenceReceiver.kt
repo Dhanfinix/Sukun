@@ -91,17 +91,9 @@ class SilenceReceiver : BroadcastReceiver() {
         try {
             when (silenceMode) {
                 SilenceMode.SILENT -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
-                    }
                     audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
                 }
                 SilenceMode.VIBRATE -> {
-                    // Turn off DND FIRST
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        notifManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
-                    }
-                    // Set ringer mode to VIBRATE LAST
                     audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
                 }
             }
