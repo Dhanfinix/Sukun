@@ -1,5 +1,4 @@
-✨ Penambahan opsi untuk menyesuaikan waktu shalat secara spesifik untuk masing-masing waktu agar lebih akurat dengan masjid sekitar.
-✨ Notifikasi "Silence Active" baru dengan tata letak luas, waktu mundur besar, dan tombol berhenti cepat.
-🖌️ Tampilan senyap di Beranda lebih ringkas dengan tombol melingkar.
-🛡️ Perbaikan crash saat izin Jangan Ganggu (DND) dicabut.
-📱 Berbagai penyempurnaan UI agar lebih rapi.
+✨ Anda kini dapat menyesuaikan waktu per shalat (±30m) agar sesuai dengan masjid sekitar.
+✨ Desain baru notifikasi senyap dengan tombol berhenti cepat.
+🛡️ Peningkatan stabilitas izin Jangan Ganggu (DND) di latar belakang.
+📱 Penyempurnaan UI dan perbaikan bug lainnya.

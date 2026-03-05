@@ -1,5 +1,4 @@
-✨ Added ability to adjust prayer times using per-prayer custom offsets for better local masjid accuracy.
-✨ New "Silence Active" notification with expanded layout, large countdown, and quick-stop button.
-🖌️ Compact Home screen active silence state with circular stop button.
-🛡️ Fixed background crashes when Do Not Disturb permission is revoked.
-📱 Various UI polishes and layout fixes.
+✨ App can now adjust individual prayer times (±30m) to match your local masjid.
+✨ Redesigned "Silence Active" notification with a quick-stop button.
+🛡️ Better stability for Do Not Disturb background permissions.
+📱 General UI improvements and bug fixes.
