@@ -267,10 +267,32 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    private var silenceTickerJob: kotlinx.coroutines.Job? = null
+
     private fun observeSilenceState() {
         viewModelScope.launch {
             userPrefs.silenceEndTime.collect { endTime ->
                 updateSilenceState(endTime)
+                
+                // Manage the active ticker to force UI clear when time expires
+                // This is a failsafe in case the SilenceReceiver broadcast is delayed by the OS
+                silenceTickerJob?.cancel()
+                if (endTime > System.currentTimeMillis()) {
+                    silenceTickerJob = viewModelScope.launch {
+                        while (true) {
+                            val now = System.currentTimeMillis()
+                            if (now >= endTime) {
+                                // Time is officially up. Update UI immediately.
+                                updateSilenceState(endTime) 
+                                // Failsafe: if SilenceReceiver hasn't cleared the prefs, clear them now.
+                                // Otherwise, a quick app restart could reload the old endTime.
+                                userPrefs.clearSilenceState()
+                                break
+                            }
+                            delay(1000)
+                        }
+                    }
+                }
             }
         }
         viewModelScope.launch {
@@ -279,8 +301,6 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
-
-    // The UI handles its own second-precision ticker now based on sukunEndTime.
 
     private var wasSukunActive = false
 
