@@ -47,7 +47,6 @@
     <string name="manual_silence">Senyap Manual</string>
     <string name="label_manual">Manual</string>
     <string name="label_unknown">Tidak Diketahui</string>
-    <string name="minutes_format">%1$d Menit</string>
     <string name="manual_silence_title">Senyap Manual</string>
     <string name="manual_silence_subtitle">Senyapkan ponsel Anda untuk sementara</string>
     <string name="btn_start_silence">Mulai Senyapkan</string>
