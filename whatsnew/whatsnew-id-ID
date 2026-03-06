@@ -1,4 +1,1 @@
-✨ Anda kini dapat menyesuaikan waktu per shalat (±30m) agar sesuai dengan masjid sekitar.
-✨ Desain baru notifikasi senyap dengan tombol berhenti cepat.
-🛡️ Peningkatan stabilitas izin Jangan Ganggu (DND) di latar belakang.
-📱 Penyempurnaan UI dan perbaikan bug lainnya.
+🐛 Perbaikan Bug: Memperbaiki masalah di mana notifikasi "Senyap Aktif" kadang macet di 00:00 di Halaman Utama setelah waktu berakhir.
