@@ -1,51 +1,51 @@
 :root {
-    /* Basic Colors (Súkun Earth Tone Light Theme) */
-    --md-sys-color-background: #FAF6F0;
-    --md-sys-color-on-background: #1C1611;
-    --md-sys-color-surface: #FAF6F0;
-    --md-sys-color-surface-dim: #D8CFC8;
+    /* Basic Colors (Súkun Premium Deep Navy & Gold Theme) */
+    --md-sys-color-background: #F8F9FA;
+    --md-sys-color-on-background: #111827;
+    --md-sys-color-surface: #FFFFFF;
+    --md-sys-color-surface-dim: #E5E7EB;
     --md-sys-color-surface-bright: #FFFFFF;
-    --md-sys-color-surface-container: #F0EAE3;
-    --md-sys-color-surface-container-high: #EAE4DD;
-    --md-sys-color-surface-container-highest: #E4DDD7;
-    --md-sys-color-on-surface: #1C1611;
-    --md-sys-color-on-surface-variant: #514741;
-    --md-sys-color-outline: #837470;
-    --md-sys-color-outline-variant: #CFC8C1;
+    --md-sys-color-surface-container: #F3F4F6;
+    --md-sys-color-surface-container-high: #E5E7EB;
+    --md-sys-color-surface-container-highest: #D1D5DB;
+    --md-sys-color-on-surface: #111827;
+    --md-sys-color-on-surface-variant: #4B5563;
+    --md-sys-color-outline: #9CA3AF;
+    --md-sys-color-outline-variant: #D1D5DB;
 
-    /* Primary (Warm Brown) */
-    --md-sys-color-primary: #6B5042;
+    /* Primary (Deep Premium Green/Navy) */
+    --md-sys-color-primary: #042F2E;
     --md-sys-color-on-primary: #FFFFFF;
-    --md-sys-color-primary-container: #F3EAD8;
-    --md-sys-color-on-primary-container: #231108;
+    --md-sys-color-primary-container: #134E4A;
+    --md-sys-color-on-primary-container: #CCFBF1;
 
-    /* Secondary (Taupe) */
-    --md-sys-color-secondary: #7D7063;
+    /* Secondary (Rich Gold/Sand) */
+    --md-sys-color-secondary: #D97706;
     --md-sys-color-on-secondary: #FFFFFF;
-    --md-sys-color-secondary-container: #D8CFC8;
-    --md-sys-color-on-secondary-container: #2C2219;
+    --md-sys-color-secondary-container: #FEF3C7;
+    --md-sys-color-on-secondary-container: #78350F;
 
-    /* Tertiary (Khaki) */
-    --md-sys-color-tertiary: #6C6740;
+    /* Tertiary (Warm Taupe) */
+    --md-sys-color-tertiary: #A8A29E;
     --md-sys-color-on-tertiary: #FFFFFF;
-    --md-sys-color-tertiary-container: #F4EDBA;
-    --md-sys-color-on-tertiary-container: #221F02;
+    --md-sys-color-tertiary-container: #F5F5F4;
+    --md-sys-color-on-tertiary-container: #44403C;
 
     /* Error */
-    --md-sys-color-error: #BA1A1A;
+    --md-sys-color-error: #DC2626;
     --md-sys-color-on-error: #FFFFFF;
-    --md-sys-color-error-container: #FFFFDAD6;
-    --md-sys-color-on-error-container: #410002;
+    --md-sys-color-error-container: #FEE2E2;
+    --md-sys-color-on-error-container: #7F1D1D;
 
     /* Elevation */
-    --md-sys-elevation-1: 0px 1px 2px 0px rgba(107, 80, 66, 0.1), 0px 1px 3px 1px rgba(107, 80, 66, 0.05);
-    --md-sys-elevation-2: 0px 1px 2px 0px rgba(107, 80, 66, 0.1), 0px 2px 6px 2px rgba(107, 80, 66, 0.05);
-    --md-sys-elevation-3: 0px 1px 3px 0px rgba(107, 80, 66, 0.1), 0px 4px 8px 3px rgba(107, 80, 66, 0.05);
+    --md-sys-elevation-1: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --md-sys-elevation-2: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --md-sys-elevation-3: 0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04);
 
     /* Shape */
-    --md-sys-shape-corner-medium: 12px;
-    --md-sys-shape-corner-large: 16px;
-    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-medium: 16px;
+    --md-sys-shape-corner-large: 24px;
+    --md-sys-shape-corner-extra-large: 32px;
     --md-sys-shape-corner-full: 9999px;
 
     /* Typography */
@@ -99,10 +99,17 @@ a:hover {
     top: 0;
     left: 0;
     right: 0;
-    background-color: rgba(51, 42, 36, 0.85); /* Súkun Dark Brown */
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    background-color: rgba(255, 255, 255, 0.90);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     z-index: 100;
+    transition: all 0.3s ease;
+}
+
+.navbar.scrolled {
+    background-color: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .nav-content {
@@ -119,8 +126,8 @@ a:hover {
     align-items: center;
     gap: 8px;
     font-size: 1.25rem;
-    font-weight: 600;
-    color: #F3EAD8; /* primary-container light */
+    font-weight: 700;
+    color: var(--md-sys-color-primary);
 }
 
 .logo-img {
@@ -136,14 +143,14 @@ a:hover {
 }
 
 .nav-links a:not(.btn) {
-    color: #E4DDD7; /* light gray/brown */
+    color: var(--md-sys-color-on-surface-variant);
     font-weight: 500;
     font-size: 1rem;
     transition: color 0.2s ease;
 }
 
 .nav-links a:not(.btn):hover {
-    color: #FFFFFF;
+    color: var(--md-sys-color-primary);
 }
 
 .mobile-menu-btn {
@@ -172,23 +179,59 @@ a:hover {
 }
 
 .btn-large {
-    padding: 14px 32px;
-    font-size: 1rem;
+    padding: 16px 32px;
+    font-size: 1.125rem;
+    border-radius: var(--md-sys-shape-corner-large);
 }
 
 .btn-primary {
-    background-color: var(--md-sys-color-primary);
+    background: linear-gradient(-45deg, var(--md-sys-color-primary) 0%, #085a58 50%, var(--md-sys-color-primary) 100%);
+    background-size: 200% 200%;
+    animation: gradientMove 4s ease infinite;
     color: var(--md-sys-color-on-primary);
+    box-shadow: 0 4px 14px 0 rgba(4, 47, 46, 0.39);
+}
+
+@keyframes gradientMove {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .btn-primary:hover {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08));
-    box-shadow: var(--md-sys-elevation-1);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 20px 0 rgba(4, 47, 46, 0.6);
+    transform: translateY(-2px);
+    /* Make the animation slightly faster on hover for a subtle pop */
+    animation: gradientMove 2s ease infinite;
 }
 
 .btn-primary:active {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.12));
+    transform: translateY(0);
+}
+
+.btn-accent {
+    background: linear-gradient(-45deg, var(--md-sys-color-secondary) 0%, #dfad6b 50%, var(--md-sys-color-secondary) 100%);
+    background-size: 200% 200%;
+    animation: gradientMove 4s ease infinite;
+    color: var(--md-sys-color-on-secondary);
+    box-shadow: 0 4px 14px 0 rgba(196, 144, 79, 0.4);
+}
+
+.btn-accent:hover {
+    box-shadow: 0 6px 20px 0 rgba(196, 144, 79, 0.65);
+    transform: translateY(-2px);
+    animation: gradientMove 2s ease infinite;
+}
+
+.btn-accent:active {
     transform: translateY(0);
 }
 
@@ -261,13 +304,14 @@ section {
 }
 
 .hero-title {
-    font-size: 4rem;
+    font-size: 4.5rem;
     line-height: 1.1;
     color: var(--md-sys-color-on-surface);
+    font-weight: 700;
 }
 
 .highlight-text {
-    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-tertiary) 100%);
+    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-secondary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -297,7 +341,7 @@ section {
     width: 320px;
     height: auto;
     border-radius: 40px;
-    box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.2);
     display: block;
     animation: float 6s ease-in-out infinite;
     /* Extra styling for edge smoothness since image is transparent webp */
@@ -419,6 +463,75 @@ section {
     color: var(--md-sys-color-on-surface-variant);
 }
 
+/* Showcase Section */
+.showcase-section {
+    text-align: center;
+    padding-top: 40px;
+    padding-bottom: 80px;
+}
+
+.showcase-row {
+    display: flex;
+    align-items: center;
+    gap: 64px;
+    margin-top: 80px;
+    text-align: left;
+}
+
+.showcase-row.reversed {
+    flex-direction: row-reverse;
+}
+
+.showcase-content {
+    flex: 1;
+}
+
+.showcase-content h3 {
+    font-size: 2.5rem;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 16px;
+}
+
+.showcase-content p {
+    font-size: 1.125rem;
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.6;
+}
+
+.showcase-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.showcase-visual::after {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(4, 47, 46, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.showcase-img {
+    width: 280px;
+    height: auto;
+    border-radius: 40px;
+    box-shadow: var(--md-sys-elevation-2);
+    border: 8px solid var(--md-sys-color-surface-bright);
+    transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.showcase-img:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--md-sys-elevation-3);
+}
+
 /* Steps Section */
 .steps-section {
     text-align: center;
@@ -452,7 +565,7 @@ section {
     flex-shrink: 0;
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-tertiary) 100%);
+    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-secondary) 100%);
     color: var(--md-sys-color-on-primary);
     border-radius: 50%;
     display: flex;
@@ -481,13 +594,13 @@ section {
 }
 
 .cta-container {
-    background: linear-gradient(135deg, var(--md-sys-color-surface-container-high) 0%, var(--md-sys-color-surface-container) 100%);
+    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-primary-container) 100%);
     border-radius: var(--md-sys-shape-corner-extra-large);
-    padding: 64px 32px;
+    padding: 80px 32px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(107, 80, 66, 0.1);
+    box-shadow: var(--md-sys-elevation-2);
 }
 
 .cta-container::after {
@@ -502,16 +615,16 @@ section {
 }
 
 .cta-container h2 {
-    font-size: 2.5rem;
-    color: var(--md-sys-color-on-surface);
+    font-size: 3rem;
+    color: var(--md-sys-color-on-primary);
     margin-bottom: 16px;
 }
 
 .cta-container p {
     font-size: 1.125rem;
-    color: var(--md-sys-color-on-surface-variant);
+    color: rgba(255, 255, 255, 0.8);
     max-width: 600px;
-    margin: 0 auto 32px auto;
+    margin: 0 auto 40px auto;
 }
 
 .cta-actions {
@@ -642,4 +755,56 @@ footer {
     .steps-grid {
         grid-template-columns: 1fr;
     }
+}
+
+@media (max-width: 768px) {
+
+    .showcase-row,
+    .showcase-row.reversed {
+        flex-direction: column;
+        gap: 32px;
+        text-align: center;
+        margin-top: 64px;
+    }
+
+    .showcase-content h3 {
+        font-size: 2rem;
+    }
+}
+
+/* Scroll Animations */
+.fade-up {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.2, 0, 0, 1), transform 0.8s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stagger grid items for cascading effect */
+.features-grid .feature-card:nth-child(2) {
+    transition-delay: 0.1s;
+}
+
+.features-grid .feature-card:nth-child(3) {
+    transition-delay: 0.2s;
+}
+
+.features-grid .feature-card:nth-child(4) {
+    transition-delay: 0.3s;
+}
+
+.steps-grid .step-card:nth-child(2) {
+    transition-delay: 0.1s;
+}
+
+.steps-grid .step-card:nth-child(3) {
+    transition-delay: 0.2s;
+}
+
+.steps-grid .step-card:nth-child(4) {
+    transition-delay: 0.3s;
 }
