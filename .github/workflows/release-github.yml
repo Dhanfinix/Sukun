@@ -1,0 +1,65 @@
+name: GitHub Release
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build-and-release:
+    name: Build & Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/sukun.jks
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build Release APK
+        env:
+          STORE_FILE: sukun.jks
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Extract Version Name
+        id: version
+        run: |
+          VERSION_NAME=$(grep -oE 'versionName\s*=\s*"[^"]+"' app/build.gradle.kts | cut -d'"' -f2)
+          echo "VERSION_NAME=v$VERSION_NAME" >> $GITHUB_ENV
+          echo "version=$VERSION_NAME" >> $GITHUB_OUTPUT
+
+      - name: Read WhatsNew
+        id: whatsnew
+        run: |
+          CONTENT=$(cat whatsnew/whatsnew-en-US)
+          echo "RELEASE_BODY<<EOF" >> $GITHUB_ENV
+          echo "$CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION_NAME }}
+          name: Release ${{ env.VERSION_NAME }}
+          body: ${{ env.RELEASE_BODY }}
+          files: app/build/outputs/apk/release/*.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
