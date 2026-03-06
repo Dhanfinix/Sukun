@@ -26,6 +26,17 @@ Sukun is an Android app that helps you manage prayer times and automatically sil
 - **Network:** Retrofit + Gson for the Aladhan API
 - **Background Tasks:** Context-aware AlarmManager for exact device silence scheduling and restoring volume
 
+## 🤖 Co-Developed with AI
+
+This project is proudly built and maintained in collaboration with AI! Specifically, it was co-developed using **Antigravity** (Google DeepMind's advanced agentic coding assistant) working alongside a human developer.
+
+By embracing AI-assisted development, we were able to:
+- Rapidly prototype and build a complex Android application from scratch.
+- Implement robust background architecture (`AlarmManager`, `DataStore`, `Room`) with clean patterns.
+- Iterate instantly on UX/UI feedback and rapidly deploy CI/CD pipelines via GitHub Actions.
+
+We believe the future of software development is a hybrid approach where human creativity and AI execution work hand-in-hand!
+
 ## Getting Started
 
 1. Clone the repository.
