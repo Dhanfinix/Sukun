@@ -34,13 +34,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('scroll', () => {
         if (window.scrollY > 10) {
-            navbar.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
-            navbar.style.backgroundColor = 'rgba(20, 18, 24, 0.95)';
+            navbar.classList.add('scrolled');
         } else {
-            navbar.style.boxShadow = 'none';
-            navbar.style.backgroundColor = 'rgba(20, 18, 24, 0.8)';
+            navbar.classList.remove('scrolled');
         }
     });
 
+    // Scroll Animations with Intersection Observer
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.15 // Trigger when 15% visible
+    };
+
+    const fadeObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                fadeObserver.unobserve(entry.target); // Only animate once per load
+            }
+        });
+    }, observerOptions);
+
+    // Observe all elements with the fade-up class
+    document.querySelectorAll('.fade-up').forEach(element => {
+        fadeObserver.observe(element);
+    });
 
 });
