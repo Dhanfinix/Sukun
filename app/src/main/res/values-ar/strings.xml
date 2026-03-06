@@ -1,0 +1,166 @@
+<resources>
+    <string name="app_name">سُكون</string>
+
+    <string name="landing_tagline">صلِّ بسلام.. دون إزعاج.</string>
+    <string name="feature_silence_title">صامت تلقائيًا</string>
+    <string name="feature_silence_desc">يتحول إلى الوضع الصامت عند الأذان، ويعود الوضع الطبيعي بعد الصلاة.</string>
+    <string name="feature_location_title">تحديد الموقع</string>
+    <string name="feature_location_desc">مواقيت صلاة دقيقة بناءً على موقعك الحالي تماماً.</string>
+    <string name="feature_timing_title">جدولة دقيقة</string>
+    <string name="feature_timing_desc">تفعيل الوضع الصامت في الوقت المحدد، حتى لو كان التطبيق مغلقاً.</string>
+    <string name="feature_custom_title">تخصيص كامل</string>
+    <string name="feature_custom_desc">اختر الصلوات التي تود صمتها ومدة كل واحدة. التحكم بيدك.</string>
+    <string name="btn_get_started">ابدأ الصلاة بسلام</string>
+
+    <!-- Onboarding / Permissions -->
+    <string name="permissions_title">الأذونات</string>
+    <string name="app_reliability_title">موثوقية التطبيق</string>
+    <string name="app_reliability_desc">قم بإعداد الأذونات ليعمل سكون بشكل موثوق في الخلفية.</string>
+    <string name="notifications_title">التنبيهات</string>
+    <string name="notifications_desc">يظهر عداداً تنازلياً أثناء تفعيل الوضع الصامت.</string>
+    <string name="dnd_title">عدم الإزعاج</string>
+    <string name="dnd_desc">يصمت هاتفك فوراً عند دخول وقت الصلاة.</string>
+    <string name="location_title">الموقع</string>
+    <string name="location_desc">للحصول على مواقيت صلاة دقيقة لموقعك الحالي.</string>
+    <string name="exact_alarms_title">المنبهات الدقيقة</string>
+    <string name="exact_alarms_desc">لضمان دقة توقيت الوضع الصامت في إصدارات أندرويد +12.</string>
+    <string name="battery_optimization_title">تحسين البطارية</string>
+    <string name="battery_optimization_desc">يساعد سكون على العمل بسلاسة في الخلفية.</string>
+    <string name="btn_start_using">ابدأ استخدام سكون</string>
+    <string name="btn_skip_for_now">تخطي الآن</string>
+    <string name="btn_fix">إصلاح</string>
+    <string name="permission_granted">تم المنح</string>
+    <string name="btn_next">التالي</string>
+    <string name="btn_got_it">فهمت!</string>
+    <string name="coach_mark_prayer_title">الصمت التلقائي</string>
+    <string name="coach_mark_prayer_desc">اضغط على أي صلاة لتفعيل أو تعطيل الصمت التلقائي. عند التفعيل، سيصمت هاتفك تلقائياً أثناء وقت الصلاة.</string>
+    <string name="coach_mark_location_title">توقيت دقيق</string>
+    <string name="coach_mark_location_desc">حافظ على تحديث موقعك لتظل مواقيت الصلاة والعد التنازلي دقيقة.</string>
+    <string name="coach_mark_volume_title">تحكم يدوي</string>
+    <string name="coach_mark_volume_desc">هل تحتاج لضبط الصوت بسرعة؟ استخدم شريط التحكم أدناه في أي وقت.</string>
+    <string name="coach_mark_manual_title">صمت سريع</string>
+    <string name="coach_mark_manual_desc">في اجتماع أو عند دخول المسجد؟ اضغط هنا للبدء بالصمت اليدوي فوراً.</string>
+
+    <!-- Home Screen -->
+    <string name="change_theme">تغيير المظهر</string>
+    <string name="about_sukun">عن سكون</string>
+    <string name="manual_silence">صمت يدوي</string>
+    <string name="label_manual">يدوي</string>
+    <string name="label_unknown">غير معروف</string>
+    <string name="manual_silence_title">صمت يدوي</string>
+    <string name="manual_silence_subtitle">صمت الهاتف مؤقتاً</string>
+    <string name="btn_start_silence">تفعيل الصمت</string>
+    <string name="content_desc_settings">الإعدادات</string>
+    <string name="show_desc">إظهار الوصف</string>
+    <string name="enable_permissions_banner_title">بعض الأذونات مفقودة</string>
+    <string name="enable_permissions_banner_desc">اضغط لضبط الموقع، وضع عدم الإزعاج، والتنبيهات</string>
+
+    <!-- Prayer Section -->
+    <string name="next_prayer">التالية</string>
+    <string name="silence_active">وضع الصمت مفعل</string>
+    <string name="silence_ends_at">ينتهي عند %s</string>
+    <string name="stop_silence">إيقاف</string>
+    <string name="calculation_method">طريقة الحساب</string>
+    <string name="setting_auto_silence">صمت تلقائي</string>
+    <string name="setting_calc_method">الحساب</string>
+    <string name="calculation_method_desc">تختلف الهيئات في قواعد الحساب قليلاً. اختر الطريقة الشائعة في منطقتك.</string>
+    <string name="search_location">البحث عن موقع</string>
+    <string name="detect_location">تحديد الموقع الحالي</string>
+    <string name="unknown_location">موقع غير معروف</string>
+    <string name="search_location_placeholder">مثلاً: جاكرتا، الرياض</string>
+    <string name="copyright_text">© 2026 Dhandev</string>
+    <string name="prayer_fajr">الفجر</string>
+    <string name="prayer_sunrise">الشروق</string>
+    <string name="prayer_dhuhr">الظهر</string>
+    <string name="prayer_jumuah">الجمعة</string>
+    <string name="prayer_asr">العصر</string>
+    <string name="prayer_sunset">الغروب</string>
+    <string name="prayer_maghrib">المغرب</string>
+    <string name="prayer_isha">العشاء</string>
+    <string name="duration_label">المدة</string>
+    <string name="auto_label">تلقائي</string>
+    <string name="silencing_enabled">تم تفعيل الصمت</string>
+    <string name="silencing_disabled">تم تعطيل الصمت</string>
+
+    <!-- Volume Section -->
+    <string name="volume_controls">التحكم بالصوت</string>
+    <string name="media_volume">الوسائط</string>
+    <string name="media_volume_desc">الموسيقى، الفيديو، والألعاب</string>
+    <string name="ring_volume">الرنين</string>
+    <string name="ringer_notif_volume">الرنين والتنبيهات</string>
+    <string name="ring_volume_desc">المكالمات الواردة ونغمات الرسائل</string>
+    <string name="notification_volume">التنبيهات</string>
+    <string name="notification_volume_desc">تنبيهات التطبيقات، البريد الإلكتروني، والرسائل</string>
+    <string name="alarm_volume">المنبه</string>
+    <string name="alarm_volume_desc">المنبهات والمؤقتات المجدولة</string>
+    <string name="link_ringer_notif">ربط الرنين بالتنبيهات</string>
+    <string name="sync_streams_desc">مزامنة مستوى صوت الرنين والتنبيهات</string>
+    <string name="vibrate_in_silence">الاهتزاز في وضع الصمت</string>
+    <string name="vibrate_in_silence_desc">السماح بالاهتزاز أثناء الصمت في الصلاة</string>
+    <string name="silence_already_active_title">الوضع الصامت مفعل حالياً</string>
+    <string name="confirm_overwrite_silence">وضع الصمت لـ \"%1$s\" مفعل. هل تود استبداله بـ %2$d دقيقة صمت يدوي؟</string>
+    <string name="btn_yes_overwrite">نعم، استبدال</string>
+    <string name="btn_cancel">إلغاء</string>
+    <string name="grant_dnd_access">يرجى منح إذن \"عدم الإزعاج\" لتتمكن من ضبط الصوت</string>
+    <string name="grant_dnd_to_continue">لا بد من منح إذن \"عدم الإزعاج\" لتتمكن من استخدام سكون</string>
+    <string name="uniform_silence">تطبيق على كل الصلوات</string>
+    <string name="uniform_silence_desc">حدد المدة التي يظل فيها هاتفك صامتاً بعد كل صلاة.</string>
+    <string name="all_prayers">كل الصلوات</string>
+
+    <!-- Theme Selection -->
+    <string name="app_theme">مظهر التطبيق</string>
+    <string name="theme_system">تلقائي حسب النظام</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="dynamic_color">ألوان متغيرة</string>
+    <string name="dynamic_color_desc">استخدام ألوان خلفية الشاشة (Material You)</string>
+    <string name="app_language">اللغة</string>
+    <string name="language_english">English</string>
+    <string name="language_indonesian">Bahasa Indonesia</string>
+    <string name="language_arabic">العربية</string>
+    <string name="language_system">لغة النظام</string>
+    <string name="settings_title">الإعدادات</string>
+    <string name="section_general">عام</string>
+    <string name="show_onboarding">شرح التطبيق</string>
+    <string name="show_onboarding_desc">إلقاء نظرة على مميزات سكون الرئيسية</string>
+    <string name="rate_app">تقييم التطبيق</string>
+    <string name="rate_app_desc">هل أعجبك سكون؟ شاركنا رأيك!</string>
+
+    <!-- About Dialog -->
+    <string name="about_desc">سكون يساعدك على أداء صلواتك في سكينة وهدوء، حيث يصمت هاتفك تلقائياً أوقات الصلاة ويعيده لوضعه الطبيعي فور انتهائها.</string>
+    <string name="key_features">المميزات الرئيسية</string>
+    <string name="features_list">• تحديد مواقيت الصلاة تلقائياً حسب موقعك.\n• صمت دقيق في الخلفية باستخدام المنبهات الدقيقة.\n• إمكانية الصمت اليدوي في أي وقت للتركيز.\n• لوحة تحكم مركزية لمستويات الصوت (الوسائط والرنين).</string>
+    <string name="how_it_works_title">كيف يعمل التطبيق؟</string>
+    <string name="how_it_works_desc">يقوم سكون بجدولة منبه لكل صلاة، وعند حلول وقتها يقوم بحفظ مستويات الصوت وتفعيل وضع عدم الإزعاج وصمت الهاتف. وعند الانتهاء، يعيد كل شيء كما كان تماماً.</string>
+    <string name="version_format">الإصدار %s</string>
+    <string name="btn_close">إغلاق</string>
+    <string name="btn_show_tutorial">عرض الشرح</string>
+
+    <string name="notif_channel_name">سكون - الوضع الصامت</string>
+    <string name="notif_channel_desc">يظهر عندما يكون وضع الصمت في سكون مفعلاً</string>
+
+    <!-- Snackbars / Messages -->
+    <string name="silence_enabled_format">تم تفعيل صمت %s</string>
+    <string name="silence_disabled_format">تم إيقاف صمت %1$s</string>
+
+    <!-- Error Messages & Locations -->
+    <string name="jakarta">جاكرتا</string>
+    <string name="err_load_prayer_times">فشل تحميل مواقيت الصلاة</string>
+    <string name="err_unexpected">خطأ غير متوقع: %1$s</string>
+    <string name="err_permission_denied">تم رفض إذن الوصول للموقع</string>
+    <string name="err_location_not_found_gps">لم يتم العثور على الموقع عبر GPS</string>
+    <string name="err_location_timeout">انتهت مهلة تحديد الموقع</string>
+    <string name="err_location_not_found">لم يتم العثور على الموقع</string>
+    <string name="err_search_location">خطأ أثناء البحث عن الموقع</string>
+
+    <string name="notif_title">الهاتف صامت لـ</string>
+    <string name="notif_for_prefix">لـ </string>
+    <string name="notif_ends_in">ينتهي خلال</string>
+    <string name="notif_ends_at">ينتهي عند %s</string>
+    <string name="notif_icon_desc">صلاة</string>
+
+    <string name="setting_time_adjustments_title">ضبط</string>
+    <string name="time_adjustments_title">ضبط الأوقات</string>
+    <string name="time_adjustments_desc">يمكنك تعديل مواقيت الصلاة المحسوبة يدوياً بزيادة أو نقصان يصل إلى 30 دقيقة لتطابق توقيت مسجدك بدقة.</string>
+    <string name="adjust_label">الوقت</string>
+</resources>

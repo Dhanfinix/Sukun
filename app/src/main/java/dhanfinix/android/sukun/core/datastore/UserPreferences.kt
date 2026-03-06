@@ -24,6 +24,7 @@ enum class AppTheme {
 enum class AppLanguage {
     EN,
     ID,
+    AR,
     SYSTEM
 }
 

@@ -118,6 +118,7 @@
     <string name="app_language">Bahasa</string>
     <string name="language_english">English</string>
     <string name="language_indonesian">Bahasa Indonesia</string>
+    <string name="language_arabic">العربية</string>
     <string name="language_system">Default Sistem</string>
     <string name="settings_title">Pengaturan</string>
     <string name="section_general">Umum</string>

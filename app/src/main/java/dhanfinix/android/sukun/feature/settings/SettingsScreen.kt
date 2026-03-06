@@ -100,6 +100,7 @@ fun SettingsScreen(
                     AppLanguage.SYSTEM -> stringResource(R.string.language_system)
                     AppLanguage.EN -> stringResource(R.string.language_english)
                     AppLanguage.ID -> stringResource(R.string.language_indonesian)
+                    AppLanguage.AR -> stringResource(R.string.language_arabic)
                 },
                 icon = Icons.Rounded.Language,
                 onClick = { showLanguageSheet = true }
@@ -304,7 +305,8 @@ private fun LanguageSelectionSheet(
             val options = listOf(
                 AppLanguage.SYSTEM to stringResource(R.string.language_system),
                 AppLanguage.EN to stringResource(R.string.language_english),
-                AppLanguage.ID to stringResource(R.string.language_indonesian)
+                AppLanguage.ID to stringResource(R.string.language_indonesian),
+                AppLanguage.AR to stringResource(R.string.language_arabic)
             )
 
             options.forEach { (value, label) ->
