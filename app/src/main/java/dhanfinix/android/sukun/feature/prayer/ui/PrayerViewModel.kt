@@ -32,6 +32,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import dhanfinix.android.sukun.core.utils.localizeDigits
 
 /**
  * ViewModel for Prayer Settings.
@@ -563,10 +564,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
 
                 _uiState.update { state ->
                     state.copy(
-                        currentTime = currentTimeStr,
-                        currentDate = hijriDateStr,
+                        currentTime = currentTimeStr.localizeDigits(),
+                        currentDate = hijriDateStr.localizeDigits(),
                         nextPrayer = nextPrayerInfo?.first?.name,
-                        nextPrayerCountdown = countdownStr
+                        nextPrayerCountdown = countdownStr.localizeDigits()
                     )
                 }
                 delay(1000)

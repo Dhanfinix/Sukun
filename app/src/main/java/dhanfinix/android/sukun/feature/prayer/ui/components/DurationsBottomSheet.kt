@@ -8,8 +8,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import dhanfinix.android.sukun.R
+import dhanfinix.android.sukun.core.utils.localizeDigits
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,7 +82,7 @@ fun DurationsBottomSheet(
                     )
                     
                     Text(
-                        text = "${currentDur}m",
+                        text = pluralStringResource(R.plurals.minutes_plural, currentDur, currentDur).localizeDigits(),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.width(48.dp)
@@ -111,7 +113,7 @@ fun DurationsBottomSheet(
                         )
                         
                         Text(
-                            text = "${currentDur}m",
+                            text = pluralStringResource(R.plurals.minutes_plural, currentDur, currentDur).localizeDigits(),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.width(48.dp)

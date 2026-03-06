@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dhanfinix.android.sukun.R
+import dhanfinix.android.sukun.core.utils.localizeDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +69,7 @@ fun AboutScreen(
             )
 
             Text(
-                text = stringResource(R.string.version_format, versionName ?: "—"),
+                text = stringResource(R.string.version_format, (versionName ?: "—").localizeDigits()),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

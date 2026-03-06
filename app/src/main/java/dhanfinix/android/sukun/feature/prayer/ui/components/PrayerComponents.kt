@@ -36,6 +36,7 @@ import dhanfinix.android.sukun.core.designsystem.shimmer
 import dhanfinix.android.sukun.feature.prayer.data.model.LocationSuggestion
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
+import dhanfinix.android.sukun.core.utils.localizeDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -409,7 +410,7 @@ fun PrayerTile(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = prayer.time,
+                    text = prayer.time.localizeDigits(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (isVisuallyEnabled) 1f else 0.5f),
                     textDecoration = if (isVisuallyEnabled) TextDecoration.None else TextDecoration.LineThrough,
@@ -576,18 +577,18 @@ fun NextPrayerCard(
                                 contentColor = MaterialTheme.colorScheme.primary
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Rounded.VolumeOff,
                                         contentDescription = null,
-                                        modifier = Modifier.size(12.dp)
+                                        modifier = Modifier.size(14.dp)
                                     )
                                     Text(
                                         text = sukunLabel ?: stringResource(R.string.manual_silence),
-                                        style = MaterialTheme.typography.labelSmall,
+                                        style = MaterialTheme.typography.bodySmall,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -597,7 +598,7 @@ fun NextPrayerCard(
 
                             // Big remaining time
                             Text(
-                                text = if (activeRemainingTimeStr.isNotEmpty()) activeRemainingTimeStr else "00:00",
+                                text = (if (activeRemainingTimeStr.isNotEmpty()) activeRemainingTimeStr else "00:00").localizeDigits(),
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
