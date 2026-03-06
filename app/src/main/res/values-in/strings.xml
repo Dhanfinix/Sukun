@@ -123,6 +123,8 @@
     <string name="section_general">Umum</string>
     <string name="show_onboarding">Tampilkan Onboarding</string>
     <string name="show_onboarding_desc">Jelajahi kembali fitur-fitur unggulan Sukun</string>
+    <string name="rate_app">Nilai di Play Store</string>
+    <string name="rate_app_desc">Suka Sukun? Beri kami ulasan!</string>
 
     <!-- About Dialog -->
     <string name="about_desc">Sukun membantu Anda beribadah tanpa gangguan, menyenyapkan ponsel otomatis saat waktu salat, lalu mengembalikannya seperti semula.</string>

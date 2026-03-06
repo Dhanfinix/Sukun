@@ -14,8 +14,8 @@ android {
         applicationId = "dhanfinix.android.sukun"
         minSdk = 26
         targetSdk = 36
-        versionCode = 20
-        versionName = "1.1.1"
+        versionCode = 21
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -95,6 +95,12 @@ dependencies {
     // Location
     implementation(libs.play.services.location)
     implementation(libs.play.services.coroutines)
+
+    // Play Core (In-App Update & Review)
+    implementation(libs.play.app.update)
+    implementation(libs.play.app.update.ktx)
+    implementation(libs.play.app.review)
+    implementation(libs.play.app.review.ktx)
 
 
 

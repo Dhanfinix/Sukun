@@ -95,6 +95,10 @@ class UserPreferences(private val context: Context) {
     private val KEY_HAS_SEEN_LANDING = booleanPreferencesKey("has_seen_landing")
     private val KEY_APP_LANGUAGE = stringPreferencesKey("app_language")
 
+    // ── In-App Review ──
+    private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
+    private val KEY_HAS_RATED = booleanPreferencesKey("has_rated")
+
     // ── Flows ──
 
     val isPrayerEnabled: Flow<Map<PrayerName, Boolean>> = context.dataStore.data.map { prefs ->
@@ -388,6 +392,35 @@ class UserPreferences(private val context: Context) {
     suspend fun setSilenceMode(mode: SilenceMode) {
         context.dataStore.edit { prefs ->
             prefs[KEY_SILENCE_MODE] = mode.name
+        }
+    }
+
+    // ── In-App Review ──
+
+    val appOpenCount: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_APP_OPEN_COUNT] ?: 0
+    }
+
+    val hasRated: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_HAS_RATED] ?: false
+    }
+
+    val shouldShowReview: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        val count = prefs[KEY_APP_OPEN_COUNT] ?: 0
+        val rated = prefs[KEY_HAS_RATED] ?: false
+        count >= 5 && !rated
+    }
+
+    suspend fun incrementAppOpenCount() {
+        context.dataStore.edit { prefs ->
+            val current = prefs[KEY_APP_OPEN_COUNT] ?: 0
+            prefs[KEY_APP_OPEN_COUNT] = current + 1
+        }
+    }
+
+    suspend fun setHasRated(rated: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_HAS_RATED] = rated
         }
     }
 }

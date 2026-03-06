@@ -123,6 +123,8 @@
     <string name="section_general">General</string>
     <string name="show_onboarding">Show Onboarding</string>
     <string name="show_onboarding_desc">Take another look at Sukun\'s main features</string>
+    <string name="rate_app">Rate on Play Store</string>
+    <string name="rate_app_desc">Enjoying Sukun? Leave us a review!</string>
 
     <!-- About Dialog -->
     <string name="about_desc">Sukun helps you pray without distraction, automatically silencing your phone at prayer times and restoring it right after.</string>

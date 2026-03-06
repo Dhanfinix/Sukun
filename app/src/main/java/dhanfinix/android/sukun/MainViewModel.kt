@@ -104,4 +104,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             userPrefs.setHomeCoachmarkShown(shown)
         }
     }
+
+    // ── In-App Review ──
+
+    val shouldShowReview: StateFlow<Boolean> = userPrefs.shouldShowReview
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    init {
+        viewModelScope.launch {
+            userPrefs.incrementAppOpenCount()
+        }
+    }
+
+    fun markAsRated() {
+        viewModelScope.launch {
+            userPrefs.setHasRated(true)
+        }
+    }
 }
