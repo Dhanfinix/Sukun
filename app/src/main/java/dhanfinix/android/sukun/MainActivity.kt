@@ -12,6 +12,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -106,7 +108,9 @@ class MainActivity : AppCompatActivity() {
             
             CompositionLocalProvider(
                 LocalContext provides localizedContext,
-                LocalLayoutDirection provides layoutDirection
+                LocalLayoutDirection provides layoutDirection,
+                LocalActivityResultRegistryOwner provides this@MainActivity,
+                LocalOnBackPressedDispatcherOwner provides this@MainActivity
             ) {
                 SukunTheme(
                     appTheme = appTheme,
