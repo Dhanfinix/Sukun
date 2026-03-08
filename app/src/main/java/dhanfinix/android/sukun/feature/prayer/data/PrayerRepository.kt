@@ -35,7 +35,7 @@ class PrayerRepository(context: Context) {
     private val api = ApiClient.api
     private val prayerDao = SukunDatabase.getDatabase(context).prayerDao()
     private val gson = Gson()
-    private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", java.util.Locale.US)
     private val fetchMutex = Mutex()
 
     /**
