@@ -607,11 +607,13 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     val hours = remaining / 3600
                     val minutes = (remaining % 3600) / 60
                     val seconds = remaining % 60
-                    String.format("-%02d:%02d:%02d", hours, minutes, seconds)
+                    java.util.String.format(java.util.Locale.US, "-%02d:%02d:%02d", hours, minutes, seconds)
                 } ?: "--:--:--"
 
                 // Compute Hijri Date with Day of Week
-                val uLocale = android.icu.util.ULocale.forLocale(java.util.Locale.getDefault()).setKeywordValue("calendar", "islamic")
+                val uLocale = android.icu.util.ULocale.forLocale(java.util.Locale.getDefault())
+                    .setKeywordValue("calendar", "islamic")
+                    .setKeywordValue("numbers", "latn")
                 val islamicCalendar = android.icu.util.IslamicCalendar(uLocale)
                 val hijriFormatter = android.icu.text.SimpleDateFormat("EEEE, d MMMM yyyy", uLocale)
                 val hijriDateStr = hijriFormatter.format(islamicCalendar.time)
