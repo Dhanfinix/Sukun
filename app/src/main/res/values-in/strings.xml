@@ -171,4 +171,8 @@
     <string name="time_adjustments_title">Sesuaikan Waktu</string>
     <string name="time_adjustments_desc">Sesuaikan waktu shalat lokal yang dihitung hingga ±30 menit untuk tepat sesuai dengan masjid setempat Anda.</string>
     <string name="adjust_label">Waktu</string>
+    <string name="time_format_title">Format Waktu</string>
+    <string name="time_format_auto">Ikuti Sistem</string>
+    <string name="time_format_12">12 Jam (1:00 PM)</string>
+    <string name="time_format_24">24 Jam (13:00)</string>
 </resources>

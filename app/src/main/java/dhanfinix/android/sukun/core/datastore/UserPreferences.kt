@@ -34,6 +34,12 @@ enum class NumeralSystem {
     WESTERN  // 012
 }
 
+enum class TimeFormat {
+    AUTO,
+    H12,
+    H24
+}
+
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "sukun_prefs")
 
 /**
@@ -102,6 +108,7 @@ class UserPreferences(private val context: Context) {
     private val KEY_HAS_SEEN_LANDING = booleanPreferencesKey("has_seen_landing")
     private val KEY_APP_LANGUAGE = stringPreferencesKey("app_language")
     private val KEY_NUMERAL_SYSTEM = stringPreferencesKey("numeral_system")
+    private val KEY_TIME_FORMAT = stringPreferencesKey("time_format")
 
     // ── In-App Review ──
     private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
@@ -194,6 +201,15 @@ class UserPreferences(private val context: Context) {
             NumeralSystem.valueOf(systemName)
         } catch (e: Exception) {
             NumeralSystem.AUTO
+        }
+    }
+
+    val timeFormat: Flow<TimeFormat> = context.dataStore.data.map { prefs ->
+        val formatName = prefs[KEY_TIME_FORMAT] ?: TimeFormat.AUTO.name
+        try {
+            TimeFormat.valueOf(formatName)
+        } catch (e: Exception) {
+            TimeFormat.AUTO
         }
     }
 
@@ -383,6 +399,12 @@ class UserPreferences(private val context: Context) {
     suspend fun setNumeralSystem(system: NumeralSystem) {
         context.dataStore.edit { prefs ->
             prefs[KEY_NUMERAL_SYSTEM] = system.name
+        }
+    }
+
+    suspend fun setTimeFormat(format: TimeFormat) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_TIME_FORMAT] = format.name
         }
     }
 

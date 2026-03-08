@@ -11,11 +11,13 @@ import androidx.core.app.NotificationCompat
 import dhanfinix.android.sukun.MainActivity
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.worker.SilenceReceiver
+import dhanfinix.android.sukun.core.datastore.TimeFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import dhanfinix.android.sukun.core.datastore.NumeralSystem
 import dhanfinix.android.sukun.core.utils.localizeDigits
+import dhanfinix.android.sukun.core.utils.formatTime
 
 /**
  * Manages the "Sukun Active" notification channel and countdown notification.
@@ -46,7 +48,8 @@ object NotificationHelper {
         prayerName: String,
         startTimeMs: Long,
         endTimeMs: Long,
-        numeralSystem: NumeralSystem = NumeralSystem.AUTO
+        numeralSystem: NumeralSystem = NumeralSystem.AUTO,
+        timeFormat: TimeFormat = TimeFormat.AUTO
     ) {
         val locale = if (context.resources.configuration.locales[0].language == "ar") {
              Locale("ar")
@@ -79,7 +82,8 @@ object NotificationHelper {
         val chronometerBase = android.os.SystemClock.elapsedRealtime() + remainingMs
 
         // Human-readable end time, e.g. "14:53"
-        val endTimeFormatted = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(endTimeMs))
+        val endTimeFormatted = SimpleDateFormat("HH:mm", Locale.US).format(Date(endTimeMs))
+            .formatTime(context, timeFormat)
         val endsAtText = context.getString(R.string.notif_ends_at, endTimeFormatted.localizeDigits(numeralSystem))
 
         // ── Compact (collapsed) view ──────────────────────────────────────────

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.AppTheme
 import dhanfinix.android.sukun.core.datastore.NumeralSystem
+import dhanfinix.android.sukun.core.datastore.TimeFormat
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -63,6 +64,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = NumeralSystem.AUTO
         )
 
+    val timeFormat: StateFlow<TimeFormat> = userPrefs.timeFormat
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = TimeFormat.AUTO
+        )
+
     val hasSeenLanding: StateFlow<Boolean> = userPrefs.hasSeenLanding
         .stateIn(
             scope = viewModelScope,
@@ -92,6 +100,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setNumeralSystem(system: NumeralSystem) {
         viewModelScope.launch {
             userPrefs.setNumeralSystem(system)
+        }
+    }
+
+    fun setTimeFormat(format: TimeFormat) {
+        viewModelScope.launch {
+            userPrefs.setTimeFormat(format)
         }
     }
 

@@ -56,7 +56,8 @@ class BootReceiver : BroadcastReceiver() {
                     val startTime = userPrefs.silenceStartTime.first().takeIf { it > 0L }
                         ?: (endTime - 30 * 60 * 1000L) // Fallback: assume 30 min silence if no start stored
                     val numeralSystem = userPrefs.numeralSystem.first()
-                    NotificationHelper.showSilenceNotification(context, label, startTime, endTime, numeralSystem)
+                    val timeFormat = userPrefs.timeFormat.first()
+                    NotificationHelper.showSilenceNotification(context, label, startTime, endTime, numeralSystem, timeFormat)
                 }
 
                 val lat = userPrefs.latitude.first()

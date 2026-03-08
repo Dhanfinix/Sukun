@@ -171,4 +171,8 @@
     <string name="time_adjustments_title">Time Adjustments</string>
     <string name="time_adjustments_desc">Offset your local calculated prayer times by up to ±30 minutes to precisely match your local mosque.</string>
     <string name="adjust_label">Time</string>
+    <string name="time_format_title">Time Format</string>
+    <string name="time_format_auto">Follow System</string>
+    <string name="time_format_12">12-Hour (1:00 PM)</string>
+    <string name="time_format_24">24-Hour (13:00)</string>
 </resources>

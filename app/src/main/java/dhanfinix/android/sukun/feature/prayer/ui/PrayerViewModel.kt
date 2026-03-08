@@ -14,8 +14,9 @@ import dhanfinix.android.sukun.feature.prayer.data.model.LocationSuggestion
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 import dhanfinix.android.sukun.feature.prayer.data.PrayerRepository
-import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.core.datastore.NumeralSystem
+import dhanfinix.android.sukun.core.datastore.TimeFormat
+import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.worker.SilenceScheduler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -34,6 +35,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import dhanfinix.android.sukun.core.utils.localizeDigits
+import dhanfinix.android.sukun.core.utils.formatTime
 
 /**
  * ViewModel for Prayer Settings.
@@ -47,6 +49,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
     private var searchJob: Job? = null
     private var currentNumeralSystem = NumeralSystem.AUTO
+    private var currentTimeFormat = TimeFormat.AUTO
 
     private val _uiState = MutableStateFlow(PrayerUiState())
     val uiState: StateFlow<PrayerUiState> = _uiState.asStateFlow()
@@ -74,10 +77,17 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             // Load the data (either with newly detected GPS, or fallback Jakarta)
             loadPrayerTimes()
             
-            // Observe Numeral Preference
+            // Observe Preferences
             launch {
                 userPrefs.numeralSystem.collect {
                     currentNumeralSystem = it
+                }
+            }
+
+            launch {
+                userPrefs.timeFormat.collect {
+                    currentTimeFormat = it
+                    loadPrayerTimes() // Reload to re-format strings
                 }
             }
             
@@ -160,17 +170,19 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     val prayersToday = PrayerName.entries.filter { 
                         if (isTodayFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
                     }.map { name ->
+                        val originalTime = timesMapToday[name] ?: "--:--"
                         PrayerInfo(
                             name = name,
-                            time = timesMapToday[name] ?: "--:--",
+                            time = originalTime.formatTime(getApplication(), currentTimeFormat),
                             isEnabled = enabledMapVal[name] ?: true
                         )
                     }
                     
                     val allPrayersToday = PrayerName.entries.map { name ->
+                        val originalTime = timesMapToday[name] ?: "--:--"
                         PrayerInfo(
                             name = name,
-                            time = timesMapToday[name] ?: "--:--",
+                            time = originalTime.formatTime(getApplication(), currentTimeFormat),
                             isEnabled = enabledMapVal[name] ?: true
                         )
                     }
@@ -178,9 +190,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     val prayersTomorrow = PrayerName.entries.filter { 
                         if (isTomorrowFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
                     }.map { name ->
+                        val originalTime = timesMapTomorrow[name] ?: "--:--"
                         PrayerInfo(
                             name = name,
-                            time = timesMapTomorrow[name] ?: "--:--",
+                            time = originalTime.formatTime(getApplication(), currentTimeFormat),
                             isEnabled = enabledMapVal[name] ?: true
                         )
                     }
@@ -557,6 +570,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
 
                 val currentTimeStr = now.format(timeFormatter)
+                    .formatTime(getApplication(), currentTimeFormat)
                 
                 val nextPrayerInfo = calculateNextPrayer(now, _uiState.value.prayers)
                 val countdownStr = nextPrayerInfo?.let { (prayer, remaining) ->
