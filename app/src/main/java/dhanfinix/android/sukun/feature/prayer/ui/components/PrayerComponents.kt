@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,11 +32,14 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.designsystem.shimmer
 import dhanfinix.android.sukun.feature.prayer.data.model.LocationSuggestion
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
+import dhanfinix.android.sukun.core.utils.withIsolate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +53,6 @@ fun ManualLocationBottomSheet(
 ) {
     var query by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
-    
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         dragHandle = { BottomSheetDefaults.DragHandle() },
@@ -76,11 +79,11 @@ fun ManualLocationBottomSheet(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            
+
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = query,
-                    onValueChange = { 
+                    onValueChange = {
                         query = it
                         onQueryChange(it)
                     },
@@ -91,14 +94,23 @@ fun ManualLocationBottomSheet(
                         .fillMaxWidth()
                         .focusRequester(focusRequester),
                     shape = MaterialTheme.shapes.large,
-                    leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Rounded.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
                     trailingIcon = {
                         if (query.isNotEmpty()) {
-                            IconButton(onClick = { 
+                            IconButton(onClick = {
                                 query = ""
                                 onQueryChange("")
                             }) {
-                                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.btn_cancel))
+                                Icon(
+                                    Icons.Rounded.Close,
+                                    contentDescription = stringResource(R.string.btn_cancel)
+                                )
                             }
                         }
                     },
@@ -136,12 +148,12 @@ fun ManualLocationBottomSheet(
                     ) {
                         suggestions.forEach { suggestion ->
                             ListItem(
-                                headlineContent = { 
+                                headlineContent = {
                                     Text(
-                                        suggestion.name, 
+                                        suggestion.name,
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.onSurface
-                                    ) 
+                                    )
                                 },
                                 leadingContent = {
                                     Icon(
@@ -167,14 +179,19 @@ fun ManualLocationBottomSheet(
                     modifier = Modifier.padding(horizontal = 4.dp)
                 )
             }
-            
+
             Button(
                 onClick = { if (query.isNotBlank()) onSearch(query) },
                 enabled = query.isNotBlank(),
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
                 shape = MaterialTheme.shapes.large
             ) {
-                Text(stringResource(R.string.search_location), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(R.string.search_location),
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
         }
     }
@@ -196,7 +213,9 @@ fun SettingCard(
         )
     ) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -380,12 +399,16 @@ fun PrayerTile(
             )
         } else null
     ) {
-        Box(modifier = Modifier.fillMaxSize().padding(4.dp)) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(4.dp)) {
             // Icon in the top right corner
             val isVisuallyEnabled = prayer.isEnabled && isDndGranted
             Icon(
                 imageVector = if (isVisuallyEnabled) Icons.Rounded.NotificationsOff else Icons.Rounded.NotificationsActive,
-                contentDescription = if (isVisuallyEnabled) stringResource(R.string.silencing_enabled) else stringResource(R.string.silencing_disabled),
+                contentDescription = if (isVisuallyEnabled) stringResource(R.string.silencing_enabled) else stringResource(
+                    R.string.silencing_disabled
+                ),
                 tint = contentColor.copy(alpha = if (isVisuallyEnabled) 1f else 0.5f),
                 modifier = Modifier
                     .padding(2.dp)
@@ -408,14 +431,33 @@ fun PrayerTile(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = prayer.time,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (isVisuallyEnabled) 1f else 0.5f),
-                    textDecoration = if (isVisuallyEnabled) TextDecoration.None else TextDecoration.LineThrough,
-                    textAlign = TextAlign.Center,
-                    modifier = if (isLoading) Modifier.width(36.dp).shimmer() else Modifier
-                )
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = if (isLoading) Modifier
+                            .width(48.dp)
+                            .shimmer() else Modifier
+                    ) {
+                        Text(
+                            text = prayer.formattedTime?.time ?: prayer.time,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (isVisuallyEnabled) 1f else 0.5f),
+                            textDecoration = if (isVisuallyEnabled) TextDecoration.None else TextDecoration.LineThrough,
+                            textAlign = TextAlign.Center
+                        )
+                        prayer.formattedTime?.session?.let { session ->
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text(
+                                text = session,
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.7f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (isVisuallyEnabled) 0.8f else 0.4f),
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 1.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -425,7 +467,7 @@ fun PrayerTile(
 @Composable
 fun NextPrayerCard(
     currentDate: String,
-    currentTime: String,
+    currentTime: dhanfinix.android.sukun.core.utils.FormattedTime,
     nextPrayer: PrayerName?,
     countdown: String,
     locationName: String,
@@ -442,7 +484,6 @@ fun NextPrayerCard(
         targetValue = if (isSukunActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
         label = "NextPrayerCard_ContainerColor"
     )
-
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
@@ -492,7 +533,7 @@ fun NextPrayerCard(
                             .shimmer() else Modifier
                     )
                 }
-                
+
                 Row {
                     IconButton(
                         onClick = onLocationClick,
@@ -500,7 +541,10 @@ fun NextPrayerCard(
                         enabled = !isDetectingLocation
                     ) {
                         if (isDetectingLocation) {
-                            CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(14.dp),
+                                strokeWidth = 2.dp
+                            )
                         } else {
                             Icon(
                                 imageVector = Icons.Rounded.MyLocation,
@@ -527,24 +571,24 @@ fun NextPrayerCard(
             Spacer(modifier = Modifier.height(16.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // ── Main Dashboard: Time & Countdown ──
             var activeRemainingTimeStr by remember { mutableStateOf("") }
             LaunchedEffect(isSukunActive, sukunEndTime) {
                 while (isSukunActive && sukunEndTime > System.currentTimeMillis()) {
                     val remainingMs = sukunEndTime - System.currentTimeMillis()
                     val totalSecs = (remainingMs / 1000).toInt()
-                    
+
                     val hours = totalSecs / 3600
                     val minutes = (totalSecs % 3600) / 60
                     val seconds = totalSecs % 60
-                    
+
                     activeRemainingTimeStr = if (hours > 0) {
                         String.format("%02d:%02d:%02d", hours, minutes, seconds)
                     } else {
                         String.format("%02d:%02d", minutes, seconds)
                     }
-                    
+
                     kotlinx.coroutines.delay(1000)
                 }
             }
@@ -553,10 +597,10 @@ fun NextPrayerCard(
                 targetState = isSukunActive,
                 transitionSpec = {
                     (fadeIn(animationSpec = tween(400)) +
-                        slideInVertically(animationSpec = tween(400)) { if (targetState) it / 4 else -it / 4 })
+                            slideInVertically(animationSpec = tween(400)) { if (targetState) it / 4 else -it / 4 })
                         .togetherWith(
                             fadeOut(animationSpec = tween(300)) +
-                                slideOutVertically(animationSpec = tween(300)) { if (targetState) -it / 4 else it / 4 }
+                                    slideOutVertically(animationSpec = tween(300)) { if (targetState) -it / 4 else it / 4 }
                         )
                 },
                 label = "NextPrayerCard_StateTransition"
@@ -564,7 +608,9 @@ fun NextPrayerCard(
                 if (active) {
                     // ── Active State: Compact Horizontal Layout ──
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -576,18 +622,22 @@ fun NextPrayerCard(
                                 contentColor = MaterialTheme.colorScheme.primary
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    modifier = Modifier.padding(
+                                        horizontal = 10.dp,
+                                        vertical = 4.dp
+                                    ),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Rounded.VolumeOff,
                                         contentDescription = null,
-                                        modifier = Modifier.size(12.dp)
+                                        modifier = Modifier.size(14.dp)
                                     )
                                     Text(
-                                        text = sukunLabel ?: stringResource(R.string.manual_silence),
-                                        style = MaterialTheme.typography.labelSmall,
+                                        text = sukunLabel
+                                            ?: stringResource(R.string.manual_silence),
+                                        style = MaterialTheme.typography.bodySmall,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -597,7 +647,7 @@ fun NextPrayerCard(
 
                             // Big remaining time
                             Text(
-                                text = if (activeRemainingTimeStr.isNotEmpty()) activeRemainingTimeStr else "00:00",
+                                text = (activeRemainingTimeStr.ifEmpty { "00:00" }).withIsolate(),
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
@@ -615,7 +665,8 @@ fun NextPrayerCard(
                         }
 
                         // Pulse Animation for the Stop Button
-                        val infiniteTransition = rememberInfiniteTransition(label = "PulseTransition")
+                        val infiniteTransition =
+                            rememberInfiniteTransition(label = "PulseTransition")
                         val pulseScale by infiniteTransition.animateFloat(
                             initialValue = 1f,
                             targetValue = 1.1f,
@@ -665,13 +716,30 @@ fun NextPrayerCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = currentTime,
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Row(
+                                verticalAlignment = Alignment.Bottom,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            ) {
+                                Text(
+                                    text = currentTime.time,
+                                    style = MaterialTheme.typography.displayMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                currentTime.session?.let { session ->
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = session,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Black,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+                                }
+                            }
+                        }
 
                         Column(
                             modifier = Modifier.weight(1f),
@@ -685,7 +753,7 @@ fun NextPrayerCard(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = countdown,
+                                text = countdown.withIsolate(),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -698,3 +766,4 @@ fun NextPrayerCard(
         }
     }
 }
+

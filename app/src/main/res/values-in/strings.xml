@@ -47,7 +47,6 @@
     <string name="manual_silence">Senyap Manual</string>
     <string name="label_manual">Manual</string>
     <string name="label_unknown">Tidak Diketahui</string>
-    <string name="minutes_format">%1$d Menit</string>
     <string name="manual_silence_title">Senyap Manual</string>
     <string name="manual_silence_subtitle">Senyapkan ponsel Anda untuk sementara</string>
     <string name="btn_start_silence">Mulai Senyapkan</string>
@@ -108,7 +107,8 @@
     <string name="uniform_silence_desc">Atur berapa lama ponsel senyap setelah setiap waktu salat.</string>
     <string name="all_prayers">Semua Salat</string>
 
-    <!-- Theme Selection -->
+    <!-- Appearance Section -->
+    <string name="section_appearance">Tampilan</string>
     <string name="app_theme">Tema Aplikasi</string>
     <string name="theme_system">Default Sistem</string>
     <string name="theme_light">Mode Terang</string>
@@ -118,11 +118,31 @@
     <string name="app_language">Bahasa</string>
     <string name="language_english">English</string>
     <string name="language_indonesian">Bahasa Indonesia</string>
-    <string name="language_system">Default Sistem</string>
+    <string name="language_arabic">Arab</string>
+    <string name="language_system">Otomatis (Sistem)</string>
+
+    <!-- Numeral Selection -->
+    <string name="numeral_system_title">Sistem Angka</string>
+    <string name="numeral_system_auto">Default (٠١٢)</string>
+    <string name="numeral_system_western">Barat (012)</string>
+
+    <!-- Notifications Section -->
+    <string name="section_notifications">Notifikasi</string>
+    <string name="prayer_reminder">Pengingat Salat</string>
+    <string name="reminder_desc">Beri tahu sebelum waktu salat tiba</string>
+    <string name="reminder_time">Waktu Pengingat</string>
+    <string name="minutes_before">%d menit sebelum</string>
+    <string name="reminder_title_context">Siap-siap %s</string>
+    <string name="reminder_msg_context">Waktu %1$s akan tiba dalam %2$d menit lagi. Ayo bersiap!</string>
+    <string name="btn_prepare">Bersiap Sekarang</string>
+
+    <!-- General Section -->
     <string name="settings_title">Pengaturan</string>
     <string name="section_general">Umum</string>
     <string name="show_onboarding">Tampilkan Onboarding</string>
     <string name="show_onboarding_desc">Jelajahi kembali fitur-fitur unggulan Sukun</string>
+    <string name="rate_app">Nilai di Play Store</string>
+    <string name="rate_app_desc">Suka Sukun? Beri kami ulasan!</string>
 
     <!-- About Dialog -->
     <string name="about_desc">Sukun membantu Anda beribadah tanpa gangguan, menyenyapkan ponsel otomatis saat waktu salat, lalu mengembalikannya seperti semula.</string>
@@ -162,4 +182,8 @@
     <string name="time_adjustments_title">Sesuaikan Waktu</string>
     <string name="time_adjustments_desc">Sesuaikan waktu shalat lokal yang dihitung hingga ±30 menit untuk tepat sesuai dengan masjid setempat Anda.</string>
     <string name="adjust_label">Waktu</string>
+    <string name="time_format_title">Format Waktu</string>
+    <string name="time_format_auto">Ikuti Sistem</string>
+    <string name="time_format_12">12 Jam (1:00 PM)</string>
+    <string name="time_format_24">24 Jam (13:00)</string>
 </resources>

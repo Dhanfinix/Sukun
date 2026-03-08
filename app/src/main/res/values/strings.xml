@@ -47,7 +47,6 @@
     <string name="manual_silence">Manual Silence</string>
     <string name="label_manual">Manual</string>
     <string name="label_unknown">Unknown</string>
-    <string name="minutes_format">%1$d Minutes</string>
     <string name="manual_silence_title">Manual Silence</string>
     <string name="manual_silence_subtitle">Temporarily silence your phone</string>
     <string name="btn_start_silence">Start Silence</string>
@@ -108,7 +107,8 @@
     <string name="uniform_silence_desc">Set how long your phone stays muted after each prayer.</string>
     <string name="all_prayers">All Prayers</string>
 
-    <!-- Theme Selection -->
+    <!-- Appearance Section -->
+    <string name="section_appearance">Appearance</string>
     <string name="app_theme">App Theme</string>
     <string name="theme_system">System Default</string>
     <string name="theme_light">Light Mode</string>
@@ -118,11 +118,27 @@
     <string name="app_language">Language</string>
     <string name="language_english">English</string>
     <string name="language_indonesian">Indonesian</string>
-    <string name="language_system">System Default</string>
+    <string name="language_arabic">Arabic</string>
+    <string name="language_system">Auto (System)</string>
+
+
+    <!-- Notifications Section -->
+    <string name="section_notifications">Notifications</string>
+    <string name="prayer_reminder">Prayer Reminder</string>
+    <string name="reminder_desc">Notify before prayer time starts</string>
+    <string name="reminder_time">Reminder Time</string>
+    <string name="minutes_before">%d minutes before</string>
+    <string name="reminder_title_context">Prepare for %s</string>
+    <string name="reminder_msg_context">It\'s almost time for %1$s. You have about %2$d minutes to prepare.</string>
+    <string name="btn_prepare">Prepare Now</string>
+
+    <!-- General Section -->
     <string name="settings_title">Settings</string>
     <string name="section_general">General</string>
     <string name="show_onboarding">Show Onboarding</string>
     <string name="show_onboarding_desc">Take another look at Sukun\'s main features</string>
+    <string name="rate_app">Rate on Play Store</string>
+    <string name="rate_app_desc">Enjoying Sukun? Leave us a review!</string>
 
     <!-- About Dialog -->
     <string name="about_desc">Sukun helps you pray without distraction, automatically silencing your phone at prayer times and restoring it right after.</string>
@@ -162,4 +178,8 @@
     <string name="time_adjustments_title">Time Adjustments</string>
     <string name="time_adjustments_desc">Offset your local calculated prayer times by up to ±30 minutes to precisely match your local mosque.</string>
     <string name="adjust_label">Time</string>
+    <string name="time_format_title">Time Format</string>
+    <string name="time_format_auto">Follow System</string>
+    <string name="time_format_12">12-Hour (1:00 PM)</string>
+    <string name="time_format_24">24-Hour (13:00)</string>
 </resources>

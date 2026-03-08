@@ -118,14 +118,17 @@ fun LandingScreen(
                 spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
             ) { it / 2 } + fadeIn(tween(400, delayMillis = 600))
         ) {
+            val isArabic = appLanguage == AppLanguage.AR
             Button(
                 onClick = onGetStarted,
                 modifier = Modifier.fillMaxWidth().height(60.dp),
                 shape = MaterialTheme.shapes.extraLarge
             ) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null,
-                    modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(10.dp))
+                if (!isArabic) {
+                    Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null,
+                        modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                }
                 Text(stringResource(R.string.btn_get_started),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold)
@@ -150,7 +153,9 @@ fun LandingScreen(
                 Text(
                     text = when (appLanguage) {
                         AppLanguage.SYSTEM -> stringResource(R.string.language_system)
-                        else -> appLanguage.name
+                        AppLanguage.EN -> stringResource(R.string.language_english)
+                        AppLanguage.ID -> stringResource(R.string.language_indonesian)
+                        AppLanguage.AR -> stringResource(R.string.language_arabic)
                     },
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold
@@ -232,7 +237,8 @@ private fun LanguageSelectionSheet(
             val options = listOf(
                 AppLanguage.SYSTEM to stringResource(R.string.language_system),
                 AppLanguage.EN to stringResource(R.string.language_english),
-                AppLanguage.ID to stringResource(R.string.language_indonesian)
+                AppLanguage.ID to stringResource(R.string.language_indonesian),
+                AppLanguage.AR to stringResource(R.string.language_arabic)
             )
 
             options.forEach { (value, label) ->

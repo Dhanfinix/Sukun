@@ -3,8 +3,9 @@ package dhanfinix.android.sukun
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import dhanfinix.android.sukun.core.datastore.AppTheme
 import dhanfinix.android.sukun.core.datastore.AppLanguage
+import dhanfinix.android.sukun.core.datastore.AppTheme
+import dhanfinix.android.sukun.core.datastore.TimeFormat
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -55,6 +56,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = AppLanguage.SYSTEM
         )
 
+
+
+    val timeFormat: StateFlow<TimeFormat> = userPrefs.timeFormat
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = TimeFormat.AUTO
+        )
+
+    val isReminderEnabled: StateFlow<Boolean> = userPrefs.isReminderEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
+    val reminderMinutes: StateFlow<Int> = userPrefs.reminderMinutes
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 10
+        )
+
     val hasSeenLanding: StateFlow<Boolean> = userPrefs.hasSeenLanding
         .stateIn(
             scope = viewModelScope,
@@ -81,6 +105,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun setTimeFormat(format: TimeFormat) {
+        viewModelScope.launch {
+            userPrefs.setTimeFormat(format)
+        }
+    }
+
+    fun setReminderEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setReminderEnabled(enabled)
+        }
+    }
+
+    fun setReminderMinutes(minutes: Int) {
+        viewModelScope.launch {
+            userPrefs.setReminderMinutes(minutes)
+        }
+    }
+
     fun setUseDynamicColor(enabled: Boolean) {
         viewModelScope.launch {
             userPrefs.setUseDynamicColor(enabled)
@@ -102,6 +144,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setCoachmarkShown(shown: Boolean) {
         viewModelScope.launch {
             userPrefs.setHomeCoachmarkShown(shown)
+        }
+    }
+
+    // ── In-App Review ──
+
+    val shouldShowReview: StateFlow<Boolean> = userPrefs.shouldShowReview
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    init {
+        viewModelScope.launch {
+            userPrefs.incrementAppOpenCount()
+        }
+    }
+
+    fun markAsRated() {
+        viewModelScope.launch {
+            userPrefs.setHasRated(true)
         }
     }
 }

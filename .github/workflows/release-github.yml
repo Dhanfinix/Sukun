@@ -1,16 +1,13 @@
-name: Production Release
+name: GitHub Release
 
 on:
   push:
     branches:
       - 'main'
 
-permissions:
-  contents: write
-
 jobs:
   build-and-release:
-    name: Build & Publish to Production
+    name: Build & Create Release
     runs-on: ubuntu-latest
 
     steps:
@@ -33,41 +30,36 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build Release AAB
+      - name: Build Release APK
         env:
           STORE_FILE: sukun.jks
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew bundleRelease
-
-      - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-aab-production
-          path: app/build/outputs/bundle/release/*.aab
-          retention-days: 14
+        run: ./gradlew assembleRelease
 
       - name: Extract Version Name
         id: version
         run: |
           VERSION_NAME=$(grep -oE 'versionName\s*=\s*"[^"]+"' app/build.gradle.kts | cut -d'"' -f2)
           echo "VERSION_NAME=v$VERSION_NAME" >> $GITHUB_ENV
+          echo "version=$VERSION_NAME" >> $GITHUB_OUTPUT
+
+      - name: Read WhatsNew
+        id: whatsnew
+        run: |
+          CONTENT=$(cat whatsnew/whatsnew-en-US)
+          echo "RELEASE_BODY<<EOF" >> $GITHUB_ENV
+          echo "$CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_NAME }}
           name: Release ${{ env.VERSION_NAME }}
-          files: app/build/outputs/bundle/release/*.aab
+          body: ${{ env.RELEASE_BODY }}
+          files: app/build/outputs/apk/release/*.apk
           generate_release_notes: true
-
-      - name: Upload to Play Store (Production)
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: dhanfinix.android.sukun
-          releaseFiles: app/build/outputs/bundle/release/*.aab
-          track: production
-          status: completed
-          whatsNewDirectory: whatsnew
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

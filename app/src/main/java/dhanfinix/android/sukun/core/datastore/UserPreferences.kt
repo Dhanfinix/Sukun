@@ -24,7 +24,14 @@ enum class AppTheme {
 enum class AppLanguage {
     EN,
     ID,
+    AR,
     SYSTEM
+}
+
+enum class TimeFormat {
+    AUTO,
+    H12,
+    H24
 }
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "sukun_prefs")
@@ -94,6 +101,13 @@ class UserPreferences(private val context: Context) {
     private val KEY_USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
     private val KEY_HAS_SEEN_LANDING = booleanPreferencesKey("has_seen_landing")
     private val KEY_APP_LANGUAGE = stringPreferencesKey("app_language")
+    private val KEY_TIME_FORMAT = stringPreferencesKey("time_format")
+    private val KEY_REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
+    private val KEY_REMINDER_MINUTES = intPreferencesKey("reminder_minutes")
+
+    // ── In-App Review ──
+    private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
+    private val KEY_HAS_RATED = booleanPreferencesKey("has_rated")
 
     // ── Flows ──
 
@@ -174,6 +188,23 @@ class UserPreferences(private val context: Context) {
         } catch (e: Exception) {
             AppLanguage.SYSTEM
         }
+    }
+
+    val timeFormat: Flow<TimeFormat> = context.dataStore.data.map { prefs ->
+        val formatName = prefs[KEY_TIME_FORMAT] ?: TimeFormat.AUTO.name
+        try {
+            TimeFormat.valueOf(formatName)
+        } catch (e: Exception) {
+            TimeFormat.AUTO
+        }
+    }
+
+    val isReminderEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_REMINDER_ENABLED] ?: true
+    }
+
+    val reminderMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_REMINDER_MINUTES] ?: 10
     }
 
     val silenceMode: Flow<SilenceMode> = context.dataStore.data.map { prefs ->
@@ -359,6 +390,24 @@ class UserPreferences(private val context: Context) {
         }
     }
 
+    suspend fun setTimeFormat(format: TimeFormat) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_TIME_FORMAT] = format.name
+        }
+    }
+
+    suspend fun setReminderEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_REMINDER_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setReminderMinutes(minutes: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_REMINDER_MINUTES] = minutes
+        }
+    }
+
     val useDynamicColor: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[KEY_USE_DYNAMIC_COLOR] ?: false // Default: disable dynamic color
     }
@@ -388,6 +437,35 @@ class UserPreferences(private val context: Context) {
     suspend fun setSilenceMode(mode: SilenceMode) {
         context.dataStore.edit { prefs ->
             prefs[KEY_SILENCE_MODE] = mode.name
+        }
+    }
+
+    // ── In-App Review ──
+
+    val appOpenCount: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_APP_OPEN_COUNT] ?: 0
+    }
+
+    val hasRated: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_HAS_RATED] ?: false
+    }
+
+    val shouldShowReview: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        val count = prefs[KEY_APP_OPEN_COUNT] ?: 0
+        val rated = prefs[KEY_HAS_RATED] ?: false
+        count >= 5 && !rated
+    }
+
+    suspend fun incrementAppOpenCount() {
+        context.dataStore.edit { prefs ->
+            val current = prefs[KEY_APP_OPEN_COUNT] ?: 0
+            prefs[KEY_APP_OPEN_COUNT] = current + 1
+        }
+    }
+
+    suspend fun setHasRated(rated: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_HAS_RATED] = rated
         }
     }
 }
