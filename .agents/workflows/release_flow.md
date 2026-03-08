@@ -30,5 +30,5 @@ When `development` has a batch of features ready for real-device testing:
 When the internal build is verified and ready for public release:
 1. **Check Version Name:** Ensure `versionName` in `app/build.gradle.kts` matches the release (e.g., `1.2.0`).
 2. **Merge:** Open a PR from `internal` -> `main`.
-3. **Deploy:** Merging to `main` automatically triggers the GitHub Action (`release-github.yml`) to build the AAB and create a GitHub Release/tag.
+3. **Deploy:** Merging to `main` automatically triggers the GitHub Action (`release-github.yml`) to build the APK and create a GitHub Release/tag.
 4. **Final Step:** Manually promote the build from the **Internal Testing** track to **Production** in the Google Play Console.
