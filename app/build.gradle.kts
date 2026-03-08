@@ -14,7 +14,7 @@ android {
         applicationId = "dhanfinix.android.sukun"
         minSdk = 26
         targetSdk = 36
-        versionCode = 23
+        versionCode = 24
         versionName = "1.1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
