@@ -148,7 +148,8 @@ object NotificationHelper {
         )
 
         val title = context.getString(R.string.reminder_title_context, prayerName)
-        val content = context.getString(R.string.reminder_msg_context, prayerName, minutesBefore)
+        val minutesStr = java.lang.String.format(java.util.Locale.US, "%d", minutesBefore)
+        val content = context.getString(R.string.reminder_msg_context, prayerName, minutesStr)
 
         val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
