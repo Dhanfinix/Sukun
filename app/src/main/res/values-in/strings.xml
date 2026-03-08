@@ -121,11 +121,6 @@
     <string name="language_arabic">Arab</string>
     <string name="language_system">Otomatis (Sistem)</string>
 
-    <!-- Numeral Selection -->
-    <string name="numeral_system_title">Sistem Angka</string>
-    <string name="numeral_system_auto">Default (٠١٢)</string>
-    <string name="numeral_system_western">Barat (012)</string>
-
     <!-- Notifications Section -->
     <string name="section_notifications">Notifikasi</string>
     <string name="prayer_reminder">Pengingat Salat</string>
