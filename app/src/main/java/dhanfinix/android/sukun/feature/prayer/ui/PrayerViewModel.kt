@@ -83,6 +83,14 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     loadPrayerTimes() // Reload to re-format strings
                 }
             }
+
+            launch {
+                userPrefs.isReminderEnabled.collect { loadPrayerTimes() }
+            }
+
+            launch {
+                userPrefs.reminderMinutes.collect { loadPrayerTimes() }
+            }
             
             startClockTicker()
         }
@@ -222,7 +230,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                         )
                     }
                     
-                    scheduleWorkers(prayersToday, prayersTomorrow, durationsMapVal)
+                    val isReminder = withContext(Dispatchers.IO) { userPrefs.isReminderEnabled.first() }
+                    val reminderMin = withContext(Dispatchers.IO) { userPrefs.reminderMinutes.first() }
+                    scheduleWorkers(prayersToday, prayersTomorrow, durationsMapVal, isReminder, reminderMin)
                 } else {
                     val error = resultToday.exceptionOrNull() ?: resultTomorrow.exceptionOrNull()
                     _uiState.update { state ->
@@ -287,7 +297,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(updatedPrayers, prayersTomorrow, currentState.prayerDurations)
+            val isReminder = userPrefs.isReminderEnabled.first()
+            val reminderMin = userPrefs.reminderMinutes.first()
+            scheduleWorkers(updatedPrayers, prayersTomorrow, currentState.prayerDurations, isReminder, reminderMin)
         }
     }
 
@@ -314,7 +326,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedDurations)
+            val isReminder = userPrefs.isReminderEnabled.first()
+            val reminderMin = userPrefs.reminderMinutes.first()
+            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedDurations, isReminder, reminderMin)
         }
     }
 
@@ -365,7 +379,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(updatedPrayersToday, prayersTomorrow, _uiState.value.prayerDurations)
+            val isReminder = userPrefs.isReminderEnabled.first()
+            val reminderMin = userPrefs.reminderMinutes.first()
+            scheduleWorkers(updatedPrayersToday, prayersTomorrow, _uiState.value.prayerDurations, isReminder, reminderMin)
         }
     }
 
@@ -406,7 +422,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedMap)
+            val isReminder = userPrefs.isReminderEnabled.first()
+            val reminderMin = userPrefs.reminderMinutes.first()
+            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedMap, isReminder, reminderMin)
         }
     }
 
@@ -550,8 +568,21 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun scheduleWorkers(prayersToday: List<PrayerInfo>, prayersTomorrow: List<PrayerInfo>, durations: Map<PrayerName, Int>) {
-        silenceScheduler.scheduleAll(prayersToday, prayersTomorrow, durations, _uiState.value.prayerOffsets)
+    private fun scheduleWorkers(
+        prayersToday: List<PrayerInfo>,
+        prayersTomorrow: List<PrayerInfo>,
+        durations: Map<PrayerName, Int>,
+        reminderEnabled: Boolean,
+        reminderMinutes: Int
+    ) {
+        silenceScheduler.scheduleAll(
+            prayersToday,
+            prayersTomorrow,
+            durations,
+            _uiState.value.prayerOffsets,
+            reminderEnabled,
+            reminderMinutes
+        )
     }
 
     private fun startClockTicker() {

@@ -102,6 +102,8 @@ class UserPreferences(private val context: Context) {
     private val KEY_HAS_SEEN_LANDING = booleanPreferencesKey("has_seen_landing")
     private val KEY_APP_LANGUAGE = stringPreferencesKey("app_language")
     private val KEY_TIME_FORMAT = stringPreferencesKey("time_format")
+    private val KEY_REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
+    private val KEY_REMINDER_MINUTES = intPreferencesKey("reminder_minutes")
 
     // ── In-App Review ──
     private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
@@ -195,6 +197,14 @@ class UserPreferences(private val context: Context) {
         } catch (e: Exception) {
             TimeFormat.AUTO
         }
+    }
+
+    val isReminderEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_REMINDER_ENABLED] ?: true
+    }
+
+    val reminderMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_REMINDER_MINUTES] ?: 10
     }
 
     val silenceMode: Flow<SilenceMode> = context.dataStore.data.map { prefs ->
@@ -383,6 +393,18 @@ class UserPreferences(private val context: Context) {
     suspend fun setTimeFormat(format: TimeFormat) {
         context.dataStore.edit { prefs ->
             prefs[KEY_TIME_FORMAT] = format.name
+        }
+    }
+
+    suspend fun setReminderEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_REMINDER_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setReminderMinutes(minutes: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_REMINDER_MINUTES] = minutes
         }
     }
 

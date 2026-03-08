@@ -122,6 +122,16 @@
     <string name="language_system">تلقائي (النظام)</string>
 
 
+    <!-- Notifications Section -->
+    <string name="section_notifications">التنبيهات</string>
+    <string name="prayer_reminder">تذكير الصلاة</string>
+    <string name="reminder_desc">تنبيه قبل دخول وقت الصلاة</string>
+    <string name="reminder_time">وقت التذكير</string>
+    <string name="minutes_before">قبل %d دقائق</string>
+    <string name="reminder_title_context">الاستعداد لصلاة %s</string>
+    <string name="reminder_msg_context">اقترب موعد صلاة %1$s. بقي %2$d دقائق. حان وقت الاستعداد.</string>
+    <string name="btn_prepare">استعد الآن</string>
+
     <!-- General Section -->
     <string name="settings_title">الإعدادات</string>
     <string name="section_general">عام</string>

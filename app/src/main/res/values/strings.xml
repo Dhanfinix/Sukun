@@ -122,6 +122,16 @@
     <string name="language_system">Auto (System)</string>
 
 
+    <!-- Notifications Section -->
+    <string name="section_notifications">Notifications</string>
+    <string name="prayer_reminder">Prayer Reminder</string>
+    <string name="reminder_desc">Notify before prayer time starts</string>
+    <string name="reminder_time">Reminder Time</string>
+    <string name="minutes_before">%d minutes before</string>
+    <string name="reminder_title_context">Prepare for %s</string>
+    <string name="reminder_msg_context">It\'s almost time for %1$s. You have about %2$d minutes to prepare.</string>
+    <string name="btn_prepare">Prepare Now</string>
+
     <!-- General Section -->
     <string name="settings_title">Settings</string>
     <string name="section_general">General</string>

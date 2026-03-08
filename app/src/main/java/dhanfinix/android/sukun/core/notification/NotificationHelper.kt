@@ -28,7 +28,9 @@ import dhanfinix.android.sukun.core.utils.withIsolate
 object NotificationHelper {
 
     private const val CHANNEL_ID = "sukun_silence_channel"
+    private const val REMINDER_CHANNEL_ID = "sukun_reminder_channel"
     const val NOTIFICATION_ID = 1001
+    const val REMINDER_NOTIFICATION_ID = 1002
 
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
@@ -40,6 +42,15 @@ object NotificationHelper {
         }
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(channel)
+
+        val reminderChannel = NotificationChannel(
+            REMINDER_CHANNEL_ID,
+            context.getString(R.string.prayer_reminder),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = context.getString(R.string.reminder_desc)
+        }
+        manager.createNotificationChannel(reminderChannel)
     }
 
     fun showSilenceNotification(
@@ -123,5 +134,33 @@ object NotificationHelper {
     fun cancelNotification(context: Context) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancel(NOTIFICATION_ID)
+    }
+
+    fun showReminderNotification(context: Context, prayerName: String, minutesBefore: Int) {
+        createChannel(context)
+
+        val openAppIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val openAppPending = PendingIntent.getActivity(
+            context, 1, openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val title = context.getString(R.string.reminder_title_context, prayerName)
+        val content = context.getString(R.string.reminder_msg_context, prayerName, minutesBefore)
+
+        val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setAutoCancel(true)
+            .setContentIntent(openAppPending)
+            .addAction(0, context.getString(R.string.btn_prepare), openAppPending)
+
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(REMINDER_NOTIFICATION_ID, builder.build())
     }
 }

@@ -65,6 +65,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = TimeFormat.AUTO
         )
 
+    val isReminderEnabled: StateFlow<Boolean> = userPrefs.isReminderEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
+    val reminderMinutes: StateFlow<Int> = userPrefs.reminderMinutes
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 10
+        )
+
     val hasSeenLanding: StateFlow<Boolean> = userPrefs.hasSeenLanding
         .stateIn(
             scope = viewModelScope,
@@ -94,6 +108,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setTimeFormat(format: TimeFormat) {
         viewModelScope.launch {
             userPrefs.setTimeFormat(format)
+        }
+    }
+
+    fun setReminderEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setReminderEnabled(enabled)
+        }
+    }
+
+    fun setReminderMinutes(minutes: Int) {
+        viewModelScope.launch {
+            userPrefs.setReminderMinutes(minutes)
         }
     }
 
