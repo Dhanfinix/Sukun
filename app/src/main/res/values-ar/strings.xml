@@ -181,4 +181,7 @@
     <string name="time_format_auto">تلقائي (حسب النظام)</string>
     <string name="time_format_12">12 ساعة (1:00 PM)</string>
     <string name="time_format_24">24 ساعة (13:00)</string>
+    <string name="language_restart_title">إعادة تشغيل سكون؟</string>
+    <string name="language_restart_msg">يجب إعادة تشغيل سكون لتطبيق اللغة الجديدة. هل تود الاستمرار؟</string>
+    <string name="btn_continue">استمرار</string>
 </resources>
