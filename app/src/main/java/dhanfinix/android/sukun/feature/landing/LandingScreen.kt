@@ -38,8 +38,6 @@ fun LandingScreen(
 ) {
     var visible by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
-    var showRestartDialog by remember { mutableStateOf(false) }
-    var selectedLanguage by remember { mutableStateOf<AppLanguage?>(null) }
     val appLanguage by mainVm.appLanguage.collectAsState()
     
     LaunchedEffect(Unit) { visible = true }
@@ -169,36 +167,11 @@ fun LandingScreen(
     if (showLanguageSheet) {
         LanguageSelectionSheet(
             currentLanguage = appLanguage,
-            onLanguageSelected = { 
-                selectedLanguage = it
-                showRestartDialog = true
-            },
+            onLanguageSelected = { mainVm.setLanguage(it) },
             onDismiss = { showLanguageSheet = false }
         )
     }
 
-    if (showRestartDialog) {
-        AlertDialog(
-            onDismissRequest = { showRestartDialog = false },
-            title = { Text(stringResource(R.string.language_restart_title)) },
-            text = { Text(stringResource(R.string.language_restart_msg)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        selectedLanguage?.let { mainVm.setLanguage(it) }
-                        showRestartDialog = false
-                    }
-                ) {
-                    Text(stringResource(R.string.btn_continue))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showRestartDialog = false }) {
-                    Text(stringResource(R.string.btn_cancel))
-                }
-            }
-        )
-    }
 }
 
 
