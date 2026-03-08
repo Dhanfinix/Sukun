@@ -25,6 +25,7 @@ fun ManualSilenceBottomSheet(
     onStart: (Int) -> Unit
 ) {
     var duration by remember { mutableFloatStateOf(15f) }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -48,7 +49,7 @@ fun ManualSilenceBottomSheet(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, duration.toInt()), duration.toInt()),
+                text = java.lang.String.format(java.util.Locale.US, context.resources.getQuantityString(R.plurals.minutes_plural, duration.toInt()), duration.toInt()),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

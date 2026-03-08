@@ -120,10 +120,11 @@ fun OffsetsBottomSheet(
                         }
 
                         // Offset Value
+                        val context = androidx.compose.ui.platform.LocalContext.current
                         val offsetText = when {
-                            currentOffset == 0 -> java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, 0), 0)
-                            currentOffset > 0 -> "+${java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, currentOffset), currentOffset)}"
-                            else -> "-${java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, currentOffset.absoluteValue), currentOffset.absoluteValue)}"
+                            currentOffset == 0 -> java.lang.String.format(java.util.Locale.US, context.resources.getQuantityString(R.plurals.minutes_plural, 0), 0)
+                            currentOffset > 0 -> "+${java.lang.String.format(java.util.Locale.US, context.resources.getQuantityString(R.plurals.minutes_plural, currentOffset), currentOffset)}"
+                            else -> "-${java.lang.String.format(java.util.Locale.US, context.resources.getQuantityString(R.plurals.minutes_plural, currentOffset.absoluteValue), currentOffset.absoluteValue)}"
                         }
                         Text(
                             text = offsetText,
