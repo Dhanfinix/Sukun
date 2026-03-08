@@ -24,6 +24,7 @@ import dhanfinix.android.sukun.MainViewModel
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.AppTheme
+import dhanfinix.android.sukun.core.datastore.TimeFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,8 +37,16 @@ fun SettingsScreen(
     val useDynamicColor by mainVm.useDynamicColor.collectAsState()
     val appLanguage by mainVm.appLanguage.collectAsState()
 
+    val timeFormat by mainVm.timeFormat.collectAsState()
+    val isReminderEnabled by mainVm.isReminderEnabled.collectAsState()
+    val reminderMinutes by mainVm.reminderMinutes.collectAsState()
+
     var showThemeSheet by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
+    var showTimeFormatSheet by remember { mutableStateOf(false) }
+    var showReminderSheet by remember { mutableStateOf(false) }
+
+    val isArabic = java.util.Locale.getDefault().language == "ar"
     val context = LocalContext.current
 
     Scaffold(
@@ -65,7 +74,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Appearance Section
-            SettingsSectionTitle(stringResource(R.string.app_theme))
+            SettingsSectionTitle(stringResource(R.string.section_appearance))
             
             SettingsItem(
                 title = stringResource(R.string.app_theme),
@@ -82,6 +91,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.dynamic_color),
                 subtitle = stringResource(R.string.dynamic_color_desc),
                 icon = Icons.Rounded.ColorLens,
+                onClick = { mainVm.setUseDynamicColor(!useDynamicColor) },
                 trailing = {
                     Switch(
                         checked = useDynamicColor,
@@ -90,11 +100,6 @@ fun SettingsScreen(
                 }
             )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-            // Localization Section
-            SettingsSectionTitle(stringResource(R.string.app_language))
-            
             SettingsItem(
                 title = stringResource(R.string.app_language),
                 subtitle = when (appLanguage) {
@@ -106,6 +111,44 @@ fun SettingsScreen(
                 icon = Icons.Rounded.Language,
                 onClick = { showLanguageSheet = true }
             )
+
+            SettingsItem(
+                title = stringResource(R.string.time_format_title),
+                subtitle = when (timeFormat) {
+                    TimeFormat.AUTO -> stringResource(R.string.time_format_auto)
+                    TimeFormat.H12 -> stringResource(R.string.time_format_12)
+                    TimeFormat.H24 -> stringResource(R.string.time_format_24)
+                },
+                icon = Icons.Rounded.AccessTime,
+                onClick = { showTimeFormatSheet = true }
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Notifications Section
+            SettingsSectionTitle(stringResource(R.string.section_notifications))
+            
+            SettingsItem(
+                title = stringResource(R.string.prayer_reminder),
+                subtitle = stringResource(R.string.reminder_desc),
+                icon = Icons.Rounded.Notifications,
+                trailing = {
+                    Switch(
+                        checked = isReminderEnabled,
+                        onCheckedChange = { mainVm.setReminderEnabled(it) }
+                    )
+                },
+                onClick = { mainVm.setReminderEnabled(!isReminderEnabled) }
+            )
+
+            if (isReminderEnabled) {
+                SettingsItem(
+                    title = stringResource(R.string.reminder_time),
+                    subtitle = stringResource(R.string.minutes_before, reminderMinutes),
+                    icon = Icons.Rounded.NotificationAdd,
+                    onClick = { showReminderSheet = true }
+                )
+            }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
@@ -156,6 +199,24 @@ fun SettingsScreen(
                 onDismiss = { showLanguageSheet = false }
             )
         }
+
+
+
+        if (showTimeFormatSheet) {
+            TimeFormatSelectionSheet(
+                currentFormat = timeFormat,
+                onFormatSelected = { mainVm.setTimeFormat(it) },
+                onDismiss = { showTimeFormatSheet = false }
+            )
+        }
+
+        if (showReminderSheet) {
+            ReminderSelectionSheet(
+                currentMinutes = reminderMinutes,
+                onMinutesSelected = { mainVm.setReminderMinutes(it) },
+                onDismiss = { showReminderSheet = false }
+            )
+        }
     }
 }
 
@@ -182,7 +243,7 @@ private fun SettingsItem(
         onClick = onClick ?: {},
         enabled = onClick != null,
         shape = MaterialTheme.shapes.large,
-        color = if (onClick != null) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
     ) {
         Row(
             modifier = Modifier
@@ -330,6 +391,122 @@ private fun LanguageSelectionSheet(
                     ) {
                         Text(
                             text = label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
+                        if (isSelected) {
+                            Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimeFormatSelectionSheet(
+    currentFormat: TimeFormat,
+    onFormatSelected: (TimeFormat) -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.time_format_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp, start = 8.dp)
+            )
+
+            val options = listOf(
+                TimeFormat.AUTO to stringResource(R.string.time_format_auto),
+                TimeFormat.H12 to stringResource(R.string.time_format_12),
+                TimeFormat.H24 to stringResource(R.string.time_format_24)
+            )
+
+            options.forEach { (value, label) ->
+                val isSelected = value == currentFormat
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable {
+                            onFormatSelected(value)
+                            onDismiss()
+                        },
+                    shape = MaterialTheme.shapes.medium,
+                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
+                        if (isSelected) {
+                            Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReminderSelectionSheet(
+    currentMinutes: Int,
+    onMinutesSelected: (Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.reminder_time),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp, start = 8.dp)
+            )
+
+            val options = listOf(5, 10, 15, 30)
+
+            options.forEach { minutes ->
+                val isSelected = minutes == currentMinutes
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable {
+                            onMinutesSelected(minutes)
+                            onDismiss()
+                        },
+                    shape = MaterialTheme.shapes.medium,
+                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.minutes_before, minutes),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                         )

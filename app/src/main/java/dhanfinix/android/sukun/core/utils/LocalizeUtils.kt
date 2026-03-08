@@ -1,26 +1,61 @@
 package dhanfinix.android.sukun.core.utils
 
+import dhanfinix.android.sukun.core.datastore.TimeFormat
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
+import android.text.format.DateFormat
+import android.content.Context
 
 /**
- * Utility to localize digits (0-9) to Eastern Arabic numerals (٠-٩)
- * if the current locale is Arabic.
+ * Wraps a string in LTR isolate characters to ensure it's rendered correctly in RTL contexts.
+ * Useful for times, countdowns, and numbers.
  */
-fun String.localizeDigits(): String {
-    val locale = Locale.getDefault()
-    if (locale.language != "ar") return this
+fun String.withIsolate(): String = "\u2066$this\u2069"
 
-    val digits = charArrayOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
-    return this.map { char ->
-        if (char in '0'..'9') {
-            digits[char - '0']
+/**
+ * Holds formatted time parts for UI display.
+ */
+data class FormattedTime(
+    val time: String,      // e.g. "05:30"
+    val session: String? = null // e.g. "AM", "PM", or null for 24h
+)
+
+/**
+ * Formats a time string (HH:mm or HH:mm:ss) according to user preference.
+ */
+fun String.formatTime(
+    context: Context,
+    timeFormat: TimeFormat = TimeFormat.AUTO
+): FormattedTime {
+    if (this.isBlank() || this == "--:--") return FormattedTime(this)
+    
+    val is24Hour = when (timeFormat) {
+        TimeFormat.H12 -> false
+        TimeFormat.H24 -> true
+        TimeFormat.AUTO -> DateFormat.is24HourFormat(context)
+    }
+
+    return try {
+        val cleanInput = this.substringBefore(" ").trim()
+        val hasSeconds = cleanInput.count { it == ':' } == 2
+        val inputFormatter = if (hasSeconds) DateTimeFormatter.ofPattern("HH:mm:ss") else DateTimeFormatter.ofPattern("HH:mm")
+        val time = LocalTime.parse(cleanInput, inputFormatter)
+        
+        if (is24Hour) {
+            val pattern = if (hasSeconds) "HH:mm:ss" else "HH:mm"
+            FormattedTime(time.format(DateTimeFormatter.ofPattern(pattern)))
         } else {
-            char
+            val timePattern = if (hasSeconds) "hh:mm:ss" else "hh:mm"
+            val amPmPattern = "a"
+            
+            val formattedTime = time.format(DateTimeFormatter.ofPattern(timePattern))
+            // Force AM/PM to be Latin uppercase for modern look
+            val session = time.format(DateTimeFormatter.ofPattern(amPmPattern, Locale.US)).uppercase()
+            
+            FormattedTime(formattedTime, session)
         }
-    }.joinToString("")
+    } catch (e: Exception) {
+        FormattedTime(this)
+    }
 }
-
-/**
- * Convenience for Int to localized String
- */
-fun Int.toLocalizedPath(): String = this.toString().localizeDigits()

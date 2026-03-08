@@ -14,6 +14,7 @@ import dhanfinix.android.sukun.feature.prayer.data.model.LocationSuggestion
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 import dhanfinix.android.sukun.feature.prayer.data.PrayerRepository
+import dhanfinix.android.sukun.core.datastore.TimeFormat
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.worker.SilenceScheduler
 import kotlinx.coroutines.Job
@@ -32,7 +33,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import dhanfinix.android.sukun.core.utils.localizeDigits
+import dhanfinix.android.sukun.core.utils.formatTime
 
 /**
  * ViewModel for Prayer Settings.
@@ -45,6 +46,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private val silenceScheduler = SilenceScheduler(application)
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
     private var searchJob: Job? = null
+    private var currentTimeFormat = TimeFormat.AUTO
 
     private val _uiState = MutableStateFlow(PrayerUiState())
     val uiState: StateFlow<PrayerUiState> = _uiState.asStateFlow()
@@ -69,8 +71,27 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             }
             
-            // Now load the data (either with newly detected GPS, or fallback Jakarta)
+            // Load the data (either with newly detected GPS, or fallback Jakarta)
             loadPrayerTimes()
+            
+            // Observe Preferences
+
+
+            launch {
+                userPrefs.timeFormat.collect {
+                    currentTimeFormat = it
+                    loadPrayerTimes() // Reload to re-format strings
+                }
+            }
+
+            launch {
+                userPrefs.isReminderEnabled.collect { loadPrayerTimes() }
+            }
+
+            launch {
+                userPrefs.reminderMinutes.collect { loadPrayerTimes() }
+            }
+            
             startClockTicker()
         }
     }
@@ -150,28 +171,37 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     val prayersToday = PrayerName.entries.filter { 
                         if (isTodayFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
                     }.map { name ->
+                        val originalTime = timesMapToday[name] ?: "--:--"
+                        val formattedTime = originalTime.formatTime(getApplication(), currentTimeFormat)
                         PrayerInfo(
                             name = name,
-                            time = timesMapToday[name] ?: "--:--",
-                            isEnabled = enabledMapVal[name] ?: true
+                            time = originalTime,
+                            isEnabled = enabledMapVal[name] ?: true,
+                            formattedTime = formattedTime
                         )
                     }
                     
                     val allPrayersToday = PrayerName.entries.map { name ->
+                        val originalTime = timesMapToday[name] ?: "--:--"
+                        val formattedTime = originalTime.formatTime(getApplication(), currentTimeFormat)
                         PrayerInfo(
                             name = name,
-                            time = timesMapToday[name] ?: "--:--",
-                            isEnabled = enabledMapVal[name] ?: true
+                            time = originalTime,
+                            isEnabled = enabledMapVal[name] ?: true,
+                            formattedTime = formattedTime
                         )
                     }
                     
                     val prayersTomorrow = PrayerName.entries.filter { 
                         if (isTomorrowFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
                     }.map { name ->
+                        val originalTime = timesMapTomorrow[name] ?: "--:--"
+                        val formattedTime = originalTime.formatTime(getApplication(), currentTimeFormat)
                         PrayerInfo(
                             name = name,
-                            time = timesMapTomorrow[name] ?: "--:--",
-                            isEnabled = enabledMapVal[name] ?: true
+                            time = originalTime,
+                            isEnabled = enabledMapVal[name] ?: true,
+                            formattedTime = formattedTime
                         )
                     }
                     
@@ -200,7 +230,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                         )
                     }
                     
-                    scheduleWorkers(prayersToday, prayersTomorrow, durationsMapVal)
+                    val isReminder = withContext(Dispatchers.IO) { userPrefs.isReminderEnabled.first() }
+                    val reminderMin = withContext(Dispatchers.IO) { userPrefs.reminderMinutes.first() }
+                    scheduleWorkers(prayersToday, prayersTomorrow, durationsMapVal, isReminder, reminderMin)
                 } else {
                     val error = resultToday.exceptionOrNull() ?: resultTomorrow.exceptionOrNull()
                     _uiState.update { state ->
@@ -265,7 +297,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(updatedPrayers, prayersTomorrow, currentState.prayerDurations)
+            val isReminder = userPrefs.isReminderEnabled.first()
+            val reminderMin = userPrefs.reminderMinutes.first()
+            scheduleWorkers(updatedPrayers, prayersTomorrow, currentState.prayerDurations, isReminder, reminderMin)
         }
     }
 
@@ -292,7 +326,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedDurations)
+            val isReminder = userPrefs.isReminderEnabled.first()
+            val reminderMin = userPrefs.reminderMinutes.first()
+            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedDurations, isReminder, reminderMin)
         }
     }
 
@@ -343,7 +379,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(updatedPrayersToday, prayersTomorrow, _uiState.value.prayerDurations)
+            val isReminder = userPrefs.isReminderEnabled.first()
+            val reminderMin = userPrefs.reminderMinutes.first()
+            scheduleWorkers(updatedPrayersToday, prayersTomorrow, _uiState.value.prayerDurations, isReminder, reminderMin)
         }
     }
 
@@ -384,7 +422,9 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedMap)
+            val isReminder = userPrefs.isReminderEnabled.first()
+            val reminderMin = userPrefs.reminderMinutes.first()
+            scheduleWorkers(_uiState.value.prayers, prayersTomorrow, updatedMap, isReminder, reminderMin)
         }
     }
 
@@ -528,8 +568,21 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun scheduleWorkers(prayersToday: List<PrayerInfo>, prayersTomorrow: List<PrayerInfo>, durations: Map<PrayerName, Int>) {
-        silenceScheduler.scheduleAll(prayersToday, prayersTomorrow, durations, _uiState.value.prayerOffsets)
+    private fun scheduleWorkers(
+        prayersToday: List<PrayerInfo>,
+        prayersTomorrow: List<PrayerInfo>,
+        durations: Map<PrayerName, Int>,
+        reminderEnabled: Boolean,
+        reminderMinutes: Int
+    ) {
+        silenceScheduler.scheduleAll(
+            prayersToday,
+            prayersTomorrow,
+            durations,
+            _uiState.value.prayerOffsets,
+            reminderEnabled,
+            reminderMinutes
+        )
     }
 
     private fun startClockTicker() {
@@ -546,7 +599,8 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     loadPrayerTimes()
                 }
 
-                val currentTimeStr = now.format(timeFormatter)
+                val currentTimeResult = now.format(timeFormatter)
+                    .formatTime(getApplication(), currentTimeFormat)
                 
                 val nextPrayerInfo = calculateNextPrayer(now, _uiState.value.prayers)
                 val countdownStr = nextPrayerInfo?.let { (prayer, remaining) ->
@@ -564,10 +618,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
 
                 _uiState.update { state ->
                     state.copy(
-                        currentTime = currentTimeStr.localizeDigits(),
-                        currentDate = hijriDateStr.localizeDigits(),
+                        currentTime = currentTimeResult,
+                        currentDate = hijriDateStr,
                         nextPrayer = nextPrayerInfo?.first?.name,
-                        nextPrayerCountdown = countdownStr.localizeDigits()
+                        nextPrayerCountdown = countdownStr
                     )
                 }
                 delay(1000)

@@ -24,7 +24,7 @@ data class PrayerUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val snackbarMessage: String? = null,
-    val currentTime: String = "--:--:--",
+    val currentTime: dhanfinix.android.sukun.core.utils.FormattedTime = dhanfinix.android.sukun.core.utils.FormattedTime("--:--:--"),
     val nextPrayer: PrayerName? = null,
     val nextPrayerCountdown: String = "--:--:--",
     val locationSuggestions: List<LocationSuggestion> = emptyList(),

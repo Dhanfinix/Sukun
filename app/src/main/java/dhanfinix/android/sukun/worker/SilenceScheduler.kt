@@ -29,15 +29,11 @@ class SilenceScheduler(private val context: Context) {
         prayersToday: List<PrayerInfo>,
         prayersTomorrow: List<PrayerInfo>,
         durations: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int>,
-        offsets: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int> = emptyMap()
+        offsets: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int> = emptyMap(),
+        reminderEnabled: Boolean = false,
+        reminderMinutes: Int = 10
     ) {
         cancelAll()
-
-        val notifManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (!notifManager.isNotificationPolicyAccessGranted) {
-            // Do not schedule anything if DND permission is missing
-            return
-        }
 
         val now = LocalTime.now()
 
@@ -49,12 +45,12 @@ class SilenceScheduler(private val context: Context) {
             
             if (todayTime.isAfter(now)) {
                 // Today's adhan is still in the future
-                scheduleSinglePrayer(todayPrayer, durations[todayPrayer.name] ?: 15, LocalDate.now())
+                scheduleSinglePrayer(todayPrayer, durations[todayPrayer.name] ?: 15, LocalDate.now(), reminderEnabled, reminderMinutes)
             } else {
                 // Today's adhan passed, schedule tomorrow's instead
                 val tomorrowPrayer = prayersTomorrow.find { it.name == todayPrayer.name }
                 if (tomorrowPrayer?.isEnabled == true) {
-                    scheduleSinglePrayer(tomorrowPrayer, durations[tomorrowPrayer.name] ?: 15, LocalDate.now().plusDays(1))
+                    scheduleSinglePrayer(tomorrowPrayer, durations[tomorrowPrayer.name] ?: 15, LocalDate.now().plusDays(1), reminderEnabled, reminderMinutes)
                 }
             }
         }
@@ -103,12 +99,20 @@ class SilenceScheduler(private val context: Context) {
         dhanfinix.android.sukun.feature.prayer.data.model.PrayerName.entries.forEach { prayerName ->
             val pendingStart = getPendingIntent(SilenceReceiver.ACTION_START_SILENCE, prayerName.ordinal)
             val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, prayerName.ordinal + 100)
+            val pendingReminder = getPendingIntent(SilenceReceiver.ACTION_SHOW_REMINDER, prayerName.ordinal + 200)
             alarmManager.cancel(pendingStart)
             alarmManager.cancel(pendingRestore)
+            alarmManager.cancel(pendingReminder)
         }
     }
 
-    private fun scheduleSinglePrayer(prayer: PrayerInfo, durationMin: Int, date: LocalDate) {
+    private fun scheduleSinglePrayer(
+        prayer: PrayerInfo,
+        durationMin: Int,
+        date: LocalDate,
+        reminderEnabled: Boolean = false,
+        reminderMinutes: Int = 10
+    ) {
         val prayerTime = parseTime(prayer.time) ?: return
 
         val calendar = Calendar.getInstance().apply {
@@ -121,36 +125,56 @@ class SilenceScheduler(private val context: Context) {
             set(Calendar.MILLISECOND, 0)
         }
 
-        val startIntent = Intent(context, SilenceReceiver::class.java).apply {
-            action = SilenceReceiver.ACTION_START_SILENCE
-            putExtra(SilenceReceiver.KEY_PRAYER_NAME, prayer.name.nameRes)
-            putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
-        }
-        
-        // We use different request codes if we wanted multiple concurrent alarms, 
-        // but since we only have one "next" silence at a time in the logic usually,
-        // or we just want the unique prayer. Let's use prayer name hash for uniqueness.
         val requestCode = prayer.name.ordinal
 
-        val pendingStart = PendingIntent.getBroadcast(
-            context,
-            requestCode,
-            startIntent,
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        // 1. Schedule Reminder
+        if (reminderEnabled && reminderMinutes > 0) {
+            val reminderTimeMs = calendar.timeInMillis - (reminderMinutes * 60 * 1000L)
+            if (reminderTimeMs > System.currentTimeMillis()) {
+                val reminderIntent = Intent(context, SilenceReceiver::class.java).apply {
+                    action = SilenceReceiver.ACTION_SHOW_REMINDER
+                    putExtra(SilenceReceiver.KEY_PRAYER_NAME, prayer.name.nameRes)
+                    putExtra(SilenceReceiver.KEY_REMINDER_MINUTES, reminderMinutes)
+                }
+                val pendingReminder = PendingIntent.getBroadcast(
+                    context,
+                    requestCode + 200, // Offset to avoid collision
+                    reminderIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                scheduleExactAlarmSafely(reminderTimeMs, pendingReminder)
+            }
+        }
 
-        scheduleExactAlarmSafely(calendar.timeInMillis, pendingStart)
+        // 2. Schedule Silence (Only if DND permission is granted)
+        val notifManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (notifManager.isNotificationPolicyAccessGranted) {
+            val startIntent = Intent(context, SilenceReceiver::class.java).apply {
+                action = SilenceReceiver.ACTION_START_SILENCE
+                putExtra(SilenceReceiver.KEY_PRAYER_NAME, prayer.name.nameRes)
+                putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
+            }
+            
+            val pendingStart = PendingIntent.getBroadcast(
+                context,
+                requestCode,
+                startIntent,
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
 
-        // Schedule Restore (Adhan + Duration)
-        val restoreTimeMs = calendar.timeInMillis + (durationMin * 60 * 1000L)
-        val pendingRestore = PendingIntent.getBroadcast(
-            context,
-            requestCode + 100, // Offset to avoid collision
-            getRestoreIntent(),
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+            scheduleExactAlarmSafely(calendar.timeInMillis, pendingStart)
 
-        scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
+            // 3. Schedule Restore (Adhan + Duration)
+            val restoreTimeMs = calendar.timeInMillis + (durationMin * 60 * 1000L)
+            val pendingRestore = PendingIntent.getBroadcast(
+                context,
+                requestCode + 100, // Offset to avoid collision
+                getRestoreIntent(),
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
+        }
     }
 
     private fun getPendingIntent(action: String, requestCode: Int = 0): PendingIntent {

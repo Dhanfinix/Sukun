@@ -38,6 +38,12 @@ class SilenceReceiver : BroadcastReceiver() {
                 else if (action == ACTION_STOP_SILENCE) {
                     handleStopSilence(context)
                 }
+                else if (action == ACTION_SHOW_REMINDER) {
+                    val prayerResId = intent.getIntExtra(KEY_PRAYER_NAME, R.string.app_name)
+                    val prayerName = context.getString(prayerResId)
+                    val reminderMin = intent.getIntExtra(KEY_REMINDER_MINUTES, 10)
+                    NotificationHelper.showReminderNotification(context, prayerName, reminderMin)
+                }
             } finally {
                 pendingResult.finish()
             }
@@ -107,7 +113,8 @@ class SilenceReceiver : BroadcastReceiver() {
         userPrefs.setSilenceMetadata(startTime, endTime, prayerName)
 
         // 5. Show ongoing notification with working chronometer
-        NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime)
+        val timeFormat = userPrefs.timeFormat.first()
+        NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime, timeFormat)
     }
 
     private suspend fun handleStopSilence(context: Context) {
@@ -159,8 +166,10 @@ class SilenceReceiver : BroadcastReceiver() {
     companion object {
         const val ACTION_START_SILENCE = "dhanfinix.android.sukun.START_SILENCE"
         const val ACTION_STOP_SILENCE = "dhanfinix.android.sukun.STOP_SILENCE"
+        const val ACTION_SHOW_REMINDER = "dhanfinix.android.sukun.SHOW_REMINDER"
         const val KEY_PRAYER_NAME = "prayer_name"
         const val KEY_DURATION_MIN = "duration_min"
+        const val KEY_REMINDER_MINUTES = "reminder_minutes"
         private const val TAG = "SilenceReceiver"
     }
 }

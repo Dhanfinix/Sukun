@@ -23,7 +23,8 @@ enum class PrayerName(val nameRes: Int) {
 data class PrayerInfo(
     val name: PrayerName,
     val time: String, // "HH:mm" format
-    val isEnabled: Boolean
+    val isEnabled: Boolean,
+    val formattedTime: dhanfinix.android.sukun.core.utils.FormattedTime? = null
 )
 @Stable
 data class LocationSuggestion(

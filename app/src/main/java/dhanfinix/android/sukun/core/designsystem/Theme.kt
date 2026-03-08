@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.AppTheme
+import androidx.compose.runtime.CompositionLocalProvider
 
 private val DarkColorScheme = darkColorScheme(
     // Primary — sandy tan pastel
@@ -103,6 +104,7 @@ private val LightColorScheme = lightColorScheme(
     inversePrimary = WarmBrown80,
     scrim = Color(0xFF000000),
 )
+
 
 @Composable
 fun SukunTheme(

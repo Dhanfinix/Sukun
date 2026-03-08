@@ -17,8 +17,9 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import dhanfinix.android.sukun.R
-import dhanfinix.android.sukun.core.utils.localizeDigits
 import kotlin.math.absoluteValue
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
@@ -71,12 +72,28 @@ fun OffsetsBottomSheet(
                             text = stringResource(prayer.nameRes),
                             style = MaterialTheme.typography.bodyLarge
                         )
-                        Text(
-                            text = timeStr.localizeDigits(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Row(
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                Text(
+                                    text = prayerInfo?.formattedTime?.time ?: timeStr,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                prayerInfo?.formattedTime?.session?.let { session ->
+                                    Spacer(modifier = Modifier.width(2.dp))
+                                    Text(
+                                        text = session,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = MaterialTheme.typography.labelSmall.fontSize * 0.7f),
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(bottom = 1.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     Row(
@@ -109,7 +126,7 @@ fun OffsetsBottomSheet(
                             else -> "-${pluralStringResource(R.plurals.minutes_plural, currentOffset.absoluteValue, currentOffset.absoluteValue)}"
                         }
                         Text(
-                            text = offsetText.localizeDigits(),
+                            text = offsetText,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = if (currentOffset != 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,

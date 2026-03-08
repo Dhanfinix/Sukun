@@ -107,7 +107,8 @@
     <string name="uniform_silence_desc">حدد المدة التي يظل فيها هاتفك صامتاً بعد كل صلاة.</string>
     <string name="all_prayers">كل الصلوات</string>
 
-    <!-- Theme Selection -->
+    <!-- Appearance Section -->
+    <string name="section_appearance">المظهر</string>
     <string name="app_theme">مظهر التطبيق</string>
     <string name="theme_system">تلقائي حسب النظام</string>
     <string name="theme_light">فاتح</string>
@@ -118,7 +119,20 @@
     <string name="language_english">English</string>
     <string name="language_indonesian">Bahasa Indonesia</string>
     <string name="language_arabic">العربية</string>
-    <string name="language_system">لغة النظام</string>
+    <string name="language_system">تلقائي (النظام)</string>
+
+
+    <!-- Notifications Section -->
+    <string name="section_notifications">التنبيهات</string>
+    <string name="prayer_reminder">تذكير الصلاة</string>
+    <string name="reminder_desc">تنبيه قبل دخول وقت الصلاة</string>
+    <string name="reminder_time">وقت التذكير</string>
+    <string name="minutes_before">قبل %d دقائق</string>
+    <string name="reminder_title_context">الاستعداد لصلاة %s</string>
+    <string name="reminder_msg_context">اقترب موعد صلاة %1$s. بقي %2$d دقائق. حان وقت الاستعداد.</string>
+    <string name="btn_prepare">استعد الآن</string>
+
+    <!-- General Section -->
     <string name="settings_title">الإعدادات</string>
     <string name="section_general">عام</string>
     <string name="show_onboarding">شرح التطبيق</string>
@@ -163,4 +177,8 @@
     <string name="time_adjustments_title">ضبط الأوقات</string>
     <string name="time_adjustments_desc">يمكنك تعديل مواقيت الصلاة المحسوبة يدوياً بزيادة أو نقصان يصل إلى 30 دقيقة لتطابق توقيت مسجدك بدقة.</string>
     <string name="adjust_label">الوقت</string>
+    <string name="time_format_title">تنسيق الوقت</string>
+    <string name="time_format_auto">تلقائي (حسب النظام)</string>
+    <string name="time_format_12">12 ساعة (1:00 PM)</string>
+    <string name="time_format_24">24 ساعة (13:00)</string>
 </resources>

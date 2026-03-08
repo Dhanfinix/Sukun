@@ -80,7 +80,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             
-            SukunTheme(appTheme = appTheme, dynamicColor = useDynamicColor) {
+            SukunTheme(
+                appTheme = appTheme,
+                dynamicColor = useDynamicColor
+            ) {
                 AppNavigation(
                     mainVm = mainVm,
                     isOnboardingCompleted = isOnboardingCompleted,
