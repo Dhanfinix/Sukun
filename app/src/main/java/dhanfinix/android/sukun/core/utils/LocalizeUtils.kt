@@ -39,17 +39,17 @@ fun String.formatTime(
     return try {
         val cleanInput = this.substringBefore(" ").trim()
         val hasSeconds = cleanInput.count { it == ':' } == 2
-        val inputFormatter = if (hasSeconds) DateTimeFormatter.ofPattern("HH:mm:ss") else DateTimeFormatter.ofPattern("HH:mm")
+        val inputFormatter = if (hasSeconds) DateTimeFormatter.ofPattern("HH:mm:ss", Locale.US) else DateTimeFormatter.ofPattern("HH:mm", Locale.US)
         val time = LocalTime.parse(cleanInput, inputFormatter)
         
         if (is24Hour) {
             val pattern = if (hasSeconds) "HH:mm:ss" else "HH:mm"
-            FormattedTime(time.format(DateTimeFormatter.ofPattern(pattern)))
+            FormattedTime(time.format(DateTimeFormatter.ofPattern(pattern, Locale.US)))
         } else {
             val timePattern = if (hasSeconds) "hh:mm:ss" else "hh:mm"
             val amPmPattern = "a"
             
-            val formattedTime = time.format(DateTimeFormatter.ofPattern(timePattern))
+            val formattedTime = time.format(DateTimeFormatter.ofPattern(timePattern, Locale.US))
             // Force AM/PM to be Latin uppercase for modern look
             val session = time.format(DateTimeFormatter.ofPattern(amPmPattern, Locale.US)).uppercase()
             
