@@ -118,8 +118,9 @@ fun DurationsBottomSheet(
                                 text = stringResource(prayer.nameRes),
                                 style = MaterialTheme.typography.bodyLarge
                             )
+                            val context = androidx.compose.ui.platform.LocalContext.current
                             Text(
-                                text = java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, currentDur), currentDur),
+                                text = java.lang.String.format(java.util.Locale.US, context.resources.getQuantityString(R.plurals.minutes_plural, currentDur), currentDur),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
