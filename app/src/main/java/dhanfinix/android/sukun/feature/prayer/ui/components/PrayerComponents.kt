@@ -584,9 +584,9 @@ fun NextPrayerCard(
                     val seconds = totalSecs % 60
 
                     activeRemainingTimeStr = if (hours > 0) {
-                        java.util.String.format(java.util.Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
+                        java.lang.String.format(java.util.Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
                     } else {
-                        java.util.String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds)
+                        java.lang.String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds)
                     }
 
                     kotlinx.coroutines.delay(1000)
