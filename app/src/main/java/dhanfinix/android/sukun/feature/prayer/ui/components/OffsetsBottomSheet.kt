@@ -121,9 +121,9 @@ fun OffsetsBottomSheet(
 
                         // Offset Value
                         val offsetText = when {
-                            currentOffset == 0 -> pluralStringResource(R.plurals.minutes_plural, 0, 0)
-                            currentOffset > 0 -> "+${pluralStringResource(R.plurals.minutes_plural, currentOffset, currentOffset)}"
-                            else -> "-${pluralStringResource(R.plurals.minutes_plural, currentOffset.absoluteValue, currentOffset.absoluteValue)}"
+                            currentOffset == 0 -> java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, 0), 0)
+                            currentOffset > 0 -> "+${java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, currentOffset), currentOffset)}"
+                            else -> "-${java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, currentOffset.absoluteValue), currentOffset.absoluteValue)}"
                         }
                         Text(
                             text = offsetText,

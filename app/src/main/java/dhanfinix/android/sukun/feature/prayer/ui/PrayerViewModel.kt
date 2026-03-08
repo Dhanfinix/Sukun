@@ -586,7 +586,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun startClockTicker() {
-        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss", java.util.Locale.US)
         viewModelScope.launch {
             var lastDate = LocalDate.now()
             while (true) {

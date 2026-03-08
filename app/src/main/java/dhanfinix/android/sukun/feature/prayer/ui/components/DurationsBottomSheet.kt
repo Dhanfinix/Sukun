@@ -86,7 +86,7 @@ fun DurationsBottomSheet(
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Text(
-                            text = pluralStringResource(R.plurals.minutes_plural, currentDur, currentDur),
+                            text = java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, currentDur), currentDur),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
@@ -118,7 +118,7 @@ fun DurationsBottomSheet(
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Text(
-                                text = pluralStringResource(R.plurals.minutes_plural, currentDur, currentDur),
+                                text = java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, currentDur), currentDur),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
