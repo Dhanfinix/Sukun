@@ -12,6 +12,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import android.content.res.Configuration
+import java.util.Locale
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
@@ -62,6 +68,24 @@ class MainActivity : AppCompatActivity() {
             val useDynamicColor by mainVm.useDynamicColor.collectAsState()
             val appLanguage by mainVm.appLanguage.collectAsState()
             val shouldShowReview by mainVm.shouldShowReview.collectAsState()
+            val context = LocalContext.current
+            val layoutDirection = when (appLanguage) {
+                AppLanguage.AR -> LayoutDirection.Rtl
+                else -> LayoutDirection.Ltr
+            }
+
+            val localizedContext = remember(appLanguage) {
+                val locale = when (appLanguage) {
+                    AppLanguage.EN -> Locale.ENGLISH
+                    AppLanguage.ID -> Locale("in")
+                    AppLanguage.AR -> Locale("ar")
+                    AppLanguage.SYSTEM -> Locale.getDefault()
+                }
+                val config = Configuration(context.resources.configuration)
+                config.setLocale(locale)
+                config.setLayoutDirection(locale)
+                context.createConfigurationContext(config)
+            }
 
             LaunchedEffect(appLanguage) {
                 val localeList = when (appLanguage) {
@@ -80,15 +104,20 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             
-            SukunTheme(
-                appTheme = appTheme,
-                dynamicColor = useDynamicColor
+            CompositionLocalProvider(
+                LocalContext provides localizedContext,
+                LocalLayoutDirection provides layoutDirection
             ) {
-                AppNavigation(
-                    mainVm = mainVm,
-                    isOnboardingCompleted = isOnboardingCompleted,
-                    isReady = isReady
-                )
+                SukunTheme(
+                    appTheme = appTheme,
+                    dynamicColor = useDynamicColor
+                ) {
+                    AppNavigation(
+                        mainVm = mainVm,
+                        isOnboardingCompleted = isOnboardingCompleted,
+                        isReady = isReady
+                    )
+                }
             }
         }
     }
