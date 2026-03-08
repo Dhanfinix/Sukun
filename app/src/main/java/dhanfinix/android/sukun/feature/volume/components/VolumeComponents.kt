@@ -48,7 +48,7 @@ fun ManualSilenceBottomSheet(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = pluralStringResource(R.plurals.minutes_plural, duration.toInt(), duration.toInt()),
+                text = java.lang.String.format(java.util.Locale.US, pluralStringResource(R.plurals.minutes_plural, duration.toInt()), duration.toInt()),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -148,7 +148,7 @@ fun VolumeCard(
                 )
 
                 Text(
-                    text = "${animatedPercent.toInt()}%",
+                    text = java.lang.String.format(java.util.Locale.US, "%d%%", animatedPercent.toInt()),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
