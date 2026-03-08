@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dhanfinix.android.sukun.R
+import dhanfinix.android.sukun.core.designsystem.LocalNumeralSystem
 import dhanfinix.android.sukun.core.utils.localizeDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,8 +69,9 @@ fun AboutScreen(
                 fontWeight = FontWeight.Bold
             )
 
+            val numeralSystem = LocalNumeralSystem.current
             Text(
-                text = stringResource(R.string.version_format, (versionName ?: "—").localizeDigits()),
+                text = stringResource(R.string.version_format, (versionName ?: "—").localizeDigits(numeralSystem)),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

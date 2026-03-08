@@ -118,7 +118,14 @@
     <string name="language_english">English</string>
     <string name="language_indonesian">Bahasa Indonesia</string>
     <string name="language_arabic">العربية</string>
-    <string name="language_system">لغة النظام</string>
+    <string name="language_system">تلقائي (النظام)</string>
+
+    <!-- Numeral Selection -->
+    <string name="numeral_system_title">نظام الأرقام</string>
+    <string name="numeral_system_auto">الافتراضي (٠١٢)</string>
+    <string name="numeral_system_western">الغربي (012)</string>
+
+    <!-- General Section -->
     <string name="settings_title">الإعدادات</string>
     <string name="section_general">عام</string>
     <string name="show_onboarding">شرح التطبيق</string>

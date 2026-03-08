@@ -1,6 +1,7 @@
 package dhanfinix.android.sukun.core.notification
 
 import android.app.NotificationChannel
+import android.content.res.Configuration
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -13,6 +14,8 @@ import dhanfinix.android.sukun.worker.SilenceReceiver
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import dhanfinix.android.sukun.core.datastore.NumeralSystem
+import dhanfinix.android.sukun.core.utils.localizeDigits
 
 /**
  * Manages the "Sukun Active" notification channel and countdown notification.
@@ -41,9 +44,18 @@ object NotificationHelper {
     fun showSilenceNotification(
         context: Context,
         prayerName: String,
-        startTimeMs: Long,   // when silence began — needed to compute progress
-        endTimeMs: Long
+        startTimeMs: Long,
+        endTimeMs: Long,
+        numeralSystem: NumeralSystem = NumeralSystem.AUTO
     ) {
+        val locale = if (context.resources.configuration.locales[0].language == "ar") {
+             Locale("ar")
+        } else Locale.getDefault()
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        val localizedContext = context.createConfigurationContext(config)
+
         createChannel(context)
 
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
@@ -68,17 +80,19 @@ object NotificationHelper {
 
         // Human-readable end time, e.g. "14:53"
         val endTimeFormatted = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(endTimeMs))
-        val endsAtText = context.getString(R.string.notif_ends_at, endTimeFormatted)
+        val endsAtText = context.getString(R.string.notif_ends_at, endTimeFormatted.localizeDigits(numeralSystem))
 
         // ── Compact (collapsed) view ──────────────────────────────────────────
-        val compactView = RemoteViews(context.packageName, R.layout.notification_sukun_countdown)
+        val compactView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_countdown)
         compactView.setTextViewText(R.id.notification_text, prayerName)
         compactView.setChronometer(R.id.notification_chronometer, chronometerBase, "%s", true)
+        compactView.setChronometerCountDown(R.id.notification_chronometer, true)
 
         // ── Expanded (big content) view ───────────────────────────────────────
-        val expandedView = RemoteViews(context.packageName, R.layout.notification_sukun_expanded)
+        val expandedView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_expanded)
         expandedView.setTextViewText(R.id.notif_expanded_prayer, prayerName)
         expandedView.setChronometer(R.id.notif_expanded_chronometer, chronometerBase, "%s", true)
+        expandedView.setChronometerCountDown(R.id.notif_expanded_chronometer, true)
         expandedView.setTextViewText(R.id.notif_expanded_end_time, endsAtText)
         expandedView.setOnClickPendingIntent(R.id.notif_expanded_stop, stopPending)
 

@@ -15,6 +15,7 @@ import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 import dhanfinix.android.sukun.feature.prayer.data.PrayerRepository
 import dhanfinix.android.sukun.core.datastore.UserPreferences
+import dhanfinix.android.sukun.core.datastore.NumeralSystem
 import dhanfinix.android.sukun.worker.SilenceScheduler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -45,6 +46,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private val silenceScheduler = SilenceScheduler(application)
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
     private var searchJob: Job? = null
+    private var currentNumeralSystem = NumeralSystem.AUTO
 
     private val _uiState = MutableStateFlow(PrayerUiState())
     val uiState: StateFlow<PrayerUiState> = _uiState.asStateFlow()
@@ -69,8 +71,16 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             }
             
-            // Now load the data (either with newly detected GPS, or fallback Jakarta)
+            // Load the data (either with newly detected GPS, or fallback Jakarta)
             loadPrayerTimes()
+            
+            // Observe Numeral Preference
+            launch {
+                userPrefs.numeralSystem.collect {
+                    currentNumeralSystem = it
+                }
+            }
+            
             startClockTicker()
         }
     }
@@ -564,10 +574,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
 
                 _uiState.update { state ->
                     state.copy(
-                        currentTime = currentTimeStr.localizeDigits(),
-                        currentDate = hijriDateStr.localizeDigits(),
+                        currentTime = currentTimeStr.localizeDigits(currentNumeralSystem),
+                        currentDate = hijriDateStr.localizeDigits(currentNumeralSystem),
                         nextPrayer = nextPrayerInfo?.first?.name,
-                        nextPrayerCountdown = countdownStr.localizeDigits()
+                        nextPrayerCountdown = countdownStr.localizeDigits(currentNumeralSystem)
                     )
                 }
                 delay(1000)

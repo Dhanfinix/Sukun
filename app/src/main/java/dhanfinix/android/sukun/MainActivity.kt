@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
             val appTheme by mainVm.appTheme.collectAsState()
             val useDynamicColor by mainVm.useDynamicColor.collectAsState()
             val appLanguage by mainVm.appLanguage.collectAsState()
+            val numeralSystem by mainVm.numeralSystem.collectAsState()
             val shouldShowReview by mainVm.shouldShowReview.collectAsState()
 
             LaunchedEffect(appLanguage) {
@@ -80,7 +81,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             
-            SukunTheme(appTheme = appTheme, dynamicColor = useDynamicColor) {
+            SukunTheme(
+                appTheme = appTheme,
+                numeralSystem = numeralSystem,
+                dynamicColor = useDynamicColor
+            ) {
                 AppNavigation(
                     mainVm = mainVm,
                     isOnboardingCompleted = isOnboardingCompleted,

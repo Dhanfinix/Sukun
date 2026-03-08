@@ -24,6 +24,7 @@ import dhanfinix.android.sukun.MainViewModel
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.AppTheme
+import dhanfinix.android.sukun.core.datastore.NumeralSystem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +39,10 @@ fun SettingsScreen(
 
     var showThemeSheet by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
+    var showNumeralSheet by remember { mutableStateOf(false) }
+
+    val numeralSystem by mainVm.numeralSystem.collectAsState()
+    val isArabic = java.util.Locale.getDefault().language == "ar"
     val context = LocalContext.current
 
     Scaffold(
@@ -107,6 +112,19 @@ fun SettingsScreen(
                 onClick = { showLanguageSheet = true }
             )
 
+            if (isArabic) {
+                SettingsItem(
+                    title = stringResource(R.string.numeral_system_title),
+                    subtitle = when (numeralSystem) {
+                        NumeralSystem.AUTO -> stringResource(R.string.numeral_system_auto)
+                        NumeralSystem.EASTERN -> stringResource(R.string.numeral_system_auto)
+                        NumeralSystem.WESTERN -> stringResource(R.string.numeral_system_western)
+                    },
+                    icon = Icons.Rounded.Numbers,
+                    onClick = { showNumeralSheet = true }
+                )
+            }
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             // General Section
@@ -154,6 +172,14 @@ fun SettingsScreen(
                 currentLanguage = appLanguage,
                 onLanguageSelected = { mainVm.setLanguage(it) },
                 onDismiss = { showLanguageSheet = false }
+            )
+        }
+
+        if (showNumeralSheet) {
+            NumeralSelectionSheet(
+                currentSystem = numeralSystem,
+                onSystemSelected = { mainVm.setNumeralSystem(it) },
+                onDismiss = { showNumeralSheet = false }
             )
         }
     }
@@ -318,6 +344,64 @@ private fun LanguageSelectionSheet(
                         .padding(vertical = 4.dp)
                         .clickable { 
                             onLanguageSelected(value)
+                            onDismiss()
+                        },
+                    shape = MaterialTheme.shapes.medium,
+                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
+                        if (isSelected) {
+                            Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NumeralSelectionSheet(
+    currentSystem: NumeralSystem,
+    onSystemSelected: (NumeralSystem) -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.numeral_system_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp, start = 8.dp)
+            )
+
+            val options = listOf(
+                NumeralSystem.AUTO to stringResource(R.string.numeral_system_auto),
+                NumeralSystem.WESTERN to stringResource(R.string.numeral_system_western)
+            )
+
+            options.forEach { (value, label) ->
+                val isSelected = (value == currentSystem) || (value == NumeralSystem.AUTO && currentSystem == NumeralSystem.EASTERN)
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable {
+                            onSystemSelected(value)
                             onDismiss()
                         },
                     shape = MaterialTheme.shapes.medium,

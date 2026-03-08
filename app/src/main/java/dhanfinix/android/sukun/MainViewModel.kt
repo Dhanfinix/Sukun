@@ -3,8 +3,9 @@ package dhanfinix.android.sukun
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import dhanfinix.android.sukun.core.datastore.AppTheme
 import dhanfinix.android.sukun.core.datastore.AppLanguage
+import dhanfinix.android.sukun.core.datastore.AppTheme
+import dhanfinix.android.sukun.core.datastore.NumeralSystem
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -55,6 +56,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = AppLanguage.SYSTEM
         )
 
+    val numeralSystem: StateFlow<NumeralSystem> = userPrefs.numeralSystem
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = NumeralSystem.AUTO
+        )
+
     val hasSeenLanding: StateFlow<Boolean> = userPrefs.hasSeenLanding
         .stateIn(
             scope = viewModelScope,
@@ -78,6 +86,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setLanguage(language: AppLanguage) {
         viewModelScope.launch {
             userPrefs.setAppLanguage(language)
+        }
+    }
+
+    fun setNumeralSystem(system: NumeralSystem) {
+        viewModelScope.launch {
+            userPrefs.setNumeralSystem(system)
         }
     }
 

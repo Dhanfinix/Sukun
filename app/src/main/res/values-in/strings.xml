@@ -117,8 +117,15 @@
     <string name="app_language">Bahasa</string>
     <string name="language_english">English</string>
     <string name="language_indonesian">Bahasa Indonesia</string>
-    <string name="language_arabic">العربية</string>
-    <string name="language_system">Default Sistem</string>
+    <string name="language_arabic">Arab</string>
+    <string name="language_system">Otomatis (Sistem)</string>
+
+    <!-- Numeral Selection -->
+    <string name="numeral_system_title">Sistem Angka</string>
+    <string name="numeral_system_auto">Default (٠١٢)</string>
+    <string name="numeral_system_western">Barat (012)</string>
+
+    <!-- General Section -->
     <string name="settings_title">Pengaturan</string>
     <string name="section_general">Umum</string>
     <string name="show_onboarding">Tampilkan Onboarding</string>

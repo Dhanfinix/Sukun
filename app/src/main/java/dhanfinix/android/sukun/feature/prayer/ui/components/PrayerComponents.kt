@@ -36,6 +36,7 @@ import dhanfinix.android.sukun.core.designsystem.shimmer
 import dhanfinix.android.sukun.feature.prayer.data.model.LocationSuggestion
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
+import dhanfinix.android.sukun.core.designsystem.LocalNumeralSystem
 import dhanfinix.android.sukun.core.utils.localizeDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -409,8 +410,9 @@ fun PrayerTile(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                val numeralSystem = LocalNumeralSystem.current
                 Text(
-                    text = prayer.time.localizeDigits(),
+                    text = prayer.time.localizeDigits(numeralSystem),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (isVisuallyEnabled) 1f else 0.5f),
                     textDecoration = if (isVisuallyEnabled) TextDecoration.None else TextDecoration.LineThrough,
@@ -597,8 +599,9 @@ fun NextPrayerCard(
                             Spacer(modifier = Modifier.height(6.dp))
 
                             // Big remaining time
+                            val numeralSystem = LocalNumeralSystem.current
                             Text(
-                                text = (if (activeRemainingTimeStr.isNotEmpty()) activeRemainingTimeStr else "00:00").localizeDigits(),
+                                text = (if (activeRemainingTimeStr.isNotEmpty()) activeRemainingTimeStr else "00:00").localizeDigits(numeralSystem),
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
@@ -666,8 +669,9 @@ fun NextPrayerCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val numeralSystem = LocalNumeralSystem.current
                         Text(
-                            text = currentTime,
+                            text = currentTime.localizeDigits(numeralSystem),
                             style = MaterialTheme.typography.displayMedium,
                             fontWeight = FontWeight.ExtraBold,
                             fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
@@ -686,7 +690,7 @@ fun NextPrayerCard(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = countdown,
+                                text = countdown.localizeDigits(numeralSystem),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,

@@ -1,5 +1,7 @@
 package dhanfinix.android.sukun.feature.volume
 
+import dhanfinix.android.sukun.core.designsystem.LocalNumeralSystem
+import dhanfinix.android.sukun.core.utils.localizeDigits
 import dhanfinix.android.sukun.feature.volume.components.*
 import androidx.compose.ui.res.stringResource
 import dhanfinix.android.sukun.R
@@ -47,12 +49,13 @@ fun VolumeSection(
             },
             title = { Text(stringResource(R.string.silence_already_active_title)) },
             text = {
+                val numeralSystem = LocalNumeralSystem.current
                 Text(
                     text = stringResource(
                         R.string.confirm_overwrite_silence,
                         state.sukunLabel ?: stringResource(R.string.label_unknown),
                         state.pendingOverwriteDurationMin ?: 0
-                    ),
+                    ).localizeDigits(numeralSystem),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },

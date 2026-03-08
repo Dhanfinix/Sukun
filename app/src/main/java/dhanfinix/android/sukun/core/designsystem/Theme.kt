@@ -15,6 +15,9 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.AppTheme
+import dhanfinix.android.sukun.core.datastore.NumeralSystem
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 
 private val DarkColorScheme = darkColorScheme(
     // Primary — sandy tan pastel
@@ -104,9 +107,12 @@ private val LightColorScheme = lightColorScheme(
     scrim = Color(0xFF000000),
 )
 
+val LocalNumeralSystem = staticCompositionLocalOf { NumeralSystem.AUTO }
+
 @Composable
 fun SukunTheme(
     appTheme: AppTheme = AppTheme.SYSTEM,
+    numeralSystem: NumeralSystem = NumeralSystem.AUTO,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
@@ -144,7 +150,8 @@ fun SukunTheme(
     val layoutDirection = if (isArabic) LayoutDirection.Rtl else LayoutDirection.Ltr
 
     androidx.compose.runtime.CompositionLocalProvider(
-        LocalLayoutDirection provides layoutDirection
+        LocalLayoutDirection provides layoutDirection,
+        LocalNumeralSystem provides numeralSystem
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

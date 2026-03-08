@@ -1,26 +1,46 @@
 package dhanfinix.android.sukun.core.utils
 
+import dhanfinix.android.sukun.core.datastore.NumeralSystem
 import java.util.Locale
 
 /**
  * Utility to localize digits (0-9) to Eastern Arabic numerals (٠-٩)
  * if the current locale is Arabic.
  */
-fun String.localizeDigits(): String {
+fun String.localizeDigits(numeralSystem: NumeralSystem = NumeralSystem.AUTO): String {
     val locale = Locale.getDefault()
-    if (locale.language != "ar") return this
+    val isArabic = locale.language == "ar"
+
+    // Fix: We need BiDi isolation for Arabic locale even if we don't localize digits
+    // to prevent signs (-, :) from flipping to the wrong side.
+    if (!isArabic) return this
+
+    val shouldLocalize = when (numeralSystem) {
+        NumeralSystem.AUTO -> isArabic
+        NumeralSystem.EASTERN -> isArabic // Only localize if in Arabic locale
+        NumeralSystem.WESTERN -> false
+    }
 
     val digits = charArrayOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
-    return this.map { char ->
-        if (char in '0'..'9') {
-            digits[char - '0']
-        } else {
-            char
-        }
-    }.joinToString("")
+    val converted = if (shouldLocalize) {
+        this.map { char ->
+            if (char in '0'..'9') {
+                digits[char - '0']
+            } else {
+                char
+            }
+        }.joinToString("")
+    } else {
+        this
+    }
+
+    // Wrap in Left-to-Right Isolate (\u2066) and Pop Directional Isolate (\u2069)
+    // to ensure signs like '-' stay on the left as a prefix even in RTL containers.
+    return "\u2066$converted\u2069"
 }
 
 /**
  * Convenience for Int to localized String
  */
-fun Int.toLocalizedPath(): String = this.toString().localizeDigits()
+fun Int.toLocalizedPath(numeralSystem: NumeralSystem = NumeralSystem.AUTO): String = 
+    this.toString().localizeDigits(numeralSystem)

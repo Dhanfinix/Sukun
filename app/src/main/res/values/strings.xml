@@ -117,8 +117,15 @@
     <string name="app_language">Language</string>
     <string name="language_english">English</string>
     <string name="language_indonesian">Indonesian</string>
-    <string name="language_arabic">العربية</string>
-    <string name="language_system">System Default</string>
+    <string name="language_arabic">Arabic</string>
+    <string name="language_system">Auto (System)</string>
+
+    <!-- Numeral Selection -->
+    <string name="numeral_system_title">Numeral System</string>
+    <string name="numeral_system_auto">Default (٠١٢)</string>
+    <string name="numeral_system_western">Western (012)</string>
+
+    <!-- General Section -->
     <string name="settings_title">Settings</string>
     <string name="section_general">General</string>
     <string name="show_onboarding">Show Onboarding</string>

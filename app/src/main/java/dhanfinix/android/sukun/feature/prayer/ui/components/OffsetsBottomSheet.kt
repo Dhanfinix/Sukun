@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dhanfinix.android.sukun.R
+import dhanfinix.android.sukun.core.designsystem.LocalNumeralSystem
 import dhanfinix.android.sukun.core.utils.localizeDigits
 import kotlin.math.absoluteValue
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
@@ -31,6 +32,7 @@ fun OffsetsBottomSheet(
     onOffsetChange: (PrayerName, Int) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val numeralSystem = LocalNumeralSystem.current
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         dragHandle = { BottomSheetDefaults.DragHandle() }
@@ -72,7 +74,7 @@ fun OffsetsBottomSheet(
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Text(
-                            text = timeStr.localizeDigits(),
+                            text = timeStr.localizeDigits(numeralSystem),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
@@ -109,7 +111,7 @@ fun OffsetsBottomSheet(
                             else -> "-${pluralStringResource(R.plurals.minutes_plural, currentOffset.absoluteValue, currentOffset.absoluteValue)}"
                         }
                         Text(
-                            text = offsetText.localizeDigits(),
+                            text = offsetText.localizeDigits(numeralSystem),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = if (currentOffset != 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
