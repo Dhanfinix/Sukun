@@ -46,8 +46,7 @@ fun SettingsScreen(
     var showTimeFormatSheet by remember { mutableStateOf(false) }
     var showReminderSheet by remember { mutableStateOf(false) }
 
-    var showRestartDialog by remember { mutableStateOf(false) }
-    var selectedLanguage by remember { mutableStateOf<AppLanguage?>(null) }
+
 
     val isArabic = java.util.Locale.getDefault().language == "ar"
     val context = LocalContext.current
@@ -198,36 +197,11 @@ fun SettingsScreen(
         if (showLanguageSheet) {
             LanguageSelectionSheet(
                 currentLanguage = appLanguage,
-                onLanguageSelected = { 
-                    selectedLanguage = it
-                    showRestartDialog = true
-                },
+                onLanguageSelected = { mainVm.setLanguage(it) },
                 onDismiss = { showLanguageSheet = false }
             )
         }
 
-        if (showRestartDialog) {
-            AlertDialog(
-                onDismissRequest = { showRestartDialog = false },
-                title = { Text(stringResource(R.string.language_restart_title)) },
-                text = { Text(stringResource(R.string.language_restart_msg)) },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            selectedLanguage?.let { mainVm.setLanguage(it) }
-                            showRestartDialog = false
-                        }
-                    ) {
-                        Text(stringResource(R.string.btn_continue))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showRestartDialog = false }) {
-                        Text(stringResource(R.string.btn_cancel))
-                    }
-                }
-            )
-        }
 
 
 
