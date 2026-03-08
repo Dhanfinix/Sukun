@@ -7,7 +7,8 @@ To ensure stable releases and a clean working environment, the Sukun project fol
 1. **`main`** 
    - Strict representation of **Production / Live to Users**.
    - Accepts Pull Requests *only* from `internal`.
-   - Merging to `main` instantly triggers a **Play Store Production Release** and creates a GitHub Release with an auto-generated version tag (e.g., `v1.2.0`).
+   - Merging to `main` automatically triggers the GitHub Action to build and create a **GitHub Release** with version tags.
+   - **Production Release**: Google Play Production releases are now done **manually** by promoting the build from the **Internal Testing** track to **Production** in the Google Play Console.
 
 2. **`internal`**
    - Representation of the **Internal Testing Track**.
@@ -40,10 +41,10 @@ Once a batch of features is merged into `development` and is ready for real-worl
 Once the internal testers confirm the app is stable and working:
 1. Check that the `versionName` (e.g., `1.2.0`) in `app/build.gradle.kts` exactly reflects the update.
 2. Open a Pull Request from `internal` → `main`.
-3. Once merged, the GitHub Action (`release-production.yml`) triggers:
+3. Once merged, the GitHub Action (`release-github.yml`) triggers:
    - Builds the final signed AAB.
-   - Pushes it to the **Production Track** on Google Play Console.
    - Creates a **GitHub Release** and automatically tags the repo with `v1.2.0` based on the version name.
+   - **Manual Promotion**: The developer must manually promote the build from the **Internal Testing** track to the **Production Track** in the Google Play Console.
 
 ## Play Store "What's New" Notes
 The `whatsnew/` folder dictates what text is presented as the update changelog in the Play Store. It supports localization. Keep descriptions concise and under 500 characters so Google Play accepts them. Update these files before merging PRs.

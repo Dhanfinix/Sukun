@@ -5,9 +5,12 @@ on:
     branches:
       - 'main'
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
-    name: Build & Create Release
+    name: Build & GitHub Release
     runs-on: ubuntu-latest
 
     steps:
@@ -30,20 +33,26 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build Release APK
+      - name: Build Release AAB
         env:
           STORE_FILE: sukun.jks
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew assembleRelease
+        run: ./gradlew bundleRelease
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-aab-github
+          path: app/build/outputs/bundle/release/*.aab
+          retention-days: 14
 
       - name: Extract Version Name
         id: version
         run: |
           VERSION_NAME=$(grep -oE 'versionName\s*=\s*"[^"]+"' app/build.gradle.kts | cut -d'"' -f2)
           echo "VERSION_NAME=v$VERSION_NAME" >> $GITHUB_ENV
-          echo "version=$VERSION_NAME" >> $GITHUB_OUTPUT
 
       - name: Read WhatsNew
         id: whatsnew
@@ -59,7 +68,5 @@ jobs:
           tag_name: ${{ env.VERSION_NAME }}
           name: Release ${{ env.VERSION_NAME }}
           body: ${{ env.RELEASE_BODY }}
-          files: app/build/outputs/apk/release/*.apk
+          files: app/build/outputs/bundle/release/*.aab
           generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
