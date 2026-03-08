@@ -1,4 +1,4 @@
-name: Production Release
+name: GitHub Release
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-and-release:
-    name: Build & Publish to Production
+    name: Build & GitHub Release
     runs-on: ubuntu-latest
 
     steps:
@@ -44,7 +44,7 @@ jobs:
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-aab-production
+          name: release-aab-github
           path: app/build/outputs/bundle/release/*.aab
           retention-days: 14
 
@@ -61,13 +61,3 @@ jobs:
           name: Release ${{ env.VERSION_NAME }}
           files: app/build/outputs/bundle/release/*.aab
           generate_release_notes: true
-
-      - name: Upload to Play Store (Production)
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: dhanfinix.android.sukun
-          releaseFiles: app/build/outputs/bundle/release/*.aab
-          track: production
-          status: completed
-          whatsNewDirectory: whatsnew
