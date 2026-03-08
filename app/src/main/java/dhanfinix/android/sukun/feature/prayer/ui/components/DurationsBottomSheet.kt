@@ -7,12 +7,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import dhanfinix.android.sukun.R
-import dhanfinix.android.sukun.core.designsystem.LocalNumeralSystem
-import dhanfinix.android.sukun.core.utils.localizeDigits
+import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,65 +71,65 @@ fun DurationsBottomSheet(
 
             if (isUniform) {
                 val currentDur = durations.values.firstOrNull() ?: 15
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(vertical = 8.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.all_prayers),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    val numeralSystem = LocalNumeralSystem.current
-                    Text(
-                        text = pluralStringResource(R.plurals.minutes_plural, currentDur, currentDur).localizeDigits(numeralSystem),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.width(48.dp)
-                    )
-
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.all_prayers),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = pluralStringResource(R.plurals.minutes_plural, currentDur, currentDur),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                     Slider(
                         value = currentDur.toFloat(),
                         onValueChange = { onAllDurationsChange(it.toInt()) },
                         valueRange = 5f..120f,
                         steps = 22,
-                        modifier = Modifier.weight(2f)
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             } else {
                 PrayerName.entries.forEach { prayer ->
                     val currentDur = durations[prayer] ?: if (prayer == PrayerName.JUMUAH) 45 else 15
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(vertical = 8.dp)
                     ) {
-                        Text(
-                            text = stringResource(prayer.nameRes),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f)
-                        )
-                        
-                        val numeralSystem = LocalNumeralSystem.current
-                        Text(
-                            text = pluralStringResource(R.plurals.minutes_plural, currentDur, currentDur).localizeDigits(numeralSystem),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.width(48.dp)
-                        )
-
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(prayer.nameRes),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Text(
+                                text = pluralStringResource(R.plurals.minutes_plural, currentDur, currentDur),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         Slider(
                             value = currentDur.toFloat(),
                             onValueChange = { onDurationChange(prayer, it.toInt()) },
                             valueRange = 5f..120f,
-                            steps = 22, // Steps between 5 and 120 every 5 mins
-                            modifier = Modifier.weight(2f)
+                            steps = 22,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }

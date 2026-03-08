@@ -14,7 +14,6 @@ import dhanfinix.android.sukun.feature.prayer.data.model.LocationSuggestion
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 import dhanfinix.android.sukun.feature.prayer.data.PrayerRepository
-import dhanfinix.android.sukun.core.datastore.NumeralSystem
 import dhanfinix.android.sukun.core.datastore.TimeFormat
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.worker.SilenceScheduler
@@ -34,7 +33,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import dhanfinix.android.sukun.core.utils.localizeDigits
 import dhanfinix.android.sukun.core.utils.formatTime
 
 /**
@@ -48,7 +46,6 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private val silenceScheduler = SilenceScheduler(application)
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
     private var searchJob: Job? = null
-    private var currentNumeralSystem = NumeralSystem.AUTO
     private var currentTimeFormat = TimeFormat.AUTO
 
     private val _uiState = MutableStateFlow(PrayerUiState())
@@ -78,11 +75,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             loadPrayerTimes()
             
             // Observe Preferences
-            launch {
-                userPrefs.numeralSystem.collect {
-                    currentNumeralSystem = it
-                }
-            }
+
 
             launch {
                 userPrefs.timeFormat.collect {
@@ -171,19 +164,23 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                         if (isTodayFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
                     }.map { name ->
                         val originalTime = timesMapToday[name] ?: "--:--"
+                        val formattedTime = originalTime.formatTime(getApplication(), currentTimeFormat)
                         PrayerInfo(
                             name = name,
-                            time = originalTime.formatTime(getApplication(), currentTimeFormat),
-                            isEnabled = enabledMapVal[name] ?: true
+                            time = originalTime,
+                            isEnabled = enabledMapVal[name] ?: true,
+                            formattedTime = formattedTime
                         )
                     }
                     
                     val allPrayersToday = PrayerName.entries.map { name ->
                         val originalTime = timesMapToday[name] ?: "--:--"
+                        val formattedTime = originalTime.formatTime(getApplication(), currentTimeFormat)
                         PrayerInfo(
                             name = name,
-                            time = originalTime.formatTime(getApplication(), currentTimeFormat),
-                            isEnabled = enabledMapVal[name] ?: true
+                            time = originalTime,
+                            isEnabled = enabledMapVal[name] ?: true,
+                            formattedTime = formattedTime
                         )
                     }
                     
@@ -191,10 +188,12 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                         if (isTomorrowFriday) it != PrayerName.DHUHR else it != PrayerName.JUMUAH 
                     }.map { name ->
                         val originalTime = timesMapTomorrow[name] ?: "--:--"
+                        val formattedTime = originalTime.formatTime(getApplication(), currentTimeFormat)
                         PrayerInfo(
                             name = name,
-                            time = originalTime.formatTime(getApplication(), currentTimeFormat),
-                            isEnabled = enabledMapVal[name] ?: true
+                            time = originalTime,
+                            isEnabled = enabledMapVal[name] ?: true,
+                            formattedTime = formattedTime
                         )
                     }
                     
@@ -569,7 +568,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
                     loadPrayerTimes()
                 }
 
-                val currentTimeStr = now.format(timeFormatter)
+                val currentTimeResult = now.format(timeFormatter)
                     .formatTime(getApplication(), currentTimeFormat)
                 
                 val nextPrayerInfo = calculateNextPrayer(now, _uiState.value.prayers)
@@ -588,10 +587,10 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
 
                 _uiState.update { state ->
                     state.copy(
-                        currentTime = currentTimeStr.localizeDigits(currentNumeralSystem),
-                        currentDate = hijriDateStr.localizeDigits(currentNumeralSystem),
+                        currentTime = currentTimeResult,
+                        currentDate = hijriDateStr,
                         nextPrayer = nextPrayerInfo?.first?.name,
-                        nextPrayerCountdown = countdownStr.localizeDigits(currentNumeralSystem)
+                        nextPrayerCountdown = countdownStr
                     )
                 }
                 delay(1000)

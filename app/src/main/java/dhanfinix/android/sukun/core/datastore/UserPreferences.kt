@@ -28,12 +28,6 @@ enum class AppLanguage {
     SYSTEM
 }
 
-enum class NumeralSystem {
-    AUTO,
-    EASTERN, // ٠١٢
-    WESTERN  // 012
-}
-
 enum class TimeFormat {
     AUTO,
     H12,
@@ -107,7 +101,6 @@ class UserPreferences(private val context: Context) {
     private val KEY_USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
     private val KEY_HAS_SEEN_LANDING = booleanPreferencesKey("has_seen_landing")
     private val KEY_APP_LANGUAGE = stringPreferencesKey("app_language")
-    private val KEY_NUMERAL_SYSTEM = stringPreferencesKey("numeral_system")
     private val KEY_TIME_FORMAT = stringPreferencesKey("time_format")
 
     // ── In-App Review ──
@@ -192,15 +185,6 @@ class UserPreferences(private val context: Context) {
             AppLanguage.valueOf(langName)
         } catch (e: Exception) {
             AppLanguage.SYSTEM
-        }
-    }
-
-    val numeralSystem: Flow<NumeralSystem> = context.dataStore.data.map { prefs ->
-        val systemName = prefs[KEY_NUMERAL_SYSTEM] ?: NumeralSystem.AUTO.name
-        try {
-            NumeralSystem.valueOf(systemName)
-        } catch (e: Exception) {
-            NumeralSystem.AUTO
         }
     }
 
@@ -393,12 +377,6 @@ class UserPreferences(private val context: Context) {
     suspend fun setAppLanguage(language: AppLanguage) {
         context.dataStore.edit { prefs ->
             prefs[KEY_APP_LANGUAGE] = language.name
-        }
-    }
-
-    suspend fun setNumeralSystem(system: NumeralSystem) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_NUMERAL_SYSTEM] = system.name
         }
     }
 

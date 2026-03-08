@@ -107,7 +107,8 @@
     <string name="uniform_silence_desc">Atur berapa lama ponsel senyap setelah setiap waktu salat.</string>
     <string name="all_prayers">Semua Salat</string>
 
-    <!-- Theme Selection -->
+    <!-- Appearance Section -->
+    <string name="section_appearance">Tampilan</string>
     <string name="app_theme">Tema Aplikasi</string>
     <string name="theme_system">Default Sistem</string>
     <string name="theme_light">Mode Terang</string>

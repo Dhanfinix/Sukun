@@ -107,9 +107,8 @@ class SilenceReceiver : BroadcastReceiver() {
         userPrefs.setSilenceMetadata(startTime, endTime, prayerName)
 
         // 5. Show ongoing notification with working chronometer
-        val numeralSystem = userPrefs.numeralSystem.first()
         val timeFormat = userPrefs.timeFormat.first()
-        NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime, numeralSystem, timeFormat)
+        NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime, timeFormat)
     }
 
     private suspend fun handleStopSilence(context: Context) {

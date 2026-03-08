@@ -107,7 +107,8 @@
     <string name="uniform_silence_desc">حدد المدة التي يظل فيها هاتفك صامتاً بعد كل صلاة.</string>
     <string name="all_prayers">كل الصلوات</string>
 
-    <!-- Theme Selection -->
+    <!-- Appearance Section -->
+    <string name="section_appearance">المظهر</string>
     <string name="app_theme">مظهر التطبيق</string>
     <string name="theme_system">تلقائي حسب النظام</string>
     <string name="theme_light">فاتح</string>
@@ -120,10 +121,6 @@
     <string name="language_arabic">العربية</string>
     <string name="language_system">تلقائي (النظام)</string>
 
-    <!-- Numeral Selection -->
-    <string name="numeral_system_title">نظام الأرقام</string>
-    <string name="numeral_system_auto">الافتراضي (٠١٢)</string>
-    <string name="numeral_system_western">الغربي (012)</string>
 
     <!-- General Section -->
     <string name="settings_title">الإعدادات</string>
@@ -172,6 +169,6 @@
     <string name="adjust_label">الوقت</string>
     <string name="time_format_title">تنسيق الوقت</string>
     <string name="time_format_auto">تلقائي (حسب النظام)</string>
-    <string name="time_format_12">١٢ ساعة (١:٠٠ م)</string>
-    <string name="time_format_24">٢٤ ساعة (١٣:٠٠)</string>
+    <string name="time_format_12">12 ساعة (1:00 PM)</string>
+    <string name="time_format_24">24 ساعة (13:00)</string>
 </resources>

@@ -107,7 +107,8 @@
     <string name="uniform_silence_desc">Set how long your phone stays muted after each prayer.</string>
     <string name="all_prayers">All Prayers</string>
 
-    <!-- Theme Selection -->
+    <!-- Appearance Section -->
+    <string name="section_appearance">Appearance</string>
     <string name="app_theme">App Theme</string>
     <string name="theme_system">System Default</string>
     <string name="theme_light">Light Mode</string>
@@ -120,10 +121,6 @@
     <string name="language_arabic">Arabic</string>
     <string name="language_system">Auto (System)</string>
 
-    <!-- Numeral Selection -->
-    <string name="numeral_system_title">Numeral System</string>
-    <string name="numeral_system_auto">Default (٠١٢)</string>
-    <string name="numeral_system_western">Western (012)</string>
 
     <!-- General Section -->
     <string name="settings_title">Settings</string>

@@ -17,8 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import dhanfinix.android.sukun.R
-import dhanfinix.android.sukun.core.designsystem.LocalNumeralSystem
-import dhanfinix.android.sukun.core.utils.localizeDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,9 +47,8 @@ fun ManualSilenceBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            val numeralSystem = LocalNumeralSystem.current
             Text(
-                text = pluralStringResource(R.plurals.minutes_plural, duration.toInt(), duration.toInt()).localizeDigits(numeralSystem),
+                text = pluralStringResource(R.plurals.minutes_plural, duration.toInt(), duration.toInt()),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -150,9 +147,8 @@ fun VolumeCard(
                     label = "volume_percent"
                 )
 
-                val numeralSystem = LocalNumeralSystem.current
                 Text(
-                    text = "${animatedPercent.toInt()}%".localizeDigits(numeralSystem),
+                    text = "${animatedPercent.toInt()}%",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
