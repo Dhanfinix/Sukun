@@ -167,7 +167,7 @@ class PrayerRepository(context: Context) {
                 }
                 h = (h % 24 + 24) % 24
                 
-                String.format("%02d:%02d", h, m)
+                java.lang.String.format(java.util.Locale.US, "%02d:%02d", h, m)
             } catch (e: Exception) {
                 timeStr
             }
