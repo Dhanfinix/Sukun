@@ -100,10 +100,11 @@ object NotificationHelper {
             formattedEndTime.time.withIsolate()
         }
         
-        val endsAtText = context.getString(R.string.notif_ends_at, endTimeDisplay)
+        val endsAtLabel = localizedContext.getString(R.string.notif_ends_at, endTimeDisplay)
 
         // ── Compact (collapsed) view ──────────────────────────────────────────
         val compactView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_countdown)
+        compactView.setTextViewText(R.id.notification_title, localizedContext.getString(R.string.notif_title))
         compactView.setTextViewText(R.id.notification_text, prayerName)
         compactView.setChronometer(R.id.notification_chronometer, chronometerBase, "%s", true)
         compactView.setChronometerCountDown(R.id.notification_chronometer, true)
@@ -111,9 +112,10 @@ object NotificationHelper {
         // ── Expanded (big content) view ───────────────────────────────────────
         val expandedView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_expanded)
         expandedView.setTextViewText(R.id.notif_expanded_prayer, prayerName)
+        expandedView.setTextViewText(R.id.notif_expanded_status, localizedContext.getString(R.string.silence_active))
         expandedView.setChronometer(R.id.notif_expanded_chronometer, chronometerBase, "%s", true)
         expandedView.setChronometerCountDown(R.id.notif_expanded_chronometer, true)
-        expandedView.setTextViewText(R.id.notif_expanded_end_time, endsAtText)
+        expandedView.setTextViewText(R.id.notif_expanded_end_time, endsAtLabel)
         expandedView.setOnClickPendingIntent(R.id.notif_expanded_stop, stopPending)
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
