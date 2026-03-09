@@ -44,9 +44,9 @@
                 android:textAppearance="@style/TextAppearance.Compat.Notification.Line2" />
 
             <TextView
+                android:id="@+id/notif_expanded_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/silence_active"
                 android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
                 android:maxLines="1" />
 

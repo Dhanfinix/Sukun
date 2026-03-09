@@ -100,10 +100,11 @@ object NotificationHelper {
             formattedEndTime.time.withIsolate()
         }
         
-        val endsAtText = context.getString(R.string.notif_ends_at, endTimeDisplay)
+        val endsAtLabel = localizedContext.getString(R.string.notif_ends_at, endTimeDisplay)
 
         // ── Compact (collapsed) view ──────────────────────────────────────────
         val compactView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_countdown)
+        compactView.setTextViewText(R.id.notification_title, localizedContext.getString(R.string.notif_title))
         compactView.setTextViewText(R.id.notification_text, prayerName)
         compactView.setChronometer(R.id.notification_chronometer, chronometerBase, "%s", true)
         compactView.setChronometerCountDown(R.id.notification_chronometer, true)
@@ -111,9 +112,10 @@ object NotificationHelper {
         // ── Expanded (big content) view ───────────────────────────────────────
         val expandedView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_expanded)
         expandedView.setTextViewText(R.id.notif_expanded_prayer, prayerName)
+        expandedView.setTextViewText(R.id.notif_expanded_status, localizedContext.getString(R.string.silence_active))
         expandedView.setChronometer(R.id.notif_expanded_chronometer, chronometerBase, "%s", true)
         expandedView.setChronometerCountDown(R.id.notif_expanded_chronometer, true)
-        expandedView.setTextViewText(R.id.notif_expanded_end_time, endsAtText)
+        expandedView.setTextViewText(R.id.notif_expanded_end_time, endsAtLabel)
         expandedView.setOnClickPendingIntent(R.id.notif_expanded_stop, stopPending)
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -137,6 +139,14 @@ object NotificationHelper {
     }
 
     fun showReminderNotification(context: Context, prayerName: String, minutesBefore: Int) {
+        val locale = if (context.resources.configuration.locales[0].language == "ar") {
+            Locale("ar")
+        } else Locale.getDefault()
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        val localizedContext = context.createConfigurationContext(config)
+
         createChannel(context)
 
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
@@ -147,9 +157,9 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val title = context.getString(R.string.reminder_title_context, prayerName)
-        val minutesStr = java.lang.String.format(java.util.Locale.US, "%d", minutesBefore)
-        val content = context.getString(R.string.reminder_msg_context, prayerName, minutesStr)
+        val title = context.getString(R.string.reminder_title_context, prayerName.withIsolate())
+        val minutesStr = java.lang.String.format(java.util.Locale.US, "%d", minutesBefore).withIsolate()
+        val content = context.getString(R.string.reminder_msg_context, prayerName.withIsolate(), minutesStr)
 
         val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
