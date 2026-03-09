@@ -129,7 +129,7 @@
     <string name="reminder_time">Reminder Time</string>
     <string name="minutes_before">%d minutes before</string>
     <string name="reminder_title_context">Prepare for %s</string>
-    <string name="reminder_msg_context">It\'s almost time for %1$s. You have about %2$d minutes to prepare.</string>
+    <string name="reminder_msg_context">It\'s almost time for %1$s. You have about %2$s minutes to prepare.</string>
     <string name="btn_prepare">Prepare Now</string>
 
     <!-- General Section -->

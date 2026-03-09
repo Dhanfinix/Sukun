@@ -137,6 +137,14 @@ object NotificationHelper {
     }
 
     fun showReminderNotification(context: Context, prayerName: String, minutesBefore: Int) {
+        val locale = if (context.resources.configuration.locales[0].language == "ar") {
+            Locale("ar")
+        } else Locale.getDefault()
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        val localizedContext = context.createConfigurationContext(config)
+
         createChannel(context)
 
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
@@ -147,9 +155,9 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val title = context.getString(R.string.reminder_title_context, prayerName)
-        val minutesStr = java.lang.String.format(java.util.Locale.US, "%d", minutesBefore)
-        val content = context.getString(R.string.reminder_msg_context, prayerName, minutesStr)
+        val title = context.getString(R.string.reminder_title_context, prayerName.withIsolate())
+        val minutesStr = java.lang.String.format(java.util.Locale.US, "%d", minutesBefore).withIsolate()
+        val content = context.getString(R.string.reminder_msg_context, prayerName.withIsolate(), minutesStr)
 
         val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)

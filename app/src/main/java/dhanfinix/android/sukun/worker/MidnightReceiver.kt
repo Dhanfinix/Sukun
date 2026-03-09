@@ -61,8 +61,11 @@ class MidnightReceiver : BroadcastReceiver() {
                         )
                     }
                     
+                    val isReminder = userPrefs.isReminderEnabled.first()
+                    val reminderMin = userPrefs.reminderMinutes.first()
+                    
                     // Re-schedule for the whole rolling 24h window
-                    scheduler.scheduleAll(prayersToday, prayersTomorrow, durations, offsets)
+                    scheduler.scheduleAll(prayersToday, prayersTomorrow, durations, offsets, isReminder, reminderMin)
                 }
             } finally {
                 pendingResult.finish()
