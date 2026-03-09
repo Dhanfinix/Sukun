@@ -129,7 +129,7 @@
     <string name="reminder_time">وقت التذكير</string>
     <string name="minutes_before">قبل %d دقائق</string>
     <string name="reminder_title_context">الاستعداد لصلاة %s</string>
-    <string name="reminder_msg_context">اقترب موعد صلاة %1$s. بقي %2$d دقائق. حان وقت الاستعداد.</string>
+    <string name="reminder_msg_context">اقترب موعد صلاة %1$s. بقي %2$s دقائق. حان وقت الاستعداد.</string>
     <string name="btn_prepare">استعد الآن</string>
 
     <!-- General Section -->
