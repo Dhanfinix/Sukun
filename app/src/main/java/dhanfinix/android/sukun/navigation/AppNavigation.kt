@@ -20,6 +20,7 @@ import dhanfinix.android.sukun.MainViewModel
 import dhanfinix.android.sukun.feature.home.HomeScreen
 import dhanfinix.android.sukun.feature.landing.LandingScreen
 import dhanfinix.android.sukun.feature.onboarding.OnboardingScreen
+import dhanfinix.android.sukun.feature.mosque.MosqueLocationsScreen
 import dhanfinix.android.sukun.feature.settings.AboutScreen
 import dhanfinix.android.sukun.feature.settings.SettingsScreen
 import dhanfinix.android.sukun.feature.splash.SplashScreen
@@ -110,6 +111,18 @@ fun AppNavigation(
                 SettingsScreen(
                     mainVm = mainVm,
                     onOpenAbout = { navController.navigate(Route.About) },
+                    onOpenMosqueLocations = { navController.navigate(Route.MosqueLocations) },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<Route.MosqueLocations>(
+                enterTransition = { slideInHorizontally(tween(350)) { it } + fadeIn(tween(350)) },
+                exitTransition = { slideOutHorizontally(tween(300)) { -it } + fadeOut(tween(300)) },
+                popEnterTransition = { slideInHorizontally(tween(350)) { -it } + fadeIn(tween(350)) },
+                popExitTransition = { slideOutHorizontally(tween(300)) { it } + fadeOut(tween(300)) }
+            ) {
+                MosqueLocationsScreen(
                     onBack = { navController.popBackStack() }
                 )
             }

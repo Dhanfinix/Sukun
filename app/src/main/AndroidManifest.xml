@@ -47,6 +47,10 @@
         <receiver
             android:name=".worker.MidnightReceiver"
             android:exported="false" />
+
+        <receiver
+            android:name=".worker.GeofenceReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

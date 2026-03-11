@@ -109,6 +109,13 @@ class UserPreferences(private val context: Context) {
     private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
     private val KEY_HAS_RATED = booleanPreferencesKey("has_rated")
 
+    // ── Location-Based Silence ──
+    private val KEY_LOCATION_SILENCE_ENABLED = booleanPreferencesKey("location_silence_enabled")
+    private val KEY_LOCATION_SILENCE_RADIUS = intPreferencesKey("location_silence_radius") // in meters
+    private val KEY_MOSQUE_AUTO_SILENT = booleanPreferencesKey("mosque_auto_silent")
+    private val KEY_MOSQUE_SILENT_DURATION = intPreferencesKey("mosque_silent_duration") // in minutes
+    private val KEY_GLOBAL_MOSQUES_LOADED = booleanPreferencesKey("global_mosques_loaded")
+
     // ── Flows ──
 
     val isPrayerEnabled: Flow<Map<PrayerName, Boolean>> = context.dataStore.data.map { prefs ->
@@ -218,6 +225,26 @@ class UserPreferences(private val context: Context) {
 
     val hasSeenHomeCoachmark: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[KEY_HOME_COACH_MARK_SHOWN] ?: false
+    }
+
+    val isLocationSilenceEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_LOCATION_SILENCE_ENABLED] ?: false
+    }
+
+    val locationSilenceRadius: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_LOCATION_SILENCE_RADIUS] ?: 100 // Default 100m
+    }
+
+    val isMosqueAutoSilent: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_MOSQUE_AUTO_SILENT] ?: false // Default false (shows notification)
+    }
+
+    val mosqueSilentDuration: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_MOSQUE_SILENT_DURATION] ?: 15 // Default 15m
+    }
+
+    val isGlobalMosquesLoaded: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_GLOBAL_MOSQUES_LOADED] ?: false
     }
 
     // ── Setters ──
@@ -466,6 +493,38 @@ class UserPreferences(private val context: Context) {
     suspend fun setHasRated(rated: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[KEY_HAS_RATED] = rated
+        }
+    }
+
+    // ── Location Silence Setters ──
+
+    suspend fun setLocationSilenceEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LOCATION_SILENCE_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setLocationSilenceRadius(radius: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LOCATION_SILENCE_RADIUS] = radius
+        }
+    }
+
+    suspend fun setMosqueAutoSilent(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_MOSQUE_AUTO_SILENT] = enabled
+        }
+    }
+
+    suspend fun setMosqueSilentDuration(duration: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_MOSQUE_SILENT_DURATION] = duration
+        }
+    }
+
+    suspend fun setGlobalMosquesLoaded(loaded: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_GLOBAL_MOSQUES_LOADED] = loaded
         }
     }
 }

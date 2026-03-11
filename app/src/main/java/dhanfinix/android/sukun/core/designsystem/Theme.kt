@@ -106,6 +106,12 @@ private val LightColorScheme = lightColorScheme(
 )
 
 
+@Suppress("DEPRECATION")
+private fun applyTransparentSystemBars(window: android.view.Window) {
+    window.statusBarColor = android.graphics.Color.TRANSPARENT
+    window.navigationBarColor = android.graphics.Color.TRANSPARENT
+}
+
 @Composable
 fun SukunTheme(
     appTheme: AppTheme = AppTheme.SYSTEM,
@@ -132,8 +138,7 @@ fun SukunTheme(
     if (!view.isInEditMode) {
         androidx.compose.runtime.SideEffect {
             val window = (view.context as android.app.Activity).window
-            window.statusBarColor = android.graphics.Color.TRANSPARENT
-            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+            applyTransparentSystemBars(window)
             androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
             androidx.core.view.WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = !isAppInDarkTheme

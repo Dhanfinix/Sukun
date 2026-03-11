@@ -90,6 +90,7 @@ dependencies {
     // Networking (Aladhan API)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
+    implementation(libs.retrofit.converter.scalars)
     implementation(libs.okhttp.logging.interceptor)
 
     // Location
@@ -101,10 +102,8 @@ dependencies {
     implementation(libs.play.app.update.ktx)
     implementation(libs.play.app.review)
     implementation(libs.play.app.review.ktx)
-
-
-
-    // Testing
+    // Map (OSM)
+    implementation(libs.osmdroid.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

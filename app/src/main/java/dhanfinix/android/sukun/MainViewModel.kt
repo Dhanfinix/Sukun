@@ -93,6 +93,41 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = false
         )
 
+    val isLocationSilenceEnabled: StateFlow<Boolean> = userPrefs.isLocationSilenceEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    val locationSilenceRadius: StateFlow<Int> = userPrefs.locationSilenceRadius
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 100
+        )
+
+    val isMosqueAutoSilent: StateFlow<Boolean> = userPrefs.isMosqueAutoSilent
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    val mosqueSilentDuration: StateFlow<Int> = userPrefs.mosqueSilentDuration
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 15
+        )
+
+    val isGlobalMosquesLoaded: StateFlow<Boolean> = userPrefs.isGlobalMosquesLoaded
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch {
             userPrefs.setAppTheme(theme)
@@ -144,6 +179,38 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setCoachmarkShown(shown: Boolean) {
         viewModelScope.launch {
             userPrefs.setHomeCoachmarkShown(shown)
+        }
+    }
+
+    // ── Location Silence ──
+
+    fun setLocationSilenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setLocationSilenceEnabled(enabled)
+        }
+    }
+
+    fun setLocationSilenceRadius(radius: Int) {
+        viewModelScope.launch {
+            userPrefs.setLocationSilenceRadius(radius)
+        }
+    }
+
+    fun setMosqueAutoSilent(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setMosqueAutoSilent(enabled)
+        }
+    }
+
+    fun setMosqueSilentDuration(duration: Int) {
+        viewModelScope.launch {
+            userPrefs.setMosqueSilentDuration(duration)
+        }
+    }
+
+    fun setGlobalMosquesLoaded(loaded: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setGlobalMosquesLoaded(loaded)
         }
     }
 
