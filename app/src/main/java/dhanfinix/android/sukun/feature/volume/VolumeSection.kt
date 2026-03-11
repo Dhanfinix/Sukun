@@ -51,7 +51,7 @@ fun VolumeSection(
                     text = stringResource(
                         R.string.confirm_overwrite_silence,
                         state.sukunLabel ?: stringResource(R.string.label_unknown),
-                        state.pendingOverwriteDurationMin
+                        state.pendingOverwriteDurationMin ?: 0
                     ),
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -81,7 +81,7 @@ fun VolumeSection(
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(start = 4.dp)
         )
-
+        
         // ── Media Volume ──
         Box(
             modifier = Modifier
@@ -190,7 +190,7 @@ fun VolumeSection(
             }
             Switch(
                 checked = state.silenceMode == dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE,
-                onCheckedChange = { isVibrate ->
+                onCheckedChange = { isVibrate -> 
                     val mode = if (isVibrate) dhanfinix.android.sukun.core.datastore.SilenceMode.VIBRATE else dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT
                     onEvent(VolumeEvent.SilenceModeChanged(mode))
                 },

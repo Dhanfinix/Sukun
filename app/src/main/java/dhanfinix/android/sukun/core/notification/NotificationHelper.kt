@@ -61,7 +61,7 @@ object NotificationHelper {
         timeFormat: TimeFormat = TimeFormat.AUTO
     ) {
         val locale = if (context.resources.configuration.locales[0].language == "ar") {
-             Locale.forLanguageTag("ar")
+             Locale("ar")
         } else Locale.getDefault()
 
         val config = Configuration(context.resources.configuration)
@@ -93,13 +93,13 @@ object NotificationHelper {
         // Human-readable end time, e.g. "05:30 PM"
         val formattedEndTime = SimpleDateFormat("HH:mm", Locale.US).format(Date(endTimeMs))
             .formatTime(context, timeFormat)
-
+            
         val endTimeDisplay = if (formattedEndTime.session != null) {
             "${formattedEndTime.time} ${formattedEndTime.session}".withIsolate()
         } else {
             formattedEndTime.time.withIsolate()
         }
-
+        
         val endsAtLabel = localizedContext.getString(R.string.notif_ends_at, endTimeDisplay)
 
         // ── Compact (collapsed) view ──────────────────────────────────────────
@@ -140,7 +140,7 @@ object NotificationHelper {
 
     fun showReminderNotification(context: Context, prayerName: String, minutesBefore: Int) {
         val locale = if (context.resources.configuration.locales[0].language == "ar") {
-            Locale.forLanguageTag("ar")
+            Locale("ar")
         } else Locale.getDefault()
 
         val config = Configuration(context.resources.configuration)
@@ -173,44 +173,5 @@ object NotificationHelper {
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(REMINDER_NOTIFICATION_ID, builder.build())
-    }
-
-    fun showMosqueEntryNotification(context: Context, durationMin: Int) {
-        createChannel(context)
-
-        val openAppIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val openAppPending = PendingIntent.getActivity(
-            context, 2, openAppIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val silentNowIntent = Intent(context, SilenceReceiver::class.java).apply {
-            action = SilenceReceiver.ACTION_MOSQUE_SILENT_NOW
-            putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
-        }
-        val silentNowPending = PendingIntent.getBroadcast(
-            context, 3, silentNowIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("Entered Mosque Area")
-            .setContentText("Would you like to silence your phone for $durationMin minutes?")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setCategory(NotificationCompat.CATEGORY_SYSTEM)
-            .setOngoing(true) // Keep it until they exit geofence or click silent
-            .setContentIntent(openAppPending)
-            .addAction(R.drawable.ic_notification, "Silent Now ($durationMin min)", silentNowPending)
-
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(1003, builder.build()) // dedicated ID for mosque entry
-    }
-
-    fun cancelMosqueEntryNotification(context: Context) {
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.cancel(1003)
     }
 }

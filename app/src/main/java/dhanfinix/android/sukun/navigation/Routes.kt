@@ -20,7 +20,4 @@ sealed interface Route {
 
     @Serializable
     data object About : Route
-
-    @Serializable
-    data object MosqueLocations : Route
 }

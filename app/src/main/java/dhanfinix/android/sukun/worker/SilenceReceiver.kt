@@ -44,11 +44,6 @@ class SilenceReceiver : BroadcastReceiver() {
                     val reminderMin = intent.getIntExtra(KEY_REMINDER_MINUTES, 10)
                     NotificationHelper.showReminderNotification(context, prayerName, reminderMin)
                 }
-                else if (action == ACTION_MOSQUE_SILENT_NOW) {
-                    val durationMin = intent.getIntExtra(KEY_DURATION_MIN, 15)
-                    dhanfinix.android.sukun.worker.SilenceScheduler(context).scheduleManual(durationMin)
-                    NotificationHelper.cancelMosqueEntryNotification(context)
-                }
             } finally {
                 pendingResult.finish()
             }
@@ -172,7 +167,6 @@ class SilenceReceiver : BroadcastReceiver() {
         const val ACTION_START_SILENCE = "dhanfinix.android.sukun.START_SILENCE"
         const val ACTION_STOP_SILENCE = "dhanfinix.android.sukun.STOP_SILENCE"
         const val ACTION_SHOW_REMINDER = "dhanfinix.android.sukun.SHOW_REMINDER"
-        const val ACTION_MOSQUE_SILENT_NOW = "dhanfinix.android.sukun.MOSQUE_SILENT_NOW"
         const val KEY_PRAYER_NAME = "prayer_name"
         const val KEY_DURATION_MIN = "duration_min"
         const val KEY_REMINDER_MINUTES = "reminder_minutes"

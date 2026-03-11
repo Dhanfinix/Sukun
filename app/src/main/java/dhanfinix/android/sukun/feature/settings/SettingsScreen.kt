@@ -31,7 +31,6 @@ import dhanfinix.android.sukun.core.datastore.TimeFormat
 fun SettingsScreen(
     mainVm: MainViewModel,
     onOpenAbout: () -> Unit,
-    onOpenMosqueLocations: () -> Unit,
     onBack: () -> Unit
 ) {
     val appTheme by mainVm.appTheme.collectAsState()
@@ -41,19 +40,15 @@ fun SettingsScreen(
     val timeFormat by mainVm.timeFormat.collectAsState()
     val isReminderEnabled by mainVm.isReminderEnabled.collectAsState()
     val reminderMinutes by mainVm.reminderMinutes.collectAsState()
-    val isLocationSilenceEnabled by mainVm.isLocationSilenceEnabled.collectAsState()
-    val locationSilenceRadius by mainVm.locationSilenceRadius.collectAsState()
-    val isGlobalMosquesLoaded by mainVm.isGlobalMosquesLoaded.collectAsState()
-    val isMosqueAutoSilent by mainVm.isMosqueAutoSilent.collectAsState()
-    val mosqueSilentDuration by mainVm.mosqueSilentDuration.collectAsState()
 
     var showThemeSheet by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
     var showTimeFormatSheet by remember { mutableStateOf(false) }
     var showReminderSheet by remember { mutableStateOf(false) }
-    var showLocationSheet by remember { mutableStateOf(false) }
-    var showMosqueDurationSheet by remember { mutableStateOf(false) }
 
+
+
+    val isArabic = java.util.Locale.getDefault().language == "ar"
     val context = LocalContext.current
 
     Scaffold(
@@ -82,7 +77,7 @@ fun SettingsScreen(
         ) {
             // Appearance Section
             SettingsSectionTitle(stringResource(R.string.section_appearance))
-
+            
             SettingsItem(
                 title = stringResource(R.string.app_theme),
                 subtitle = when (appTheme) {
@@ -134,7 +129,7 @@ fun SettingsScreen(
 
             // Notifications Section
             SettingsSectionTitle(stringResource(R.string.section_notifications))
-
+            
             SettingsItem(
                 title = stringResource(R.string.prayer_reminder),
                 subtitle = stringResource(R.string.reminder_desc),
@@ -159,68 +154,14 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Location Silence Section
-            SettingsSectionTitle("Location Silence")
-
-            SettingsItem(
-                title = "Location Silence",
-                subtitle = if (isLocationSilenceEnabled) "Enabled" else "Disabled",
-                icon = Icons.Rounded.LocationOn,
-                trailing = {
-                    Switch(
-                        checked = isLocationSilenceEnabled,
-                        onCheckedChange = { mainVm.setLocationSilenceEnabled(it) }
-                    )
-                },
-                onClick = { mainVm.setLocationSilenceEnabled(!isLocationSilenceEnabled) }
-            )
-
-            if (isLocationSilenceEnabled) {
-                SettingsItem(
-                    title = "Auto-Silent in Mosque",
-                    subtitle = "Automatically trigger silence pattern upon entering",
-                    icon = Icons.Rounded.VolumeOff,
-                    trailing = {
-                        Switch(
-                            checked = isMosqueAutoSilent,
-                            onCheckedChange = { mainVm.setMosqueAutoSilent(it) }
-                        )
-                    },
-                    onClick = { mainVm.setMosqueAutoSilent(!isMosqueAutoSilent) }
-                )
-
-                SettingsItem(
-                    title = "Silence Duration",
-                    subtitle = "$mosqueSilentDuration minutes",
-                    icon = Icons.Rounded.HourglassBottom,
-                    onClick = { showMosqueDurationSheet = true }
-                )
-
-                SettingsItem(
-                    title = "Silence Radius",
-                    subtitle = "$locationSilenceRadius meters",
-                    icon = Icons.Rounded.LocationSearching,
-                    onClick = { showLocationSheet = true }
-                )
-
-                SettingsItem(
-                    title = "Mosque Locations",
-                    subtitle = "Manage custom and global mosques",
-                    icon = Icons.Rounded.Place,
-                    onClick = onOpenMosqueLocations
-                )
-            }
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
             // General Section
             SettingsSectionTitle(stringResource(R.string.section_general))
-
+            
             SettingsItem(
                 title = stringResource(R.string.show_onboarding),
                 subtitle = stringResource(R.string.show_onboarding_desc),
                 icon = Icons.AutoMirrored.Rounded.Help,
-                onClick = {
+                onClick = { 
                     mainVm.setCoachmarkShown(false)
                     onBack()
                 }
@@ -245,7 +186,6 @@ fun SettingsScreen(
             )
         }
 
-        // Bottom sheets
         if (showThemeSheet) {
             ThemeSelectionSheet(
                 currentTheme = appTheme,
@@ -262,6 +202,9 @@ fun SettingsScreen(
             )
         }
 
+
+
+
         if (showTimeFormatSheet) {
             TimeFormatSelectionSheet(
                 currentFormat = timeFormat,
@@ -275,22 +218,6 @@ fun SettingsScreen(
                 currentMinutes = reminderMinutes,
                 onMinutesSelected = { mainVm.setReminderMinutes(it) },
                 onDismiss = { showReminderSheet = false }
-            )
-        }
-
-        if (showLocationSheet) {
-            RadiusSelectionSheet(
-                currentRadius = locationSilenceRadius,
-                onRadiusSelected = { mainVm.setLocationSilenceRadius(it) },
-                onDismiss = { showLocationSheet = false }
-            )
-        }
-
-        if (showMosqueDurationSheet) {
-            MosqueDurationSelectionSheet(
-                currentDuration = mosqueSilentDuration,
-                onDurationSelected = { mainVm.setMosqueSilentDuration(it) },
-                onDismiss = { showMosqueDurationSheet = false }
             )
         }
     }
@@ -393,7 +320,7 @@ private fun ThemeSelectionSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
-                        .clickable {
+                        .clickable { 
                             onThemeSelected(value)
                             onDismiss()
                         },
@@ -453,7 +380,7 @@ private fun LanguageSelectionSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
-                        .clickable {
+                        .clickable { 
                             onLanguageSelected(value)
                             onDismiss()
                         },
@@ -479,6 +406,8 @@ private fun LanguageSelectionSheet(
         }
     }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -553,22 +482,22 @@ private fun ReminderSelectionSheet(
                 .fillMaxWidth()
         ) {
             Text(
-                text = "Reminder Time",
+                text = stringResource(R.string.reminder_time),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 12.dp, start = 8.dp)
             )
 
-            val options = listOf(5, 10, 15, 30, 60)
+            val options = listOf(5, 10, 15, 30)
 
-            options.forEach { value ->
-                val isSelected = value == currentMinutes
+            options.forEach { minutes ->
+                val isSelected = minutes == currentMinutes
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clickable {
-                            onMinutesSelected(value)
+                            onMinutesSelected(minutes)
                             onDismiss()
                         },
                     shape = MaterialTheme.shapes.medium,
@@ -580,117 +509,7 @@ private fun ReminderSelectionSheet(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "$value minutes",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                        )
-                        if (isSelected) {
-                            Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun RadiusSelectionSheet(
-    currentRadius: Int,
-    onRadiusSelected: (Int) -> Unit,
-    onDismiss: () -> Unit
-) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = "Silence Radius",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 12.dp, start = 8.dp)
-            )
-
-            val options = listOf(50, 100, 200, 500)
-
-            options.forEach { value ->
-                val isSelected = value == currentRadius
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable {
-                            onRadiusSelected(value)
-                            onDismiss()
-                        },
-                    shape = MaterialTheme.shapes.medium,
-                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "$value meters",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                        )
-                        if (isSelected) {
-                            Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MosqueDurationSelectionSheet(
-    currentDuration: Int,
-    onDurationSelected: (Int) -> Unit,
-    onDismiss: () -> Unit
-) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = "Silence Duration",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 12.dp, start = 8.dp)
-            )
-
-            val options = listOf(5, 10, 15, 30, 45, 60)
-
-            options.forEach { value ->
-                val isSelected = value == currentDuration
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable {
-                            onDurationSelected(value)
-                            onDismiss()
-                        },
-                    shape = MaterialTheme.shapes.medium,
-                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "$value minutes",
+                            text = stringResource(R.string.minutes_before, minutes),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                         )
