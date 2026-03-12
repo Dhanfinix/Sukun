@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.work.WorkManager
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import java.time.LocalDate
@@ -20,7 +19,6 @@ import java.util.Calendar
 class SilenceScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    private val workManager = WorkManager.getInstance(context)
 
     /**
      * Schedules the NEXT occurrence of each enabled prayer across a rolling 24-hour window.
