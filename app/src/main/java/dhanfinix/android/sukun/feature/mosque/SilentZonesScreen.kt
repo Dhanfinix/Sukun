@@ -16,8 +16,34 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.rounded.Map
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.GpsFixed
+import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Label
+import androidx.compose.material.icons.rounded.AutoMode
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.ArrowDropDown
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Circle
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.SmartButton
+import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.MyLocation
 import androidx.compose.material3.*
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,10 +51,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight as FontWeightCompose
 import androidx.compose.ui.unit.dp
+import dhanfinix.android.sukun.R
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -98,7 +126,7 @@ fun SilentZonesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Location Silent Mode") },
+                title = { Text(stringResource(R.string.location_silence_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
@@ -149,7 +177,7 @@ fun SilentZonesScreen(
                     tonalElevation = 4.dp
                 ) {
                     Text(
-                        "Long-press on map to drop a silent pin",
+                        stringResource(R.string.hold_to_add_zone),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.labelSmall
                     )
@@ -292,7 +320,7 @@ fun SilentZonesScreen(
                                 )
                                 Spacer(Modifier.width(12.dp))
                                 Text(
-                                    text = "Saved Zones (${uiState.zones.size})",
+                                    text = "${stringResource(R.string.action_list)} (${uiState.zones.size})",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeightCompose.SemiBold
                                 )
@@ -307,7 +335,7 @@ fun SilentZonesScreen(
                         if (isListExpanded) {
                             if (uiState.zones.isEmpty()) {
                                 Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                                    Text("No silent zones added yet", color = MaterialTheme.colorScheme.secondary)
+                                    Text(stringResource(R.string.no_zones_added), color = MaterialTheme.colorScheme.secondary)
                                 }
                             } else {
                                 LazyColumn(
@@ -376,7 +404,7 @@ fun SilentZonesScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        if (zone == null) "New Silent Zone" else "Edit Silent Zone",
+                        if (zone == null) stringResource(R.string.new_silent_zone) else stringResource(R.string.edit_silent_zone),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeightCompose.Bold,
                         textAlign = TextAlign.Center
@@ -384,33 +412,39 @@ fun SilentZonesScreen(
                 }
             },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     // --- General Info Section ---
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        OutlinedTextField(
-                            value = name,
-                            onValueChange = { name = it },
-                            label = { Text("Zone Name") },
-                            placeholder = { Text("e.g. My Mosque") },
-                            modifier = Modifier.fillMaxWidth(),
-                            leadingIcon = { Icon(Icons.Rounded.Label, null) },
-                            singleLine = true,
-                            shape = RoundedCornerShape(16.dp)
-                        )
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text(stringResource(R.string.zone_name)) },
+                        placeholder = { Text(stringResource(R.string.zone_name_hint)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = { Icon(Icons.Rounded.Label, null) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp)
+                    )
                         
-                        // Radius Selection with Slider
-                        Column(modifier = Modifier.padding(top = 8.dp)) {
+                    // Radius Selection Container
+                    OutlinedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.outlinedCardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Rounded.GpsFixed, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
                                 Spacer(Modifier.width(8.dp))
-                                Text("Radius: ${radius}m", style = MaterialTheme.typography.labelLarge)
+                                Text(stringResource(R.string.radius_format, radius.toIntOrNull() ?: 20), style = MaterialTheme.typography.labelLarge)
                             }
                             Slider(
                                 value = (radius.toFloatOrNull() ?: 20f).coerceIn(10f, 100f),
                                 onValueChange = { radius = it.toInt().toString() },
                                 valueRange = 10f..100f,
                                 steps = 17, // ~5m steps from 10 to 100
-                                modifier = Modifier.fillMaxWidth().height(32.dp)
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
@@ -418,105 +452,84 @@ fun SilentZonesScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
                     // --- Silence Logic Section ---
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().clickable { isAutoSilent = !isAutoSilent }
-                        ) {
-                            Icon(
-                                if (isAutoSilent) Icons.Rounded.AutoMode else Icons.Rounded.NotificationsActive, 
-                                null, 
-                                modifier = Modifier.size(20.dp),
-                                tint = if (isAutoSilent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Auto-Silent", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeightCompose.SemiBold)
-                                Text(
-                                    if (isAutoSilent) "Starts automatically" else "Notification only",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
+                    
+                    // Mode Selection (Segmented Buttons)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.setting_auto_silence), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.secondary)
+                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                            SegmentedButton(
+                                selected = isAutoSilent,
+                                onClick = { isAutoSilent = true },
+                                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                            ) {
+                                Text(stringResource(R.string.auto_mute))
                             }
-                            Switch(
-                                checked = isAutoSilent, 
-                                onCheckedChange = { isAutoSilent = it },
-                                modifier = Modifier.scale(0.8f)
-                            )
+                            SegmentedButton(
+                                selected = !isAutoSilent,
+                                onClick = { isAutoSilent = false },
+                                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                            ) {
+                                Text(stringResource(R.string.notify_only))
+                            }
                         }
+                    }
 
-                        // Duration Picker
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Rounded.Timer, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Silence Duration", style = MaterialTheme.typography.labelLarge)
-                            }
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                OutlinedCard(
-                                    onClick = { showDurationDropdown = true },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.outlinedCardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
-                                    )
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp).fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            when {
-                                                silenceDuration == 15 -> "15 Minutes"
-                                                silenceDuration == 30 -> "30 Minutes"
-                                                (silenceDuration ?: 30) % 60 == 0 -> "${(silenceDuration ?: 30) / 60} Hour${if ((silenceDuration ?: 30) / 60 > 1) "s" else ""}"
-                                            else -> "$silenceDuration Minutes"
-                                            },
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
-                                        Icon(Icons.Rounded.ArrowDropDown, null)
-                                    }
-                                }
-                                
-                                DropdownMenu(
-                                    expanded = showDurationDropdown,
-                                    onDismissRequest = { showDurationDropdown = false },
-                                    modifier = Modifier.fillMaxWidth(0.6f),
-                                    shape = RoundedCornerShape(16.dp)
-                                ) {
-                                    listOf(15, 30, 60, 120, 180, 240, 360, 480, 720).forEach { dur ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(when {
-                                                    dur == 15 -> "15 Minutes"
-                                                    dur == 30 -> "30 Minutes"
-                                                    dur % 60 == 0 -> "${dur / 60} Hour${if (dur / 60 > 1) "s" else ""}"
-                                                else -> "$dur Minutes"
-                                                })
-                                            },
-                                            onClick = {
-                                                silenceDuration = dur
-                                                showDurationDropdown = false
-                                            },
-                                            leadingIcon = { 
-                                                Icon(
-                                                    if (silenceDuration == dur) Icons.Rounded.CheckCircle else Icons.Rounded.Circle,
-                                                    null,
-                                                    modifier = Modifier.size(18.dp),
-                                                    tint = if (silenceDuration == dur) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                                                )
-                                            }
+                    // Duration Picker (Exposed Dropdown)
+                    ExposedDropdownMenuBox(
+                        expanded = showDurationDropdown,
+                        onExpandedChange = { showDurationDropdown = it },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = when {
+                                silenceDuration == 15 -> stringResource(R.string.duration_15_min)
+                                silenceDuration == 30 -> stringResource(R.string.duration_30_min)
+                                (silenceDuration ?: 30) % 60 == 0 -> stringResource(R.string.duration_hours, (silenceDuration ?: 30) / 60)
+                                else -> stringResource(R.string.duration_minutes, silenceDuration ?: 30)
+                            },
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(stringResource(R.string.duration)) },
+                            leadingIcon = { Icon(Icons.Rounded.Timer, null) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showDurationDropdown) },
+                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        
+                        ExposedDropdownMenu(
+                            expanded = showDurationDropdown,
+                            onDismissRequest = { showDurationDropdown = false }
+                        ) {
+                            listOf(15, 30, 60, 120, 180, 240, 360, 480, 720).forEach { dur ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(when {
+                                            dur == 15 -> stringResource(R.string.duration_15_min)
+                                            dur == 30 -> stringResource(R.string.duration_30_min)
+                                            dur % 60 == 0 -> stringResource(R.string.duration_hours, dur / 60)
+                                            else -> stringResource(R.string.duration_minutes, dur)
+                                        })
+                                    },
+                                    onClick = {
+                                        silenceDuration = dur
+                                        showDurationDropdown = false
+                                    },
+                                    leadingIcon = { 
+                                        Icon(
+                                            if (silenceDuration == dur) Icons.Rounded.CheckCircle else Icons.Rounded.Circle,
+                                            null,
+                                            tint = if (silenceDuration == dur) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                                         )
                                     }
-                                }
+                                )
                             }
                         }
                     }
 
                     // Bottom tiny info
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -528,7 +541,7 @@ fun SilentZonesScreen(
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            "Silence stops when you leave the area.",
+                            stringResource(R.string.silence_stops_on_exit),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f)
                         )
@@ -564,7 +577,7 @@ fun SilentZonesScreen(
                     enabled = name.isNotBlank(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Save Zone")
+                    Text(stringResource(R.string.save_zone))
                 }
             }
         )
@@ -604,7 +617,7 @@ private fun SilentZoneCard(
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    "ACTIVE",
+                                    stringResource(R.string.status_active_caps),
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onPrimary
@@ -613,7 +626,7 @@ private fun SilentZoneCard(
                         }
                     }
                     Text(
-                        "${zone.radius.toInt()}m radius",
+                        stringResource(R.string.radius_value_format, zone.radius.toInt()),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -630,36 +643,26 @@ private fun SilentZoneCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Auto-Silent",
+                        stringResource(R.string.auto_silent),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        if (zone.isAutoSilent) "Enabled" else "Notification Only",
+                        if (zone.isAutoSilent) stringResource(R.string.status_enabled) else stringResource(R.string.status_notification_only),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        "Ends in ${if (zone.silenceDuration != null && zone.silenceDuration!! >= 60) "${zone.silenceDuration!! / 60}h" else "${zone.silenceDuration ?: 30}m"} (or on Exit)",
+                        if (zone.silenceDuration != null && zone.silenceDuration!! >= 60) {
+                            stringResource(R.string.ends_in_hours, zone.silenceDuration!! / 60)
+                        } else {
+                            stringResource(R.string.ends_in_mins, zone.silenceDuration ?: 30)
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeightCompose.Bold
                     )
                 }
-                
-                Switch(
-                    checked = zone.isAutoSilent,
-                    onCheckedChange = { onToggleAutoSilent() },
-                    thumbContent = {
-                        if (zone.isAutoSilent) {
-                            Icon(Icons.Rounded.SmartButton, null, Modifier.size(16.dp))
-                        } else {
-                            Icon(Icons.Rounded.NotificationsActive, null, Modifier.size(16.dp))
-                        }
-                    }
-                )
-                
-                Spacer(Modifier.width(8.dp))
-                
+
                 IconButton(onClick = onEdit) {
                     Icon(
                         Icons.Rounded.Edit,

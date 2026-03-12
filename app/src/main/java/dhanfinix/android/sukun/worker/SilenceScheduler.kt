@@ -76,6 +76,24 @@ class SilenceScheduler(private val context: Context) {
         scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
     }
 
+    fun scheduleImmediate(label: String, durationMin: Int) {
+        // Cancel any prior manual/immediate restore alarms
+        cancelManualAlarms()
+
+        // Start silence IMMEDIATELY and schedule restore in the future
+        val startIntent = Intent(context, SilenceReceiver::class.java).apply {
+            action = SilenceReceiver.ACTION_START_SILENCE
+            putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, label)
+            putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
+        }
+        context.sendBroadcast(startIntent)
+
+        val restoreTimeMs = System.currentTimeMillis() + (durationMin * 60 * 1000L)
+        val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE)
+
+        scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
+    }
+
     fun stopSilence() {
         // Only cancel the manual restore alarm — do NOT touch prayer-scheduled alarms!
         cancelManualAlarms()

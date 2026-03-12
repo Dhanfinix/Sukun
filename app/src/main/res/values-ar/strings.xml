@@ -40,6 +40,8 @@
     <string name="coach_mark_volume_desc">هل تحتاج لضبط الصوت بسرعة؟ استخدم شريط التحكم أدناه في أي وقت.</string>
     <string name="coach_mark_manual_title">صمت سريع</string>
     <string name="coach_mark_manual_desc">في اجتماع أو عند دخول المسجد؟ اضغط هنا للبدء بالصمت اليدوي فوراً.</string>
+    <string name="coach_mark_location_silence_title">المناطق الصامتة</string>
+    <string name="coach_mark_location_silence_desc">كتم صوت هاتفك تلقائيًا عند دخول المسجد أو مكان عملك.</string>
 
     <!-- Home Screen -->
     <string name="change_theme">تغيير المظهر</string>
@@ -183,5 +185,44 @@
     <string name="time_format_24">24 ساعة (13:00)</string>
     <string name="language_restart_title">إعادة تشغيل سكون؟</string>
     <string name="language_restart_msg">يجب إعادة تشغيل سكون لتطبيق اللغة الجديدة. هل تود الاستمرار؟</string>
-    <string name="btn_continue">استمرار</string>
+    <!-- Location Silence -->
+    <string name="location_silence_title">كتم الموقع</string>
+    <string name="hold_to_add_zone">اضغط مطولاً لإضافة منطقة</string>
+    <string name="action_list">قائمة</string>
+    <string name="action_hide">إخفاء</string>
+    <string name="no_zones_added">لم تتم إضافة أي مناطق بعد.</string>
+    <string name="add_zone_instruction">اضغط مطولاً في أي مكان بالخريطة لإنشاء منطقة كتم جديدة.</string>
+    <string name="new_silent_zone">منطقة كتم جديدة</string>
+    <string name="edit_silent_zone">تعديل منطقة الكتم</string>
+    <string name="zone_name">اسم المنطقة</string>
+    <string name="zone_name_hint">مثل: مسجدي</string>
+    <string name="radius_format">النطاق: %1$dm</string>
+    <string name="auto_silent">كتم تلقائي</string>
+    <string name="status_enabled">مفعل</string>
+    <string name="status_notification_only">إشعار فقط</string>
+    <string name="auto_silent_desc">يبدأ تلقائياً</string>
+    <string name="notify_only_desc">إشعار فقط</string>
+    <string name="auto_mute">كتم تلقائي</string>
+    <string name="notify_only">إشعار فقط</string>
+    <string name="silence_duration">مدة الكتم</string>
+    <string name="duration">المدة</string>
+    <string name="duration_15_min">15 دقيقة</string>
+    <string name="duration_30_min">30 دقيقة</string>
+    <string name="duration_hours">%1$d ساعة</string>
+    <string name="duration_minutes">%1$d دقيقة</string>
+    <string name="silence_stops_on_exit">يتم إيقاف الكتم عند مغادرة المنطقة.</string>
+    <string name="save_zone">حفظ المنطقة</string>
+    <string name="status_active_caps">نشط</string>
+    <string name="radius_value_format">نطاق %1$dm</string>
+    <string name="ends_in_hours">ينتهي خلال %1$dh (أو عند المغادرة)</string>
+    <string name="ends_in_mins">ينتهي خلال %1$dm (أو عند المغادرة)</string>
+    <string name="status_protection_active">الحماية نشطة</string>
+    <string name="status_inside_protection_zone">داخل منطقة الحماية</string>
+    <string name="status_zones_active">%1$d منطقة نشطة</string>
+    <string name="desc_location_silence">كتم تلقائي في المساجد أو العمل</string>
+    <string name="action_manage">إدارة</string>
+    <string name="status_silenced_at">تم الكتم في %1$s</string>
+    <string name="status_nearby">بالقرب من %1$s</string>
+    <string name="action_silence_now">الكتم الآن</string>
+
 </resources>

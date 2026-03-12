@@ -24,6 +24,8 @@ import kotlinx.coroutines.delay
 import dhanfinix.android.sukun.worker.SilenceScheduler
 import dhanfinix.android.sukun.core.reliability.ReliabilityManager
 import kotlinx.coroutines.flow.first
+import dhanfinix.android.sukun.core.database.SukunDatabase
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
  * ViewModel for the Volume Dashboard.
@@ -37,6 +39,7 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
     private val userPrefs = UserPreferences(application)
     private val silenceScheduler = SilenceScheduler(application)
     private val reliabilityManager = ReliabilityManager(application)
+    private val silentZoneDao = SukunDatabase.getDatabase(application).silentZoneDao()
 
     private val _uiState = MutableStateFlow(VolumeUiState())
     val uiState: StateFlow<VolumeUiState> = _uiState.asStateFlow()
@@ -55,6 +58,7 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
         loadCurrentVolumes()
         observeSettings()
         observeSilenceState()
+        observeSilentZones()
         // Register observer for all System settings (covers all audio stream volume rows)
         getApplication<Application>().contentResolver.registerContentObserver(
             Settings.System.CONTENT_URI,
@@ -82,6 +86,7 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             is VolumeEvent.ConfirmOverwrite -> confirmOverwrite()
             is VolumeEvent.DismissOverwrite -> _uiState.update { it.copy(pendingOverwriteDurationMin = null) }
             is VolumeEvent.SnackbarMessageConsumed -> _uiState.update { it.copy(snackbarMessage = null) }
+            is VolumeEvent.SilenceNow -> handleSilenceNow()
         }
     }
 
@@ -304,6 +309,27 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
 
     private var wasSukunActive = false
 
+    private fun observeSilentZones() {
+        // Observe total zone count
+        viewModelScope.launch {
+            silentZoneDao.getAllSilentZones().collect { zones ->
+                _uiState.update { it.copy(silentZoneCount = zones.size) }
+            }
+        }
+        
+        // Observe active zone ID and resolve name
+        viewModelScope.launch {
+            userPrefs.activeSilentZoneId.distinctUntilChanged().collect { activeId ->
+                if (activeId != null) {
+                    val zone = silentZoneDao.getSilentZoneById(activeId)
+                    _uiState.update { it.copy(activeSilentZoneName = zone?.name) }
+                } else {
+                    _uiState.update { it.copy(activeSilentZoneName = null) }
+                }
+            }
+        }
+    }
+
     private fun updateSilenceState(endTime: Long) {
         val now = System.currentTimeMillis()
         val isActive = endTime > now
@@ -383,6 +409,31 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
     private fun setSilenceMode(mode: dhanfinix.android.sukun.core.datastore.SilenceMode) {
         viewModelScope.launch {
             userPrefs.setSilenceMode(mode)
+        }
+    }
+
+    private fun handleSilenceNow() {
+        viewModelScope.launch {
+            val activeId = userPrefs.activeSilentZoneId.first() ?: return@launch
+            val zone = silentZoneDao.getSilentZoneById(activeId) ?: return@launch
+            
+            // Trigger immediate silence using zone's duration
+            // If duration is null (Until Exit), we use a large number or a specific marker
+            // For now, let's treat null as 15m or pass it to scheduler if supported
+            val duration = zone.silenceDuration ?: 15 
+            
+            silenceScheduler.scheduleImmediate(zone.name, duration)
+            
+            _uiState.update { 
+                it.copy(
+                    isSukunActive = true,
+                    sukunEndTime = System.currentTimeMillis() + (duration * 60 * 1000L),
+                    sukunLabel = zone.name
+                )
+            }
+            
+            delay(500)
+            loadCurrentVolumes()
         }
     }
 

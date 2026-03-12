@@ -3,6 +3,7 @@ package dhanfinix.android.sukun.feature.volume
 import dhanfinix.android.sukun.feature.volume.components.*
 import androidx.compose.ui.res.stringResource
 import dhanfinix.android.sukun.R
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -73,7 +74,6 @@ fun VolumeSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
         Text(
             text = stringResource(R.string.volume_controls),
             style = MaterialTheme.typography.labelLarge,
@@ -197,7 +197,7 @@ fun VolumeSection(
                 enabled = !state.isSukunActive
             )
         }
-
+        
         Spacer(modifier = Modifier.height(24.dp))
     }
 

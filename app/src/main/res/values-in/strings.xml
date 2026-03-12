@@ -40,6 +40,8 @@
     <string name="coach_mark_volume_desc">Perlu atur volume cepat? Gunakan slider di bawah kapan saja.</string>
     <string name="coach_mark_manual_title">Senyap Cepat</string>
     <string name="coach_mark_manual_desc">Sedang rapat atau masuk masjid? Ketuk tombol ini untuk langsung memulai hitung mundur senyap.</string>
+    <string name="coach_mark_location_silence_title">Zona Hening</string>
+    <string name="coach_mark_location_silence_desc">Otomatis bisukan ponsel Anda saat memasuki masjid atau tempat kerja.</string>
 
     <!-- Home Screen -->
     <string name="change_theme">Ganti Tema</string>
@@ -183,5 +185,44 @@
     <string name="time_format_24">24 Jam (13:00)</string>
     <string name="language_restart_title">Mulai Ulang Sukun?</string>
     <string name="language_restart_msg">Sukun perlu dimulai ulang untuk menerapkan bahasa baru. Lanjutkan?</string>
-    <string name="btn_continue">Lanjut</string>
+    <!-- Location Silence -->
+    <string name="location_silence_title">Hening Lokasi</string>
+    <string name="hold_to_add_zone">Tahan untuk tambah zona</string>
+    <string name="action_list">Daftar</string>
+    <string name="action_hide">Sembunyikan</string>
+    <string name="no_zones_added">Belum ada zona yang ditambahkan.</string>
+    <string name="add_zone_instruction">Tekan lama di mana saja pada peta untuk membuat zona hening baru.</string>
+    <string name="new_silent_zone">Zona Hening Baru</string>
+    <string name="edit_silent_zone">Edit Zona Hening</string>
+    <string name="zone_name">Nama Zona</string>
+    <string name="zone_name_hint">Mis. Masjid Saya</string>
+    <string name="radius_format">Radius: %1$dm</string>
+    <string name="auto_silent">Otomatis Hening</string>
+    <string name="status_enabled">Aktif</string>
+    <string name="status_notification_only">Hanya Notifikasi</string>
+    <string name="auto_silent_desc">Mulai otomatis</string>
+    <string name="notify_only_desc">Hanya notifikasi</string>
+    <string name="auto_mute">Otomatis Hening</string>
+    <string name="notify_only">Hanya Notifikasi</string>
+    <string name="silence_duration">Durasi Hening</string>
+    <string name="duration">Durasi</string>
+    <string name="duration_15_min">15 Menit</string>
+    <string name="duration_30_min">30 Menit</string>
+    <string name="duration_hours">%1$d Jam</string>
+    <string name="duration_minutes">%1$d Menit</string>
+    <string name="silence_stops_on_exit">Keheningan berhenti saat Anda meninggalkan area.</string>
+    <string name="save_zone">Simpan Zona</string>
+    <string name="status_active_caps">AKTIF</string>
+    <string name="radius_value_format">Radius %1$dm</string>
+    <string name="ends_in_hours">Berakhir dalam %1$d jam (atau saat Keluar)</string>
+    <string name="ends_in_mins">Berakhir dalam %1$d mnt (atau saat Keluar)</string>
+    <string name="status_protection_active">Perlindungan aktif</string>
+    <string name="status_inside_protection_zone">Di dalam zona perlindungan</string>
+    <string name="status_zones_active">%1$d zona aktif</string>
+    <string name="desc_location_silence">Otomatis hening di masjid atau tempat kerja</string>
+    <string name="action_manage">Kelola</string>
+    <string name="status_silenced_at">Dibuat hening di %1$s</string>
+    <string name="status_nearby">Di dekat %1$s</string>
+    <string name="action_silence_now">Heningkan Sekarang</string>
+
 </resources>

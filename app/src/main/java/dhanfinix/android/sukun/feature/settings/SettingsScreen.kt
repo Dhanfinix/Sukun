@@ -153,19 +153,7 @@ fun SettingsScreen(
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Location Section
-            SettingsSectionTitle("Location Features")
-            
-            SettingsItem(
-                title = "Location Silent Mode",
-                subtitle = "Auto-silent based on manual pins",
-                icon = Icons.Rounded.LocationOn,
-                onClick = onOpenLocationSilent
-            )
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             // General Section
             SettingsSectionTitle(stringResource(R.string.section_general))
@@ -174,7 +162,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.show_onboarding),
                 subtitle = stringResource(R.string.show_onboarding_desc),
                 icon = Icons.AutoMirrored.Rounded.Help,
-                onClick = { 
+                onClick = {
                     mainVm.setCoachmarkShown(false)
                     onBack()
                 }

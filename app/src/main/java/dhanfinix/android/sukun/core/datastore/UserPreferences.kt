@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName // Temp: will be fixed later
@@ -321,11 +322,11 @@ class UserPreferences(private val context: Context) {
 
     val silenceEndTime: Flow<Long> = context.dataStore.data.map { prefs ->
         prefs[KEY_SILENCE_END_TIME] ?: 0L
-    }
+    }.distinctUntilChanged()
 
     val silenceLabel: Flow<String?> = context.dataStore.data.map { prefs ->
         prefs[KEY_SILENCE_LABEL]
-    }
+    }.distinctUntilChanged()
 
     suspend fun setSilenceMetadata(startTime: Long, endTime: Long, label: String?) {
         context.dataStore.edit {
@@ -376,7 +377,7 @@ class UserPreferences(private val context: Context) {
             it.remove(KEY_SAVED_ALARM)
             it.remove(KEY_SAVED_RINGER_MODE)
             it.remove(KEY_SAVED_INTERRUPTION_FILTER)
-            it.remove(KEY_ACTIVE_SILENT_ZONE_ID)
+            // Note: KEY_ACTIVE_SILENT_ZONE_ID is NOT cleared here. It is strictly controlled by Geofence entries/exits.
         }
     }
 

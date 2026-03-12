@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -79,6 +80,7 @@ import dhanfinix.android.sukun.feature.volume.VolumeSection
 import dhanfinix.android.sukun.feature.volume.VolumeViewModel
 import dhanfinix.android.sukun.core.reliability.ReliabilityManager
 import dhanfinix.android.sukun.core.designsystem.components.TopSnackbar
+import dhanfinix.android.sukun.feature.home.components.LocationSilenceSection
 import androidx.compose.ui.Alignment
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +89,7 @@ fun HomeScreen(
     mainVm: MainViewModel,
     onShowOnboarding: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenLocationSilent: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val volumeVm: VolumeViewModel = viewModel()
@@ -124,9 +127,7 @@ fun HomeScreen(
     val density = LocalDensity.current
     val config = LocalConfiguration.current
 
-    PullToRefreshBox(
-        isRefreshing = prayerState.isLoading,
-        onRefresh = { prayerVm.onEvent(PrayerEvent.RefreshTimes) },
+    Box(
         modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         Scaffold(
@@ -171,13 +172,17 @@ fun HomeScreen(
                 }
             }
         ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(innerPadding)
-                    .padding(vertical = 12.dp)
-                    .padding(
+            PullToRefreshBox(
+                isRefreshing = prayerState.isLoading,
+                onRefresh = { prayerVm.onEvent(PrayerEvent.RefreshTimes) },
+                modifier = Modifier.fillMaxSize().padding(innerPadding)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                        .padding(vertical = 12.dp)
+                        .padding(
                         bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars
                             .asPaddingValues()
                             .calculateBottomPadding()
@@ -236,7 +241,19 @@ fun HomeScreen(
                     }
                 }
 
-                // ── Divider ──
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                LocationSilenceSection(
+                    state = volumeState,
+                    onManageClick = onOpenLocationSilent,
+                    onSilenceNowClick = { volumeVm.onEvent(VolumeEvent.SilenceNow) },
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
+                )
+
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
@@ -254,8 +271,13 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+        }
 
-        if (!hasSeenCoachmark) {
+        AnimatedVisibility(
+            visible = !hasSeenCoachmark,
+            enter = fadeIn(tween(400)),
+            exit = fadeOut(tween(300))
+        ) {
             CoachMarkOverlay(
                 targets = coachMarkTargets,
                 onStepChange = { step ->

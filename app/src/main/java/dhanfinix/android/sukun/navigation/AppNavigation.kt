@@ -98,7 +98,8 @@ fun AppNavigation(
                 HomeScreen(
                     mainVm = mainVm,
                     onShowOnboarding = { navController.navigate(Route.Onboarding) },
-                    onOpenSettings = { navController.navigate(Route.Settings) }
+                    onOpenSettings = { navController.navigate(Route.Settings) },
+                    onOpenLocationSilent = { navController.navigate(Route.LocationSilent) }
                 )
             }
 
