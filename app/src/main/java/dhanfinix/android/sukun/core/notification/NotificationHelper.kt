@@ -112,6 +112,7 @@ object NotificationHelper {
         // ── Expanded (big content) view ───────────────────────────────────────
         val expandedView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_expanded)
         expandedView.setTextViewText(R.id.notif_expanded_prayer, prayerName)
+        expandedView.setTextViewText(R.id.notif_expanded_prayer, prayerName)
         expandedView.setTextViewText(R.id.notif_expanded_status, localizedContext.getString(R.string.silence_active))
         expandedView.setChronometer(R.id.notif_expanded_chronometer, chronometerBase, "%s", true)
         expandedView.setChronometerCountDown(R.id.notif_expanded_chronometer, true)
@@ -173,5 +174,53 @@ object NotificationHelper {
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(REMINDER_NOTIFICATION_ID, builder.build())
+    }
+
+    fun showGeofenceStatusNotification(
+        context: Context, 
+        zoneName: String, 
+        isEntering: Boolean,
+        isAutoSilent: Boolean = true,
+        silenceDuration: Int? = null
+    ) {
+        val channelId = "sukun_geofence_channel"
+        val channelName = "Silent Zone Status"
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        
+        if (manager.getNotificationChannel(channelId) == null) {
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+            manager.createNotificationChannel(channel)
+        }
+
+        val title = if (isEntering) "Entered $zoneName" else "Left $zoneName"
+        val content = if (isEntering) {
+            if (isAutoSilent) "Silent mode activated" else "Tap to activate silent mode"
+        } else {
+            "Volume restored to normal"
+        }
+
+        val builder = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+
+        if (isEntering && !isAutoSilent) {
+            val silenceIntent = Intent(context, SilenceReceiver::class.java).apply {
+                action = SilenceReceiver.ACTION_START_SILENCE
+                putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, "Location: $zoneName")
+                putExtra(SilenceReceiver.KEY_DURATION_MIN, silenceDuration ?: 720) 
+                addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+            }
+            val silencePending = PendingIntent.getBroadcast(
+                context, 3001, silenceIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.addAction(R.drawable.ic_notification, "Silence Now", silencePending)
+            builder.setContentIntent(silencePending)
+        }
+
+        manager.notify(2001, builder.build())
     }
 }

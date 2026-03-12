@@ -23,6 +23,7 @@ import dhanfinix.android.sukun.feature.onboarding.OnboardingScreen
 import dhanfinix.android.sukun.feature.settings.AboutScreen
 import dhanfinix.android.sukun.feature.settings.SettingsScreen
 import dhanfinix.android.sukun.feature.splash.SplashScreen
+import dhanfinix.android.sukun.feature.mosque.SilentZonesScreen
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -110,6 +111,16 @@ fun AppNavigation(
                 SettingsScreen(
                     mainVm = mainVm,
                     onOpenAbout = { navController.navigate(Route.About) },
+                    onOpenLocationSilent = { navController.navigate(Route.LocationSilent) },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<Route.LocationSilent>(
+                enterTransition = { slideInHorizontally(tween(350)) { it } + fadeIn(tween(350)) },
+                popExitTransition = { slideOutHorizontally(tween(300)) { it } + fadeOut(tween(300)) }
+            ) {
+                SilentZonesScreen(
                     onBack = { navController.popBackStack() }
                 )
             }

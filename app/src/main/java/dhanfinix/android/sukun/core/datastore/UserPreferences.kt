@@ -108,6 +108,7 @@ class UserPreferences(private val context: Context) {
     // ── In-App Review ──
     private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
     private val KEY_HAS_RATED = booleanPreferencesKey("has_rated")
+    private val KEY_ACTIVE_SILENT_ZONE_ID = longPreferencesKey("active_silent_zone_id")
 
     // ── Flows ──
 
@@ -375,6 +376,7 @@ class UserPreferences(private val context: Context) {
             it.remove(KEY_SAVED_ALARM)
             it.remove(KEY_SAVED_RINGER_MODE)
             it.remove(KEY_SAVED_INTERRUPTION_FILTER)
+            it.remove(KEY_ACTIVE_SILENT_ZONE_ID)
         }
     }
 
@@ -466,6 +468,20 @@ class UserPreferences(private val context: Context) {
     suspend fun setHasRated(rated: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[KEY_HAS_RATED] = rated
+        }
+    }
+
+    val activeSilentZoneId: Flow<Long?> = context.dataStore.data.map { prefs ->
+        prefs[KEY_ACTIVE_SILENT_ZONE_ID]
+    }
+
+    suspend fun setActiveSilentZoneId(id: Long?) {
+        context.dataStore.edit { prefs ->
+            if (id != null) {
+                prefs[KEY_ACTIVE_SILENT_ZONE_ID] = id
+            } else {
+                prefs.remove(KEY_ACTIVE_SILENT_ZONE_ID)
+            }
         }
     }
 }

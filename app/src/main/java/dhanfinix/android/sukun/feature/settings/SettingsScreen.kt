@@ -31,6 +31,7 @@ import dhanfinix.android.sukun.core.datastore.TimeFormat
 fun SettingsScreen(
     mainVm: MainViewModel,
     onOpenAbout: () -> Unit,
+    onOpenLocationSilent: () -> Unit,
     onBack: () -> Unit
 ) {
     val appTheme by mainVm.appTheme.collectAsState()
@@ -151,6 +152,18 @@ fun SettingsScreen(
                     onClick = { showReminderSheet = true }
                 )
             }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Location Section
+            SettingsSectionTitle("Location Features")
+            
+            SettingsItem(
+                title = "Location Silent Mode",
+                subtitle = "Auto-silent based on manual pins",
+                icon = Icons.Rounded.LocationOn,
+                onClick = onOpenLocationSilent
+            )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
