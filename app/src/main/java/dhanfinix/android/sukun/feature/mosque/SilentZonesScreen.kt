@@ -148,6 +148,9 @@ fun SilentZonesScreen(
                 centerLat = centerLat,
                 centerLng = centerLng,
                 zoom = zoom,
+                onMapClick = {
+                    isListExpanded = false
+                },
                 onMapLongClick = { lat, lng ->
                     selectedLat = lat
                     selectedLng = lng

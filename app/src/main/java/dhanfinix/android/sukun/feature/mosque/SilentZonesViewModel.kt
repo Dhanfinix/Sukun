@@ -16,7 +16,11 @@ import dhanfinix.android.sukun.worker.SilenceReceiver
 import dhanfinix.android.sukun.core.notification.NotificationHelper
 import android.content.Intent
 import android.location.Location
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import android.annotation.SuppressLint
@@ -39,6 +43,19 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
     private val userPrefs = UserPreferences(application)
     private val geofenceManager = GeofenceManager(application)
     private val notificationManager = application.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
+
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(result: LocationResult) {
+            result.lastLocation?.let { location ->
+                _uiState.update { it.copy(userLat = location.latitude, userLng = location.longitude, isLocationFresh = true) }
+                // Persist to userPrefs for other features
+                viewModelScope.launch {
+                    userPrefs.setLocation(location.latitude, location.longitude)
+                }
+            }
+        }
+    }
 
     private val _uiState = MutableStateFlow(SilentZonesUiState())
     val uiState: StateFlow<SilentZonesUiState> = _uiState.asStateFlow()
@@ -55,7 +72,7 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
             val lat = userPrefs.latitude.first()
             val lng = userPrefs.longitude.first()
             _uiState.update { it.copy(userLat = lat, userLng = lng) }
-            fetchCurrentLocation()
+            startLocationUpdates()
         }
         viewModelScope.launch {
             userPrefs.activeSilentZoneId.collect { id ->
@@ -85,23 +102,29 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
     }
 
     @SuppressLint("MissingPermission")
-    fun fetchCurrentLocation() {
+    fun startLocationUpdates() {
         if (ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             
-            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    _uiState.update { it.copy(userLat = location.latitude, userLng = location.longitude, isLocationFresh = true) }
-                } else {
-                    _uiState.update { it.copy(isLocationFresh = true) }
-                }
-            }.addOnFailureListener {
-                _uiState.update { it.copy(isLocationFresh = true) }
-            }
+            val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000L).apply {
+                setMinUpdateIntervalMillis(2000L)
+            }.build()
+
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+            _uiState.update { it.copy(isLoading = true) }
         } else {
             _uiState.update { it.copy(isLocationFresh = true) }
         }
+    }
+
+    fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        _uiState.update { it.copy(isLoading = false) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopLocationUpdates()
     }
 
     private fun reSyncGeofences(zones: List<SilentZone>) {
