@@ -16,6 +16,8 @@ import dhanfinix.android.sukun.worker.SilenceReceiver
 import dhanfinix.android.sukun.core.notification.NotificationHelper
 import android.content.Intent
 import android.location.Location
+import android.location.Geocoder
+import android.util.Log
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -23,6 +25,10 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 import android.annotation.SuppressLint
 
 data class SilentZonesUiState(
@@ -35,6 +41,13 @@ data class SilentZonesUiState(
     val isDndAccessGranted: Boolean = false,
     val activeZoneId: Long? = null,
     val errorMessage: String? = null
+)
+
+data class MapSuggestion(
+    val title: String,
+    val subtitle: String?,
+    val latitude: Double,
+    val longitude: Double
 )
 
 class SilentZonesViewModel(private val application: Application) : AndroidViewModel(application) {
@@ -236,6 +249,120 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
         viewModelScope.launch {
             val newStatus = !zone.isAutoSilent
             silentZoneDao.updateAutoSilentStatus(zone.id, newStatus)
+        }
+    }
+
+    fun searchLocation(
+        query: String,
+        onResult: (Double, Double) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (query.isBlank()) {
+            onError("Enter a location to search")
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (!Geocoder.isPresent()) {
+                    withContext(Dispatchers.Main) {
+                        onError("Geocoder unavailable on this device")
+                    }
+                    return@launch
+                }
+                val results = geocode(query, 1)
+                val first = results?.firstOrNull()
+                if (first != null) {
+                    withContext(Dispatchers.Main) {
+                        onResult(first.latitude, first.longitude)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onError("Location not found")
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    onError("Search failed")
+                }
+            }
+        }
+    }
+
+    fun searchLocationSuggestions(
+        query: String,
+        onResult: (List<MapSuggestion>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (query.isBlank()) {
+            onResult(emptyList())
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (!Geocoder.isPresent()) {
+                    withContext(Dispatchers.Main) { onError("Geocoder unavailable") }
+                    return@launch
+                }
+                val results = geocode(query, 3).orEmpty()
+                val suggestions = results.mapNotNull { address ->
+                    val full = address.getAddressLine(0)
+                    val line1 = address.getAddressLine(1)
+                    val feature = address.featureName
+                    val locality = address.locality
+                    val admin = address.adminArea
+                    val subLocality = address.subLocality
+                    val thoroughfare = address.thoroughfare
+                    val subThoroughfare = address.subThoroughfare
+                    val candidates = listOfNotNull(
+                        feature,
+                        locality,
+                        admin,
+                        subLocality,
+                        thoroughfare,
+                        subThoroughfare,
+                        full,
+                        line1
+                    )
+                    val bestNamed = candidates.firstOrNull()
+                    Log.d(
+                        "SilentZoneSearch",
+                        "Geocoder candidates for \"$query\": ${candidates.joinToString(" | ")}"
+                    )
+                    if (bestNamed == null) {
+                        null
+                    } else {
+                        val subtitle = if (full != null && full != bestNamed) full else line1
+                        MapSuggestion(bestNamed, subtitle, address.latitude, address.longitude)
+                    }
+                }
+                withContext(Dispatchers.Main) { onResult(suggestions) }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) { onError("Search failed") }
+            }
+        }
+    }
+
+    private suspend fun geocode(query: String, maxResults: Int): List<android.location.Address>? {
+        val geocoder = Geocoder(application)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            suspendCancellableCoroutine { cont ->
+                geocoder.getFromLocationName(
+                    query,
+                    maxResults,
+                    object : Geocoder.GeocodeListener {
+                        override fun onGeocode(addresses: MutableList<android.location.Address>) {
+                            cont.resume(addresses)
+                        }
+
+                        override fun onError(errorMessage: String?) {
+                            cont.resume(emptyList())
+                        }
+                    }
+                )
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            geocoder.getFromLocationName(query, maxResults)
         }
     }
 

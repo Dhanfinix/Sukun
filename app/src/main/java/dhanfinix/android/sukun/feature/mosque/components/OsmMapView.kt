@@ -1,6 +1,7 @@
 package dhanfinix.android.sukun.feature.mosque.components
 
 import android.graphics.drawable.GradientDrawable
+import android.graphics.Color
 import android.view.MotionEvent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -12,6 +13,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.toColorInt
 import dhanfinix.android.sukun.core.database.entity.SilentZone
+import dhanfinix.android.sukun.R
+import androidx.core.content.ContextCompat
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -20,6 +23,8 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Overlay
 import org.osmdroid.views.overlay.Polygon
+import org.osmdroid.views.overlay.infowindow.InfoWindow
+import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow
 
 @Composable
 fun OsmMapView(
@@ -27,9 +32,13 @@ fun OsmMapView(
     zones: List<SilentZone> = emptyList(),
     userLat: Double? = null,
     userLng: Double? = null,
+    searchLat: Double? = null,
+    searchLng: Double? = null,
+    searchLabel: String? = null,
     centerLat: Double? = null,
     centerLng: Double? = null,
     zoom: Double = 18.0,
+    focusedZoneId: Long? = null,
     onMapClick: () -> Unit = {},
     onMapLongClick: (Double, Double) -> Unit = { _, _ -> },
     onMarkerClick: (SilentZone) -> Unit = {},
@@ -51,6 +60,8 @@ fun OsmMapView(
             setMultiTouchControls(true)
         }
     }
+    
+    val zoneInfoWindow = remember(mapView) { SilentZoneInfoWindow(mapView) }
 
     // Handle Map Click and Long Click
     val clickOverlay = remember {
@@ -134,6 +145,10 @@ fun OsmMapView(
                     outlinePaint.color = colorHex.toColorInt()
                     outlinePaint.strokeWidth = 3f * mv.context.resources.displayMetrics.density
                 }
+                circle.setOnClickListener { _, _, _ ->
+                    onMarkerClick(zone)
+                    true
+                }
                 mv.overlays.add(circle)
             }
 
@@ -145,6 +160,8 @@ fun OsmMapView(
                     position = GeoPoint(zone.latitude, zone.longitude)
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                     title = zone.name
+                    relatedObject = zone
+                    infoWindow = zoneInfoWindow
                     
                     val density = mv.context.resources.displayMetrics.density
                     val size = (14 * density).toInt()
@@ -165,6 +182,29 @@ fun OsmMapView(
                     }
                 }
                 mv.overlays.add(marker)
+            }
+
+            if (searchLat != null && searchLng != null) {
+                val searchMarker = Marker(mv).apply {
+                    id = "search_location"
+                    position = GeoPoint(searchLat, searchLng)
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    title = searchLabel ?: "Search Result"
+                    icon = ContextCompat.getDrawable(mv.context, R.drawable.ic_search_pin)
+                }
+                mv.overlays.add(searchMarker)
+            }
+
+            if (focusedZoneId == null) {
+                InfoWindow.closeAllInfoWindowsOn(mv)
+            } else {
+                val focusedMarker = mv.overlays
+                    .filterIsInstance<Marker>()
+                    .firstOrNull { it.id == focusedZoneId.toString() }
+                if (focusedMarker != null) {
+                    InfoWindow.closeAllInfoWindowsOn(mv)
+                    focusedMarker.showInfoWindow()
+                }
             }
 
             // Sync Center
@@ -202,5 +242,69 @@ fun OsmMapView(
         onDispose {
             mapView.removeMapListener(listener)
         }
+    }
+}
+
+private class SilentZoneInfoWindow(mapView: MapView) :
+    MarkerInfoWindow(R.layout.view_silent_zone_popup, mapView) {
+
+    init {
+        mView.setBackgroundColor(Color.TRANSPARENT)
+        mView.setPadding(0, 0, 0, 0)
+    }
+
+    override fun onOpen(item: Any?) {
+        val marker = item as? Marker ?: return
+        val zone = marker.relatedObject as? SilentZone ?: return
+        val view = mView
+
+        val name = view.findViewById<android.widget.TextView>(R.id.zone_name)
+        val statusChip = view.findViewById<android.widget.TextView>(R.id.zone_status_chip)
+        val modeChip = view.findViewById<android.widget.TextView>(R.id.zone_mode_chip)
+        val radius = view.findViewById<android.widget.TextView>(R.id.zone_radius)
+        val duration = view.findViewById<android.widget.TextView>(R.id.zone_duration)
+
+        name.text = zone.name
+        radius.text = view.resources.getString(
+            R.string.radius_value_format,
+            zone.radius.toInt()
+        )
+
+        val durationMinutes = zone.silenceDuration ?: 30
+        duration.text = if (zone.isAutoSilent) {
+            if (durationMinutes >= 60) {
+                view.resources.getString(R.string.ends_in_hours, durationMinutes / 60)
+            } else {
+                view.resources.getString(R.string.ends_in_mins, durationMinutes)
+            }
+        } else {
+            view.resources.getString(R.string.status_notification_only)
+        }
+
+        statusChip.text = if (zone.isEnabled) {
+            view.resources.getString(R.string.status_enabled)
+        } else {
+            view.resources.getString(R.string.status_disabled)
+        }
+
+        modeChip.text = if (zone.isAutoSilent) {
+            view.resources.getString(R.string.auto_mute)
+        } else {
+            view.resources.getString(R.string.notify_only)
+        }
+
+        statusChip.background = view.context.getDrawable(
+            if (zone.isEnabled) R.drawable.bg_zone_chip_enabled else R.drawable.bg_zone_chip_disabled
+        )
+        statusChip.setTextColor(
+            ContextCompat.getColor(
+                view.context,
+                if (zone.isEnabled) R.color.zone_chip_enabled_text else R.color.zone_chip_disabled_text
+            )
+        )
+
+        modeChip.background = view.context.getDrawable(R.drawable.bg_zone_chip_neutral)
+        modeChip.setTextColor(ContextCompat.getColor(view.context, R.color.zone_chip_neutral_text))
+
     }
 }

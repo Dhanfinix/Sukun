@@ -53,6 +53,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight as FontWeightCompose
 import androidx.compose.ui.unit.dp
@@ -62,6 +66,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dhanfinix.android.sukun.feature.mosque.components.OsmMapView
+import android.widget.Toast
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,6 +88,36 @@ fun SilentZonesScreen(
     var zoom by remember { mutableStateOf(18.0) }
     var isListExpanded by remember { mutableStateOf(false) }
     var editingZone by remember { mutableStateOf<dhanfinix.android.sukun.core.database.entity.SilentZone?>(null) }
+    var focusedZoneId by remember { mutableStateOf<Long?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
+    var searchExpanded by remember { mutableStateOf(false) }
+    var includeZones by remember { mutableStateOf(false) }
+    var mapSuggestions by remember { mutableStateOf<List<MapSuggestion>>(emptyList()) }
+    var searchPinLat by remember { mutableStateOf<Double?>(null) }
+    var searchPinLng by remember { mutableStateOf<Double?>(null) }
+    var searchPinLabel by remember { mutableStateOf<String?>(null) }
+
+    val zoneMatches = remember(uiState.zones, searchQuery, includeZones) {
+        if (!includeZones || searchQuery.isBlank()) {
+            emptyList()
+        } else {
+            uiState.zones.filter { it.name.contains(searchQuery, ignoreCase = true) }
+        }
+    }
+
+
+    LaunchedEffect(searchQuery, searchExpanded) {
+        if (!searchExpanded || searchQuery.isBlank()) {
+            mapSuggestions = emptyList()
+            return@LaunchedEffect
+        }
+        delay(250)
+        viewModel.searchLocationSuggestions(
+            query = searchQuery,
+            onResult = { mapSuggestions = it },
+            onError = { mapSuggestions = emptyList() }
+        )
+    }
 
     // Permission launchers
     val backgroundLocationLauncher = rememberLauncherForActivityResult(
@@ -131,6 +167,14 @@ fun SilentZonesScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    IconButton(onClick = { searchExpanded = !searchExpanded }) {
+                        Icon(
+                            if (searchExpanded) Icons.Rounded.Close else Icons.Rounded.Search,
+                            contentDescription = "Search"
+                        )
+                    }
                 }
             )
         }
@@ -145,16 +189,24 @@ fun SilentZonesScreen(
                 zones = uiState.zones,
                 userLat = uiState.userLat,
                 userLng = uiState.userLng,
+                searchLat = searchPinLat,
+                searchLng = searchPinLng,
+                searchLabel = searchPinLabel,
                 centerLat = centerLat,
                 centerLng = centerLng,
                 zoom = zoom,
+                focusedZoneId = focusedZoneId,
                 onMapClick = {
                     isListExpanded = false
+                    focusedZoneId = null
                 },
                 onMapLongClick = { lat, lng ->
                     selectedLat = lat
                     selectedLng = lng
                     showAddDialog = true
+                },
+                onMarkerClick = { zone ->
+                    focusedZoneId = zone.id
                 },
                 onCenterChanged = { lat, lng ->
                     centerLat = lat
@@ -184,6 +236,223 @@ fun SilentZonesScreen(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.labelSmall
                     )
+                }
+
+                AnimatedVisibility(
+                    visible = searchExpanded,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                shape = RoundedCornerShape(14.dp),
+                                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                                trailingIcon = {
+                                    if (searchQuery.isNotBlank()) {
+                                        IconButton(onClick = { searchQuery = "" }) {
+                                            Icon(Icons.Rounded.Close, contentDescription = "Clear")
+                                        }
+                                    }
+                                },
+                                placeholder = { Text(stringResource(R.string.search_location_placeholder)) },
+                                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+                                keyboardActions = KeyboardActions(onSearch = {
+                                    if (includeZones && zoneMatches.size == 1) {
+                                        val zone = zoneMatches.first()
+                                        focusedZoneId = zone.id
+                                        centerLat = zone.latitude
+                                        centerLng = zone.longitude
+                                        zoom = 18.0
+                                        searchPinLat = null
+                                        searchPinLng = null
+                                        searchPinLabel = null
+                                        searchExpanded = false
+                                    } else if (searchQuery.isNotBlank()) {
+                                        viewModel.searchLocation(
+                                            query = searchQuery,
+                                            onResult = { lat, lng ->
+                                                centerLat = lat
+                                                centerLng = lng
+                                                zoom = 16.0
+                                                focusedZoneId = null
+                                                searchPinLat = lat
+                                                searchPinLng = lng
+                                                searchPinLabel = searchQuery
+                                                isListExpanded = false
+                                                searchExpanded = false
+                                            },
+                                            onError = { message ->
+                                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                            }
+                                        )
+                                    }
+                                })
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text(
+                                        stringResource(R.string.include_zones),
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                    Text(
+                                        stringResource(R.string.include_zones_desc),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                }
+                                Switch(
+                                    checked = includeZones,
+                                    onCheckedChange = { includeZones = it }
+                                )
+                            }
+
+                            if (uiState.zones.isNotEmpty()) {
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    if (includeZones && zoneMatches.isNotEmpty()) {
+                                        Text(
+                                            stringResource(R.string.suggestions_zones),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.secondary
+                                        )
+                                        zoneMatches.take(4).forEach { zone ->
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        focusedZoneId = zone.id
+                                                        centerLat = zone.latitude
+                                                        centerLng = zone.longitude
+                                                        zoom = 18.0
+                                                        searchPinLat = null
+                                                        searchPinLng = null
+                                                        searchPinLabel = null
+                                                        searchExpanded = false
+                                                    }
+                                                    .padding(vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    Icons.Rounded.LocationOn,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                                Spacer(Modifier.width(8.dp))
+                                                Text(zone.name, style = MaterialTheme.typography.bodyMedium)
+                                            }
+                                        }
+                                    }
+
+                                    if (searchQuery.isNotBlank() && mapSuggestions.isNotEmpty()) {
+                                        Text(
+                                            stringResource(R.string.suggestions_map),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.secondary
+                                        )
+                                        mapSuggestions.take(3).forEach { suggestion ->
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        centerLat = suggestion.latitude
+                                                        centerLng = suggestion.longitude
+                                                        zoom = 16.0
+                                                        focusedZoneId = null
+                                                        searchPinLat = suggestion.latitude
+                                                        searchPinLng = suggestion.longitude
+                                                        searchPinLabel = suggestion.title
+                                                        isListExpanded = false
+                                                        searchExpanded = false
+                                                    }
+                                                    .padding(vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    Icons.Rounded.Map,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                                Spacer(Modifier.width(8.dp))
+                                                Column {
+                                                    Text(
+                                                        suggestion.title,
+                                                        style = MaterialTheme.typography.bodyMedium
+                                                    )
+                                                    if (!suggestion.subtitle.isNullOrBlank()) {
+                                                        Text(
+                                                            suggestion.subtitle,
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            color = MaterialTheme.colorScheme.secondary,
+                                                            maxLines = 2,
+                                                            overflow = TextOverflow.Ellipsis
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else if (searchQuery.isNotBlank()) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    viewModel.searchLocation(
+                                                        query = searchQuery,
+                                                        onResult = { lat, lng ->
+                                                            centerLat = lat
+                                                            centerLng = lng
+                                                            zoom = 16.0
+                                                            focusedZoneId = null
+                                                            searchPinLat = lat
+                                                            searchPinLng = lng
+                                                            searchPinLabel = searchQuery
+                                                            isListExpanded = false
+                                                            searchExpanded = false
+                                                        },
+                                                        onError = { message ->
+                                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    )
+                                                }
+                                                .padding(vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Rounded.Map,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                            Spacer(Modifier.width(8.dp))
+                                            Text(
+                                                stringResource(R.string.suggestion_search_map, searchQuery),
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Floating Permission Banners
@@ -353,6 +622,12 @@ fun SilentZonesScreen(
                                             isActive = isActive,
                                             onToggleEnabled = { viewModel.toggleSilentZone(zone) },
                                             onToggleAutoSilent = { viewModel.toggleAutoSilent(zone) },
+                                            onFocus = {
+                                                focusedZoneId = zone.id
+                                                centerLat = zone.latitude
+                                                centerLng = zone.longitude
+                                                zoom = 18.0
+                                            },
                                             onEdit = { editingZone = zone },
                                             onDelete = { viewModel.deleteSilentZone(zone) }
                                         )
@@ -593,11 +868,14 @@ private fun SilentZoneCard(
     isActive: Boolean,
     onToggleEnabled: () -> Unit,
     onToggleAutoSilent: () -> Unit,
+    onFocus: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onFocus() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = if (isActive) MaterialTheme.colorScheme.primaryContainer 

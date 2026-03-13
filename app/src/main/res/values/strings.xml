@@ -67,9 +67,16 @@
     <string name="setting_calc_method">Calculation</string>
     <string name="calculation_method_desc">Different organizations use slightly different conventions. Pick the one common in your region.</string>
     <string name="search_location">Search Location</string>
+    <string name="search">Search</string>
     <string name="detect_location">Detect Location</string>
     <string name="unknown_location">Unknown Location</string>
     <string name="search_location_placeholder">e.g. Jakarta, London</string>
+    <string name="include_zones">Include saved zones</string>
+    <string name="include_zones_desc">Match your saved silent zones</string>
+    <string name="suggestions_zones">Saved zones</string>
+    <string name="suggestions_map">Map suggestions</string>
+    <string name="suggestion_search_map">Search on map: %1$s</string>
+    <string name="search_zones_placeholder">Search zones</string>
     <string name="copyright_text">© 2026 Dhandev</string>
     <string name="prayer_fajr">Fajr</string>
     <string name="prayer_sunrise">Sunrise</string>
@@ -200,6 +207,7 @@
     <string name="radius_format">Radius: %1$dm</string>
     <string name="auto_silent">Auto-Silent</string>
     <string name="status_enabled">Enabled</string>
+    <string name="status_disabled">Disabled</string>
     <string name="status_notification_only">Notification Only</string>
     <string name="auto_silent_desc">Starts automatically</string>
     <string name="notify_only_desc">Notification only</string>
