@@ -29,53 +29,58 @@ class GeofenceReceiver : BroadcastReceiver() {
 
         if (triggeringGeofences.isEmpty()) return
 
+        val pendingResult = goAsync() // Essential for background reliability
         val database = SukunDatabase.getDatabase(context)
         val silentZoneDao = database.silentZoneDao()
         val userPrefs = UserPreferences(context)
 
         CoroutineScope(Dispatchers.IO).launch {
-            for (geofence in triggeringGeofences) {
-                val zoneId = geofence.requestId.toLongOrNull() ?: continue
-                val zone = silentZoneDao.getSilentZoneById(zoneId) ?: continue
+            try {
+                for (geofence in triggeringGeofences) {
+                    val zoneId = geofence.requestId.toLongOrNull() ?: continue
+                    val zone = silentZoneDao.getSilentZoneById(zoneId) ?: continue
 
-                when (transitionType) {
-                    Geofence.GEOFENCE_TRANSITION_ENTER -> {
-                        Log.d("GeofenceReceiver", "Entered geofence: ${zone.name}")
-                        userPrefs.setActiveSilentZoneId(zone.id)
-                        
-                        if (zone.isAutoSilent) {
-                            val durationToUse = zone.silenceDuration ?: 30
-                            val silenceIntent = Intent(context, SilenceReceiver::class.java).apply {
-                                action = SilenceReceiver.ACTION_START_SILENCE
-                                putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, "Location: ${zone.name}")
-                                putExtra(SilenceReceiver.KEY_DURATION_MIN, durationToUse)
-                                addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+                    when (transitionType) {
+                        Geofence.GEOFENCE_TRANSITION_ENTER, Geofence.GEOFENCE_TRANSITION_DWELL -> {
+                            Log.d("GeofenceReceiver", "Entered/Dwell geofence: ${zone.name} (type: $transitionType)")
+                            userPrefs.setActiveSilentZoneId(zone.id)
+                            
+                            if (zone.isAutoSilent) {
+                                val durationToUse = zone.silenceDuration ?: 30
+                                val silenceIntent = Intent(context, SilenceReceiver::class.java).apply {
+                                    action = SilenceReceiver.ACTION_START_SILENCE
+                                    putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, "Location: ${zone.name}")
+                                    putExtra(SilenceReceiver.KEY_DURATION_MIN, durationToUse)
+                                    addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+                                }
+                                context.sendBroadcast(silenceIntent)
+                                NotificationHelper.showGeofenceStatusNotification(context, zone.name, true, true, zone.silenceDuration)
+                            } else {
+                                NotificationHelper.showGeofenceStatusNotification(context, zone.name, true, false, zone.silenceDuration)
                             }
-                            context.sendBroadcast(silenceIntent)
-                            NotificationHelper.showGeofenceStatusNotification(context, zone.name, true, true, zone.silenceDuration)
-                        } else {
-                            NotificationHelper.showGeofenceStatusNotification(context, zone.name, true, false, zone.silenceDuration)
                         }
-                    }
-                    Geofence.GEOFENCE_TRANSITION_EXIT -> {
-                        Log.d("GeofenceReceiver", "Exited geofence: ${zone.name}")
-                        
-                        val currentActiveId = userPrefs.activeSilentZoneId.first()
-                        if (currentActiveId == zone.id) {
-                            Log.d("GeofenceReceiver", "Exiting active zone ${zone.name}, stopping silence")
-                            val stopIntent = Intent(context, SilenceReceiver::class.java).apply {
-                                action = SilenceReceiver.ACTION_STOP_SILENCE
-                                addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+                        Geofence.GEOFENCE_TRANSITION_EXIT -> {
+                            Log.d("GeofenceReceiver", "Exited geofence: ${zone.name}")
+                            
+                            val currentActiveId = userPrefs.activeSilentZoneId.first()
+                            if (currentActiveId == zone.id) {
+                                Log.d("GeofenceReceiver", "Exiting active zone ${zone.name}, stopping silence")
+                                val stopIntent = Intent(context, SilenceReceiver::class.java).apply {
+                                    action = SilenceReceiver.ACTION_STOP_SILENCE
+                                    addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+                                }
+                                context.sendBroadcast(stopIntent)
+                            } else {
+                                Log.d("GeofenceReceiver", "Exit ignored: active zone id $currentActiveId != ${zone.id}")
                             }
-                            context.sendBroadcast(stopIntent)
-                        } else {
-                            Log.d("GeofenceReceiver", "Exit ignored: active zone id $currentActiveId != ${zone.id}")
+                            
+                            userPrefs.setActiveSilentZoneId(null)
+                            NotificationHelper.showGeofenceStatusNotification(context, zone.name, false)
                         }
-                        
-                        userPrefs.setActiveSilentZoneId(null)
-                        NotificationHelper.showGeofenceStatusNotification(context, zone.name, false)
                     }
                 }
+            } finally {
+                pendingResult.finish()
             }
         }
     }

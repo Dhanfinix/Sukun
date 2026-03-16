@@ -141,11 +141,12 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
     }
 
     private fun reSyncGeofences(zones: List<SilentZone>) {
-        // Simple strategy: remove all and add enabled ones
-        // In a real app, we'd only update changes
-        geofenceManager.removeAllGeofences()
-        zones.filter { it.isEnabled }.forEach { zone ->
-            geofenceManager.addGeofence(zone)
+        val enabledZones = zones.filter { it.isEnabled }
+        if (enabledZones.isEmpty()) {
+            geofenceManager.removeAllGeofences()
+        } else {
+            // Batch update for reliability and precision
+            geofenceManager.addAllGeofences(enabledZones)
         }
     }
 
@@ -154,7 +155,7 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
             userPrefs.setActiveSilentZoneId(zone.id)
             
             if (zone.isAutoSilent) {
-                val durationToUse = zone.silenceDuration ?: 720
+                val durationToUse = zone.silenceDuration ?: 30 // Default 30 min to match receiver
                 val silenceIntent = Intent(application, SilenceReceiver::class.java).apply {
                     action = SilenceReceiver.ACTION_START_SILENCE
                     putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, "Location: ${zone.name}")

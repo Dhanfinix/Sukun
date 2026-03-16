@@ -10,6 +10,8 @@ import dhanfinix.android.sukun.core.notification.NotificationHelper
 import dhanfinix.android.sukun.feature.prayer.data.PrayerRepository
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
+import dhanfinix.android.sukun.core.database.SukunDatabase
+import dhanfinix.android.sukun.core.location.GeofenceManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -19,6 +21,7 @@ import java.time.LocalDate
 /**
  * Re-schedules all pending Sukun silence workers after device reboot.
  * Also recovers any active silences that were interrupted by the reboot.
+ * Re-registers all enabled geofences.
  */
 class BootReceiver : BroadcastReceiver() {
 
@@ -28,11 +31,19 @@ class BootReceiver : BroadcastReceiver() {
         val userPrefs = UserPreferences(context)
         val prayerRepo = PrayerRepository(context)
         val scheduler = SilenceScheduler(context)
+        val geofenceManager = GeofenceManager(context)
+        val database = SukunDatabase.getDatabase(context)
 
         val pendingResult = goAsync()
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                // Bug Fix: Re-register all enabled geofences
+                val enabledZones = database.silentZoneDao().getEnabledSilentZones()
+                if (enabledZones.isNotEmpty()) {
+                    geofenceManager.addAllGeofences(enabledZones)
+                }
+
                 // Bug 7 Fix: Mid-Silence Reboot Amnesia
                 val endTime = userPrefs.silenceEndTime.first()
                 if (endTime > System.currentTimeMillis()) {

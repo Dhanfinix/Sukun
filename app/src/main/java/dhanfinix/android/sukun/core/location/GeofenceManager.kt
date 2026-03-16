@@ -35,11 +35,13 @@ class GeofenceManager(private val context: Context) {
                 silentZone.radius
             )
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT or Geofence.GEOFENCE_TRANSITION_DWELL)
+            .setLoiteringDelay(30000) // 30 seconds dwell time for stability
+            .setNotificationResponsiveness(5000) // 5 seconds responsiveness for precision
             .build()
 
         val request = GeofencingRequest.Builder()
-            .setInitialTrigger(0) // Prevent immediate false positive triggers when adding
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER) // Detection if user is already inside
             .addGeofence(geofence)
             .build()
 
@@ -50,6 +52,41 @@ class GeofenceManager(private val context: Context) {
             }
             .addOnFailureListener { e ->
                 Log.e("GeofenceManager", "Failed to add geofence: ${silentZone.name}", e)
+                onFailure(e)
+            }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun addAllGeofences(zones: List<SilentZone>, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
+        if (zones.isEmpty()) return
+
+        val geofences = zones.map { silentZone ->
+            Geofence.Builder()
+                .setRequestId(silentZone.id.toString())
+                .setCircularRegion(
+                    silentZone.latitude,
+                    silentZone.longitude,
+                    silentZone.radius
+                )
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT or Geofence.GEOFENCE_TRANSITION_DWELL)
+                .setLoiteringDelay(30000)
+                .setNotificationResponsiveness(5000)
+                .build()
+        }
+
+        val request = GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofences(geofences)
+            .build()
+
+        geofencingClient.addGeofences(request, geofencePendingIntent)
+            .addOnSuccessListener {
+                Log.d("GeofenceManager", "Batch geofences added: ${zones.size} zones")
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                Log.e("GeofenceManager", "Failed to add batch geofences", e)
                 onFailure(e)
             }
     }
