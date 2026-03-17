@@ -38,6 +38,7 @@ data class SilentZonesUiState(
     val userLng: Double? = null,
     val isLocationFresh: Boolean = false,
     val isLoading: Boolean = false,
+    val isFineLocationGranted: Boolean = false,
     val isBackgroundLocationGranted: Boolean = false,
     val isDndAccessGranted: Boolean = false,
     val activeZoneId: Long? = null,
@@ -97,6 +98,8 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
     }
 
     fun refreshPermissions() {
+        val fineLocationGranted = ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        
         val backgroundLocationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
         } else {
@@ -110,6 +113,7 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
         }
 
         _uiState.update { it.copy(
+            isFineLocationGranted = fineLocationGranted,
             isBackgroundLocationGranted = backgroundLocationGranted,
             isDndAccessGranted = dndGranted
         ) }

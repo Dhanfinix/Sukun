@@ -491,7 +491,13 @@ fun SilentZonesScreen(
                                     text = stringResource(R.string.permission_background_location_title),
                                     subtitle = stringResource(R.string.permission_background_location_desc),
                                     onClick = {
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                            if (uiState.isFineLocationGranted) {
+                                                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                                            } else {
+                                                fineLocationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                                            }
+                                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                             backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                                         } else {
                                             fineLocationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
