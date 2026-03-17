@@ -488,6 +488,7 @@ fun SilentZonesScreen(
                             if (!uiState.isBackgroundLocationGranted) {
                                 PermissionWarningItem(
                                     text = "Background Location (Select 'Allow all the time')",
+                                    subtitle = "Required to trigger silence automatically even when the app is closed.",
                                     onClick = {
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                             backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
@@ -962,7 +963,11 @@ private fun SilentZoneCard(
 }
 
 @Composable
-private fun PermissionWarningItem(text: String, onClick: () -> Unit) {
+private fun PermissionWarningItem(
+    text: String,
+    subtitle: String? = null,
+    onClick: () -> Unit
+) {
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -973,7 +978,10 @@ private fun PermissionWarningItem(text: String, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     Icons.Rounded.Settings,
                     contentDescription = null,
@@ -981,11 +989,21 @@ private fun PermissionWarningItem(text: String, onClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.error
                 )
                 Spacer(Modifier.width(8.dp))
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
+                Column {
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeightCompose.SemiBold
+                    )
+                    if (subtitle != null) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                        )
+                    }
+                }
             }
             Icon(
                 Icons.Rounded.ChevronRight,
