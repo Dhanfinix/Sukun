@@ -25,6 +25,7 @@ import org.osmdroid.views.overlay.Overlay
 import org.osmdroid.views.overlay.Polygon
 import org.osmdroid.views.overlay.infowindow.InfoWindow
 import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow
+import kotlin.math.abs
 
 @Composable
 fun OsmMapView(
@@ -90,24 +91,12 @@ fun OsmMapView(
 
     // Apply zoom whenever the parameter changes (forced from parent)
     LaunchedEffect(zoom) {
-        if (Math.abs(mapView.zoomLevelDouble - zoom) > 0.1) {
+        if (abs(mapView.zoomLevelDouble - zoom) > 0.1) {
             mapView.controller.setZoom(zoom)
         }
     }
     
-    AndroidView(
-        modifier = modifier.fillMaxSize(),
-        factory = {
-            mapView.apply {
-                overlays.add(clickOverlay)
-                controller.setZoom(zoom)
-                centerLat?.let { lat ->
-                    centerLng?.let { lng ->
-                        controller.setCenter(GeoPoint(lat, lng))
-                    }
-                }
-            }
-        },
+
     // Handle Markers & Polygons in a more efficient way
     LaunchedEffect(zones, userLat, userLng, searchLat, searchLng, searchLabel) {
         mapView.overlays.removeAll { it !is Marker || (it.id != "user_location" && it.id != "search_location") }
