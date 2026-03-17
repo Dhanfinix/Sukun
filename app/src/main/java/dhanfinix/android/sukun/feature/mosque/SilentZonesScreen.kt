@@ -60,8 +60,8 @@ fun SilentZonesScreen(
     var selectedLat by remember { mutableStateOf(0.0) }
     var selectedLng by remember { mutableStateOf(0.0) }
 
-    var centerLat by remember { mutableStateOf<Double?>(null) }
-    var centerLng by remember { mutableStateOf<Double?>(null) }
+    var centerLat by remember(uiState.userLat) { mutableStateOf(uiState.userLat) }
+    var centerLng by remember(uiState.userLng) { mutableStateOf(uiState.userLng) }
     var zoom by remember { mutableStateOf(18.0) }
     var isListExpanded by remember { mutableStateOf(false) }
     var editingZone by remember { mutableStateOf<SilentZone?>(null) }

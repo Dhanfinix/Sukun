@@ -49,7 +49,7 @@ fun OsmMapView(
 ) {
     val context = LocalContext.current
     
-    // OSM configuration
+    // OSM configuration - Load BEFORE MapView is created if possible, or right after
     LaunchedEffect(Unit) {
         Configuration.getInstance().load(context, context.getSharedPreferences("osm_pref", 0))
         Configuration.getInstance().userAgentValue = context.packageName
@@ -60,6 +60,11 @@ fun OsmMapView(
             setTileSource(TileSourceFactory.MAPNIK)
             zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
             setMultiTouchControls(true)
+            
+            // Set a sensible default center (Jakarta) immediately to avoid (0,0) Atlantic Ocean
+            controller.setZoom(zoom)
+            val defaultPoint = GeoPoint(-6.2088, 106.8456)
+            controller.setCenter(defaultPoint)
         }
     }
     
@@ -99,8 +104,8 @@ fun OsmMapView(
 
     // Handle Markers & Polygons in a more efficient way
     LaunchedEffect(zones, userLat, userLng, searchLat, searchLng, searchLabel) {
-        mapView.overlays.removeAll { it !is Marker || (it.id != "user_location" && it.id != "search_location") }
-        mapView.overlays.removeAll { it is Marker && (it.id == "user_location" || it.id == "search_location") }
+        // Only remove markers and polygons, preserving the clickOverlay
+        mapView.overlays.removeAll { it is Marker || it is Polygon }
         
         // Polygons
         zones.forEach { zone ->
@@ -223,13 +228,15 @@ fun OsmMapView(
         modifier = modifier.fillMaxSize(),
         factory = {
             mapView.apply {
-                overlays.add(clickOverlay)
-                controller.setZoom(zoom)
-                centerLat?.let { lat ->
-                    centerLng?.let { lng ->
-                        controller.setCenter(GeoPoint(lat, lng))
-                    }
+                if (!overlays.contains(clickOverlay)) {
+                    overlays.add(0, clickOverlay)
                 }
+                
+                // Final check on centering during factory
+                val lat = centerLat ?: userLat ?: -6.2088
+                val lng = centerLng ?: userLng ?: 106.8456
+                controller.setCenter(GeoPoint(lat, lng))
+                controller.setZoom(zoom)
             }
         },
         update = { /* Updates handled in effects above for better performance */ }
