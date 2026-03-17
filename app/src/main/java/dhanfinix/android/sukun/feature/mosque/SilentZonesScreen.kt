@@ -478,8 +478,8 @@ fun SilentZonesScreen(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(Modifier.width(8.dp))
-                                Text(
-                                    "Setup required for triggers",
+                                 Text(
+                                    stringResource(R.string.permission_setup_required_title),
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
@@ -487,8 +487,8 @@ fun SilentZonesScreen(
                             
                             if (!uiState.isBackgroundLocationGranted) {
                                 PermissionWarningItem(
-                                    text = "Background Location (Select 'Allow all the time')",
-                                    subtitle = "Required to trigger silence automatically even when the app is closed.",
+                                    text = stringResource(R.string.permission_background_location_title),
+                                    subtitle = stringResource(R.string.permission_background_location_desc),
                                     onClick = {
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                             backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
@@ -501,12 +501,10 @@ fun SilentZonesScreen(
                             
                             if (!uiState.isDndAccessGranted) {
                                 PermissionWarningItem(
-                                    text = "Do Not Disturb access",
+                                    text = stringResource(R.string.permission_dnd_title),
                                     onClick = {
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                            val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
-                                            context.startActivity(intent)
-                                        }
+                                        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                                        context.startActivity(intent)
                                     }
                                 )
                             }

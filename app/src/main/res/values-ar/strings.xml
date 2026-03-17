@@ -224,5 +224,9 @@
     <string name="status_silenced_at">تم الكتم في %1$s</string>
     <string name="status_nearby">بالقرب من %1$s</string>
     <string name="action_silence_now">الكتم الآن</string>
-
+    <!-- Permissions -->
+    <string name="permission_setup_required_title">مطلوب لضمان موثوقية أفضل</string>
+    <string name="permission_background_location_title">الموقع في الخلفية (اختر "السماح طوال الوقت")</string>
+    <string name="permission_background_location_desc">مطلوب لتفعيل كتم الصوت تلقائيًا حتى عندما يكون التطبيق مغلقًا.</string>
+    <string name="permission_dnd_title">الوصول إلى وضع عدم الإزعاج</string>
 </resources>

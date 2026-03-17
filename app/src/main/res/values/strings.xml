@@ -233,5 +233,9 @@
     <string name="status_silenced_at">Silenced at %1$s</string>
     <string name="status_nearby">Nearby %1$s</string>
     <string name="action_silence_now">Silence Now</string>
-
+    <!-- Permissions -->
+    <string name="permission_setup_required_title">Required for better reliability</string>
+    <string name="permission_background_location_title">Background Location (Select \'Allow all the time\')</string>
+    <string name="permission_background_location_desc">Required to trigger silence automatically even when the app is closed.</string>
+    <string name="permission_dnd_title">Do Not Disturb access</string>
 </resources>

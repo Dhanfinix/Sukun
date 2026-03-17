@@ -224,5 +224,9 @@
     <string name="status_silenced_at">Dibuat hening di %1$s</string>
     <string name="status_nearby">Di dekat %1$s</string>
     <string name="action_silence_now">Heningkan Sekarang</string>
-
+    <!-- Permissions -->
+    <string name="permission_setup_required_title">Dibutuhkan untuk keandalan fitur</string>
+    <string name="permission_background_location_title">Lokasi Latar Belakang (Pilih \'Izinkan sepanjang waktu\')</string>
+    <string name="permission_background_location_desc">Dibutuhkan agar fitur hening otomatis tetap bekerja meski aplikasi ditutup.</string>
+    <string name="permission_dnd_title">Akses Jangan Ganggu</string>
 </resources>
