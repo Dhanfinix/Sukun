@@ -36,8 +36,8 @@ class GeofenceManager(private val context: Context) {
             )
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT or Geofence.GEOFENCE_TRANSITION_DWELL)
-            .setLoiteringDelay(30000) // 30 seconds dwell time for stability
-            .setNotificationResponsiveness(5000) // 5 seconds responsiveness for precision
+            .setLoiteringDelay(10000) // 10 seconds dwell time for faster trigger
+            .setNotificationResponsiveness(0) // 0 for best-effort immediate responsiveness
             .build()
 
         val request = GeofencingRequest.Builder()
@@ -70,8 +70,8 @@ class GeofenceManager(private val context: Context) {
                 )
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT or Geofence.GEOFENCE_TRANSITION_DWELL)
-                .setLoiteringDelay(30000)
-                .setNotificationResponsiveness(5000)
+                .setLoiteringDelay(10000)
+                .setNotificationResponsiveness(0)
                 .build()
         }
 

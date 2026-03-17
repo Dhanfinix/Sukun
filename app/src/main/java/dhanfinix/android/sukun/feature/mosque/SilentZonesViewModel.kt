@@ -125,8 +125,15 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
         if (ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             
-            val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000L).apply {
-                setMinUpdateIntervalMillis(2000L)
+            // Immediate fix: get last known location first
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                location?.let { loc ->
+                    _uiState.update { it.copy(userLat = loc.latitude, userLng = loc.longitude, isLocationFresh = true) }
+                }
+            }
+
+            val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000L).apply {
+                setMinUpdateIntervalMillis(1000L)
             }.build()
 
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
