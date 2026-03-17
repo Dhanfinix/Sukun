@@ -490,10 +490,7 @@ fun SilentZonesScreen(
                                     text = "Background Location (Select 'Allow all the time')",
                                     onClick = {
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                                data = Uri.fromParts("package", context.packageName, null)
-                                            }
-                                            context.startActivity(intent)
+                                            backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                                         } else {
                                             fineLocationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                                         }

@@ -196,7 +196,7 @@
     <!-- Location Silence -->
     <string name="location_silence_title">Location Silence</string>
     <string name="hold_to_add_zone">Hold to add zone</string>
-    <string name="action_list">List</string>
+    <string name="action_list">Saved Zones</string>
     <string name="action_hide">Hide</string>
     <string name="no_zones_added">No zones added yet.</string>
     <string name="add_zone_instruction">Long press anywhere on the map to create a new silent zone.</string>

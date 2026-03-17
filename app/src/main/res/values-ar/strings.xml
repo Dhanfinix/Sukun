@@ -188,7 +188,7 @@
     <!-- Location Silence -->
     <string name="location_silence_title">كتم الموقع</string>
     <string name="hold_to_add_zone">اضغط مطولاً لإضافة منطقة</string>
-    <string name="action_list">قائمة</string>
+    <string name="action_list">المناطق المحفوظة</string>
     <string name="action_hide">إخفاء</string>
     <string name="no_zones_added">لم تتم إضافة أي مناطق بعد.</string>
     <string name="add_zone_instruction">اضغط مطولاً في أي مكان بالخريطة لإنشاء منطقة كتم جديدة.</string>

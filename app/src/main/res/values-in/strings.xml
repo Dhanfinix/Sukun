@@ -188,7 +188,7 @@
     <!-- Location Silence -->
     <string name="location_silence_title">Hening Lokasi</string>
     <string name="hold_to_add_zone">Tahan untuk tambah zona</string>
-    <string name="action_list">Daftar</string>
+    <string name="action_list">Zona Tersimpan</string>
     <string name="action_hide">Sembunyikan</string>
     <string name="no_zones_added">Belum ada zona yang ditambahkan.</string>
     <string name="add_zone_instruction">Tekan lama di mana saja pada peta untuk membuat zona hening baru.</string>
