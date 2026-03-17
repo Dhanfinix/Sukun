@@ -23,12 +23,16 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import dhanfinix.android.sukun.core.network.ApiClient
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 import android.annotation.SuppressLint
 import dhanfinix.android.sukun.R
@@ -60,11 +64,12 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
     private val geofenceManager = GeofenceManager(application)
     private val notificationManager = application.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
+    private var singleFixJob: kotlinx.coroutines.Job? = null
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             result.lastLocation?.let { location ->
-                _uiState.update { it.copy(userLat = location.latitude, userLng = location.longitude, isLocationFresh = true) }
+                _uiState.update { it.copy(userLat = location.latitude, userLng = location.longitude, isLocationFresh = true, isLoading = false) }
                 // Persist to userPrefs for other features
                 viewModelScope.launch {
                     userPrefs.setLocation(location.latitude, location.longitude)
@@ -124,11 +129,11 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
     fun startLocationUpdates() {
         if (ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            
+            _uiState.update { it.copy(isLocationFresh = false, isLoading = true) }
             // Immediate fix: get last known location first
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let { loc ->
-                    _uiState.update { it.copy(userLat = loc.latitude, userLng = loc.longitude, isLocationFresh = true) }
+                    _uiState.update { it.copy(userLat = loc.latitude, userLng = loc.longitude, isLocationFresh = true, isLoading = false) }
                 }
             }
 
@@ -137,9 +142,63 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
             }.build()
 
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
-            _uiState.update { it.copy(isLoading = true) }
+            // Safety timeout so the UI doesn't spin forever if GPS is unavailable
+            viewModelScope.launch {
+                delay(6000)
+                _uiState.update { state ->
+                    if (state.isLocationFresh) state else state.copy(isLoading = false)
+                }
+            }
         } else {
-            _uiState.update { it.copy(isLocationFresh = true) }
+            _uiState.update { it.copy(isLocationFresh = false, isLoading = false) }
+        }
+    }
+
+    /**
+     * Attempts a single high-accuracy location fix for quick recentering.
+     * Falls back to last known location and reports failure via [onFailure] when unavailable.
+     */
+    @SuppressLint("MissingPermission")
+    fun requestSingleLocationFix(onFailure: (() -> Unit)? = null) {
+        if (ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(application, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            onFailure?.invoke()
+            return
+        }
+
+        singleFixJob?.cancel()
+        singleFixJob = viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, isLocationFresh = false) }
+            val freshLocation = withTimeoutOrNull(5000L) {
+                try {
+                    fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token).await()
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+            if (freshLocation != null) {
+                _uiState.update { it.copy(
+                    userLat = freshLocation.latitude,
+                    userLng = freshLocation.longitude,
+                    isLocationFresh = true,
+                    isLoading = false
+                ) }
+                userPrefs.setLocation(freshLocation.latitude, freshLocation.longitude)
+            } else {
+                val lastKnown = try { fusedLocationClient.lastLocation.await() } catch (_: Exception) { null }
+                if (lastKnown != null) {
+                    _uiState.update { it.copy(
+                        userLat = lastKnown.latitude,
+                        userLng = lastKnown.longitude,
+                        isLocationFresh = false,
+                        isLoading = false
+                    ) }
+                } else {
+                    _uiState.update { it.copy(isLoading = false) }
+                    onFailure?.invoke()
+                }
+            }
         }
     }
 

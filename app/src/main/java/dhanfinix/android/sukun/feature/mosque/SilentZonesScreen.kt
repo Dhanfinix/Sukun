@@ -15,6 +15,7 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -40,6 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.database.entity.SilentZone
 import dhanfinix.android.sukun.feature.mosque.components.BackgroundLocationRationaleDialog
+import dhanfinix.android.sukun.feature.mosque.components.CameraRequest
 import dhanfinix.android.sukun.feature.mosque.components.OsmMapView
 import dhanfinix.android.sukun.feature.mosque.components.SilentZoneEditDialog
 import dhanfinix.android.sukun.feature.mosque.components.SilentZonesBottomOverlay
@@ -60,8 +63,8 @@ fun SilentZonesScreen(
     var selectedLat by remember { mutableStateOf(0.0) }
     var selectedLng by remember { mutableStateOf(0.0) }
 
-    var centerLat by remember(uiState.userLat) { mutableStateOf(uiState.userLat) }
-    var centerLng by remember(uiState.userLng) { mutableStateOf(uiState.userLng) }
+    var centerLat by remember { mutableStateOf(uiState.userLat) }
+    var centerLng by remember { mutableStateOf(uiState.userLng) }
     var zoom by remember { mutableStateOf(18.0) }
     var isListExpanded by remember { mutableStateOf(false) }
     var editingZone by remember { mutableStateOf<SilentZone?>(null) }
@@ -74,6 +77,7 @@ fun SilentZonesScreen(
     var searchPinLng by remember { mutableStateOf<Double?>(null) }
     var searchPinLabel by remember { mutableStateOf<String?>(null) }
     var showBackgroundRationale by remember { mutableStateOf(false) }
+    var cameraRequest by remember { mutableStateOf<CameraRequest?>(null) }
 
     val zoneMatches = remember(uiState.zones, searchQuery, includeZones) {
         if (!includeZones || searchQuery.isBlank()) {
@@ -102,7 +106,10 @@ fun SilentZonesScreen(
 
     val fineLocationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { viewModel.refreshPermissions() }
+    ) { granted ->
+        viewModel.refreshPermissions()
+        if (granted) viewModel.startLocationUpdates()
+    }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -116,15 +123,20 @@ fun SilentZonesScreen(
         }
     }
 
+    var hasCenteredOnce by remember { mutableStateOf(false) }
     var hasCenteredToFreshLocation by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.userLat, uiState.userLng) {
+        if (!hasCenteredOnce && uiState.userLat != null && uiState.userLng != null) {
+            cameraRequest = CameraRequest(uiState.userLat!!, uiState.userLng!!, 18.0)
+            hasCenteredOnce = true
+        }
+    }
+
     LaunchedEffect(uiState.userLat, uiState.userLng, uiState.isLocationFresh) {
         if (!hasCenteredToFreshLocation && uiState.isLocationFresh && uiState.userLat != null && uiState.userLng != null) {
-            centerLat = uiState.userLat
-            centerLng = uiState.userLng
+            cameraRequest = CameraRequest(uiState.userLat!!, uiState.userLng!!, 18.0)
             hasCenteredToFreshLocation = true
-        } else if (centerLat == null && uiState.userLat != null) {
-            centerLat = uiState.userLat
-            centerLng = uiState.userLng
         }
     }
 
@@ -133,9 +145,7 @@ fun SilentZonesScreen(
         viewModel.searchLocation(
             query = searchQuery,
             onResult = { lat, lng ->
-                centerLat = lat
-                centerLng = lng
-                zoom = 16.0
+                cameraRequest = CameraRequest(lat, lng, 16.0)
                 focusedZoneId = -1L
                 searchPinLat = lat
                 searchPinLng = lng
@@ -151,9 +161,7 @@ fun SilentZonesScreen(
 
     val handleZoneMatchClick: (SilentZone) -> Unit = { zone ->
         focusedZoneId = zone.id
-        centerLat = zone.latitude
-        centerLng = zone.longitude
-        zoom = 18.0
+        cameraRequest = CameraRequest(zone.latitude, zone.longitude, 18.0)
         searchPinLat = null
         searchPinLng = null
         searchPinLabel = null
@@ -161,9 +169,7 @@ fun SilentZonesScreen(
     }
 
     val handleMapSuggestionClick: (MapSuggestion) -> Unit = { suggestion ->
-        centerLat = suggestion.latitude
-        centerLng = suggestion.longitude
-        zoom = 16.0
+        cameraRequest = CameraRequest(suggestion.latitude, suggestion.longitude, 16.0)
         focusedZoneId = -1L
         searchPinLat = suggestion.latitude
         searchPinLng = suggestion.longitude
@@ -209,12 +215,14 @@ fun SilentZonesScreen(
                 zones = uiState.zones,
                 userLat = uiState.userLat,
                 userLng = uiState.userLng,
+                isUserLocationFresh = uiState.isLocationFresh,
                 searchLat = searchPinLat,
                 searchLng = searchPinLng,
                 searchLabel = searchPinLabel,
                 centerLat = centerLat,
                 centerLng = centerLng,
                 zoom = zoom,
+                cameraRequest = cameraRequest,
                 focusedZoneId = focusedZoneId,
                 onMapClick = {
                     isListExpanded = false
@@ -280,18 +288,55 @@ fun SilentZonesScreen(
                 }
             )
 
+            androidx.compose.animation.AnimatedVisibility(
+                visible = uiState.isLoading || !uiState.isLocationFresh,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 16.dp, top = 16.dp)
+            ) {
+                androidx.compose.material3.Surface(
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                    shape = MaterialTheme.shapes.medium,
+                    tonalElevation = 3.dp
+                ) {
+                    Text(
+                        text = if (uiState.isLoading) stringResource(R.string.msg_requesting_location)
+                        else stringResource(R.string.label_last_location_used),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
             SilentZonesBottomOverlay(
                 modifier = Modifier.align(Alignment.BottomCenter),
                 zones = uiState.zones,
                 activeZoneId = uiState.activeZoneId,
+                isLocationFresh = uiState.isLocationFresh,
+                isLocating = uiState.isLoading,
                 isListExpanded = isListExpanded,
                 onToggleList = { isListExpanded = !isListExpanded },
                 onMyLocation = {
-                    uiState.userLat?.let {
-                        centerLat = it
-                        zoom = 18.0
+                    when {
+                        !uiState.isFineLocationGranted -> {
+                            Toast.makeText(context, R.string.err_location_permission_needed, Toast.LENGTH_SHORT).show()
+                            fineLocationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        }
+                        uiState.userLat != null && uiState.userLng != null -> {
+                            // Center immediately to whatever we have, even if stale, then try to refresh.
+                            cameraRequest = CameraRequest(uiState.userLat!!, uiState.userLng!!, 18.0)
+                            viewModel.requestSingleLocationFix {
+                                Toast.makeText(context, R.string.err_location_not_found_gps, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        else -> {
+                            Toast.makeText(context, R.string.msg_requesting_location, Toast.LENGTH_SHORT).show()
+                            viewModel.requestSingleLocationFix {
+                                Toast.makeText(context, R.string.err_location_not_found_gps, Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
-                    uiState.userLng?.let { centerLng = it }
                 },
                 onAddZone = {
                     selectedLat = uiState.userLat ?: centerLat ?: 0.0
@@ -300,9 +345,7 @@ fun SilentZonesScreen(
                 },
                 onFocusZone = { zone ->
                     focusedZoneId = zone.id
-                    centerLat = zone.latitude
-                    centerLng = zone.longitude
-                    zoom = 18.0
+                    cameraRequest = CameraRequest(zone.latitude, zone.longitude, 18.0)
                 },
                 onEditZone = { zone -> editingZone = zone },
                 onDeleteZone = { zone -> viewModel.deleteSilentZone(zone) },

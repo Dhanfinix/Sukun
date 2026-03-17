@@ -1,5 +1,8 @@
 package dhanfinix.android.sukun.feature.mosque.components
 
+import kotlinx.parcelize.Parcelize
+import android.os.Parcelable
+
 import android.graphics.drawable.GradientDrawable
 import android.graphics.Color
 import android.view.MotionEvent
@@ -33,6 +36,7 @@ fun OsmMapView(
     zones: List<SilentZone> = emptyList(),
     userLat: Double? = null,
     userLng: Double? = null,
+    isUserLocationFresh: Boolean = true,
     searchLat: Double? = null,
     searchLng: Double? = null,
     searchLabel: String? = null,
@@ -45,7 +49,8 @@ fun OsmMapView(
     onMarkerClick: (SilentZone) -> Unit = {},
     onCenterChanged: (Double, Double) -> Unit = { _, _ -> },
     onZoomChanged: (Double) -> Unit = {},
-    onAddFromSearch: (String, Double, Double) -> Unit = { _, _, _ -> }
+    onAddFromSearch: (String, Double, Double) -> Unit = { _, _, _ -> },
+    cameraRequest: CameraRequest? = null
 ) {
     val context = LocalContext.current
     
@@ -181,7 +186,8 @@ fun OsmMapView(
                 val strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
                 val shape = GradientDrawable().apply {
                     shape = GradientDrawable.OVAL
-                    setColor("#2196F3".toColorInt())
+                    val colorHex = if (isUserLocationFresh) "#2196F3" else "#9E9E9E"
+                    setColor(colorHex.toColorInt())
                     setStroke(strokeWidth, android.graphics.Color.WHITE)
                     setSize(size, size)
                 }
@@ -194,18 +200,12 @@ fun OsmMapView(
         mapView.invalidate()
     }
 
-    // Centering Logic
-    LaunchedEffect(centerLat, centerLng, zoom) {
-        if (centerLat != null && centerLng != null) {
-            val target = GeoPoint(centerLat, centerLng)
-            val currentCenter = mapView.mapCenter as GeoPoint
-            if (Math.abs(currentCenter.latitude - centerLat) > 0.0001 ||
-                Math.abs(currentCenter.longitude - centerLng) > 0.0001 ||
-                Math.abs(mapView.zoomLevelDouble - zoom) > 0.1
-            ) {
-                mapView.controller.animateTo(target)
-                mapView.controller.zoomTo(zoom)
-            }
+    // Explicit Centering Logic (Only triggers when a new CameraRequest is received)
+    LaunchedEffect(cameraRequest) {
+        cameraRequest?.let { request ->
+            val target = GeoPoint(request.lat, request.lng)
+            mapView.controller.animateTo(target)
+            mapView.controller.zoomTo(request.zoom)
         }
     }
 
@@ -261,6 +261,14 @@ fun OsmMapView(
         }
     }
 }
+
+@Parcelize
+data class CameraRequest(
+    val lat: Double,
+    val lng: Double,
+    val zoom: Double = 18.0,
+    val id: Long = System.currentTimeMillis()
+) : Parcelable
 
 private class SilentZoneInfoWindow(mapView: MapView) :
     MarkerInfoWindow(R.layout.view_silent_zone_popup, mapView) {

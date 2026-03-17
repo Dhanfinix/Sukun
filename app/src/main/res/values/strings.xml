@@ -172,6 +172,8 @@
     <string name="err_unexpected">Unexpected error: %1$s</string>
     <string name="err_permission_denied">Location permission denied</string>
     <string name="err_location_not_found_gps">Location not found via GPS</string>
+    <string name="err_location_permission_needed">Allow location to center the map</string>
+    <string name="msg_requesting_location">Getting your current location…</string>
     <string name="err_location_timeout">Location detection timed out</string>
     <string name="err_location_not_found">Location not found</string>
     <string name="err_search_location">Error searching location</string>
@@ -246,6 +248,7 @@
     <string name="err_geocoder_unavailable">Geocoder unavailable</string>
     <string name="label_location_prefix">Location: %1$s</string>
     <string name="label_my_location">My Location</string>
+    <string name="label_last_location_used">Showing last saved location</string>
     <string name="label_search_result">Search Result</string>
     <!-- Background Location Rationale -->
     <string name="bg_location_rationale_title">Enable Background Location</string>

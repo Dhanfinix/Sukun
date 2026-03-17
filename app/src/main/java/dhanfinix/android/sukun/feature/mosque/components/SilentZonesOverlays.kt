@@ -30,6 +30,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.GpsFixed
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.History
@@ -344,6 +345,8 @@ internal fun SilentZonesBottomOverlay(
     modifier: Modifier = Modifier,
     zones: List<SilentZone>,
     activeZoneId: Long?,
+    isLocationFresh: Boolean,
+    isLocating: Boolean,
     isListExpanded: Boolean,
     onToggleList: () -> Unit,
     onMyLocation: () -> Unit,
@@ -365,11 +368,22 @@ internal fun SilentZonesBottomOverlay(
         ) {
             SmallFloatingActionButton(
                 onClick = onMyLocation,
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.primary,
+                containerColor = when {
+                    isLocating -> MaterialTheme.colorScheme.primaryContainer
+                    isLocationFresh -> MaterialTheme.colorScheme.surface
+                    else -> MaterialTheme.colorScheme.errorContainer
+                },
+                contentColor = when {
+                    isLocating -> MaterialTheme.colorScheme.onPrimaryContainer
+                    isLocationFresh -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.error
+                },
                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
             ) {
-                Icon(Icons.Rounded.MyLocation, contentDescription = "My Location")
+                Icon(
+                    imageVector = if (isLocating) Icons.Rounded.GpsFixed else Icons.Rounded.MyLocation,
+                    contentDescription = "My Location"
+                )
             }
             Spacer(Modifier.height(16.dp))
             FloatingActionButton(
