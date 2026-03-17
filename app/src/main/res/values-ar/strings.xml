@@ -238,4 +238,9 @@
     <string name="label_location_prefix">الموقع: %1$s</string>
     <string name="label_my_location">موقعي الحالي</string>
     <string name="label_search_result">نتيجة البحث</string>
+    <!-- Background Location Rationale -->
+    <string name="bg_location_rationale_title">تفعيل الموقع في الخلفية</string>
+    <string name="bg_location_rationale_desc">لتفعيل كتم الصوت تلقائيًا عند دخولك المنطقة، يحتاج Sukun إلى الوصول لموقعك حتى عند إغلاق التطبيق.\n\nفي الشاشة التالية، يرجى اختيار \"السماح طوال الوقت\" للحصول على أفضل تجربة.</string>
+    <string name="btn_open_settings">فتح الإعدادات</string>
+    <string name="btn_app_info">معلومات التطبيق (احتياطي)</string>
 </resources>

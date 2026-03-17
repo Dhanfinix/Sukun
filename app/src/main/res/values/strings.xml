@@ -247,4 +247,9 @@
     <string name="label_location_prefix">Location: %1$s</string>
     <string name="label_my_location">My Location</string>
     <string name="label_search_result">Search Result</string>
+    <!-- Background Location Rationale -->
+    <string name="bg_location_rationale_title">Enable Background Location</string>
+    <string name="bg_location_rationale_desc">To trigger silence automatically when you enter a zone, Sukun needs to access your location even when the app is closed.\n\nIn the next screen, please select \"Allow all the time\" for the most reliable experience.</string>
+    <string name="btn_open_settings">Open Settings</string>
+    <string name="btn_app_info">App Info (Fallback)</string>
 </resources>

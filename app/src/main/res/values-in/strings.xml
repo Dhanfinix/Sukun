@@ -238,4 +238,9 @@
     <string name="label_location_prefix">Lokasi: %1$s</string>
     <string name="label_my_location">Lokasi Saya</string>
     <string name="label_search_result">Hasil Pencarian</string>
+    <!-- Background Location Rationale -->
+    <string name="bg_location_rationale_title">Aktifkan Lokasi Latar Belakang</string>
+    <string name="bg_location_rationale_desc">Untuk memicu fitur hening otomatis saat Anda memasuki zona, Sukun butuh akses lokasi meskipun aplikasi ditutup.\n\nDi layar berikutnya, silakan pilih \"Izinkan sepanjang waktu\" untuk pengalaman terbaik.</string>
+    <string name="btn_open_settings">Buka Pengaturan</string>
+    <string name="btn_app_info">App Info (Fallback)</string>
 </resources>

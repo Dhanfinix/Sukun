@@ -97,6 +97,7 @@ fun SilentZonesScreen(
     var searchPinLat by remember { mutableStateOf<Double?>(null) }
     var searchPinLng by remember { mutableStateOf<Double?>(null) }
     var searchPinLabel by remember { mutableStateOf<String?>(null) }
+    var showBackgroundRationale by remember { mutableStateOf(false) }
 
     val zoneMatches = remember(uiState.zones, searchQuery, includeZones) {
         if (!includeZones || searchQuery.isBlank()) {
@@ -127,10 +128,7 @@ fun SilentZonesScreen(
 
     val fineLocationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        }
+    ) {
         viewModel.refreshPermissions()
     }
 
@@ -489,11 +487,10 @@ fun SilentZonesScreen(
                             if (!uiState.isBackgroundLocationGranted) {
                                 PermissionWarningItem(
                                     text = stringResource(R.string.permission_background_location_title),
-                                    subtitle = stringResource(R.string.permission_background_location_desc),
                                     onClick = {
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                                             if (uiState.isFineLocationGranted) {
-                                                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                                                showBackgroundRationale = true
                                             } else {
                                                 fineLocationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                                             }
@@ -859,6 +856,33 @@ fun SilentZonesScreen(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(stringResource(R.string.save_zone))
+                }
+            }
+        )
+    }
+
+    if (showBackgroundRationale) {
+        AlertDialog(
+            onDismissRequest = { showBackgroundRationale = false },
+            title = { Text(stringResource(R.string.bg_location_rationale_title)) },
+            text = { Text(stringResource(R.string.bg_location_rationale_desc)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showBackgroundRationale = false
+                    backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                }) {
+                    Text(stringResource(R.string.btn_open_settings))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showBackgroundRationale = false
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                    context.startActivity(intent)
+                }) {
+                    Text(stringResource(R.string.btn_app_info))
                 }
             }
         )
