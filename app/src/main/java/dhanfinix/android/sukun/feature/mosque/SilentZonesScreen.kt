@@ -67,6 +67,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dhanfinix.android.sukun.feature.mosque.components.OsmMapView
 import android.widget.Toast
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1004,7 +1005,7 @@ private fun PermissionWarningItem(
                 }
             }
             Icon(
-                Icons.Rounded.ChevronRight,
+                Icons.AutoMirrored.Rounded.ArrowForward,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(16.dp)

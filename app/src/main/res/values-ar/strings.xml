@@ -229,4 +229,11 @@
     <string name="permission_background_location_title">الموقع في الخلفية (اختر "السماح طوال الوقت")</string>
     <string name="permission_background_location_desc">مطلوب لتفعيل كتم الصوت تلقائيًا حتى عندما يكون التطبيق مغلقًا.</string>
     <string name="permission_dnd_title">الوصول إلى وضع عدم الإزعاج</string>
+    <!-- Search / Errors -->
+    <string name="err_enter_location_search">أدخل موقعاً للبحث</string>
+    <string name="err_geocoder_unavailable_device">خدمة تحديد الموقع غير متوفرة على هذا الجهاز</string>
+    <string name="err_location_not_found_search">لم يتم العثور على الموقع</string>
+    <string name="err_search_failed">فشل البحث</string>
+    <string name="err_geocoder_unavailable">خدمة تحديد الموقع غير متوفرة</string>
+    <string name="label_location_prefix">الموقع: %1$s</string>
 </resources>

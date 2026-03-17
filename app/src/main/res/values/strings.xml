@@ -238,4 +238,11 @@
     <string name="permission_background_location_title">Background Location (Select \'Allow all the time\')</string>
     <string name="permission_background_location_desc">Required to trigger silence automatically even when the app is closed.</string>
     <string name="permission_dnd_title">Do Not Disturb access</string>
+    <!-- Search / Errors -->
+    <string name="err_enter_location_search">Enter a location to search</string>
+    <string name="err_geocoder_unavailable_device">Geocoder unavailable on this device</string>
+    <string name="err_location_not_found_search">Location not found</string>
+    <string name="err_search_failed">Search failed</string>
+    <string name="err_geocoder_unavailable">Geocoder unavailable</string>
+    <string name="label_location_prefix">Location: %1$s</string>
 </resources>

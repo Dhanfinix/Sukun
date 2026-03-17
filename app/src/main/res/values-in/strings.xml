@@ -229,4 +229,11 @@
     <string name="permission_background_location_title">Lokasi Latar Belakang (Pilih \'Izinkan sepanjang waktu\')</string>
     <string name="permission_background_location_desc">Dibutuhkan agar fitur hening otomatis tetap bekerja meski aplikasi ditutup.</string>
     <string name="permission_dnd_title">Akses Jangan Ganggu</string>
+    <!-- Search / Errors -->
+    <string name="err_enter_location_search">Masukkan lokasi untuk mencari</string>
+    <string name="err_geocoder_unavailable_device">Geocoder tidak tersedia di perangkat ini</string>
+    <string name="err_location_not_found_search">Lokasi tidak ditemukan</string>
+    <string name="err_search_failed">Pencarian gagal</string>
+    <string name="err_geocoder_unavailable">Geocoder tidak tersedia</string>
+    <string name="label_location_prefix">Lokasi: %1$s</string>
 </resources>

@@ -30,6 +30,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import android.annotation.SuppressLint
+import dhanfinix.android.sukun.R
 
 data class SilentZonesUiState(
     val zones: List<SilentZone> = emptyList(),
@@ -158,7 +159,7 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
                 val durationToUse = zone.silenceDuration ?: 30 // Default 30 min to match receiver
                 val silenceIntent = Intent(application, SilenceReceiver::class.java).apply {
                     action = SilenceReceiver.ACTION_START_SILENCE
-                    putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, "Location: ${zone.name}")
+                    putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, application.getString(R.string.label_location_prefix, zone.name))
                     putExtra(SilenceReceiver.KEY_DURATION_MIN, durationToUse)
                     addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
                 }
@@ -259,14 +260,14 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
         onError: (String) -> Unit
     ) {
         if (query.isBlank()) {
-            onError("Enter a location to search")
+            onError(application.getString(R.string.err_enter_location_search))
             return
         }
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if (!Geocoder.isPresent()) {
                     withContext(Dispatchers.Main) {
-                        onError("Geocoder unavailable on this device")
+                        onError(application.getString(R.string.err_geocoder_unavailable_device))
                     }
                     return@launch
                 }
@@ -278,12 +279,12 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        onError("Location not found")
+                        onError(application.getString(R.string.err_location_not_found_search))
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    onError("Search failed")
+                    onError(application.getString(R.string.err_search_failed))
                 }
             }
         }
@@ -301,7 +302,7 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if (!Geocoder.isPresent()) {
-                    withContext(Dispatchers.Main) { onError("Geocoder unavailable") }
+                    withContext(Dispatchers.Main) { onError(application.getString(R.string.err_geocoder_unavailable)) }
                     return@launch
                 }
                 val results = geocode(query, 3).orEmpty()
@@ -338,7 +339,7 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
                 }
                 withContext(Dispatchers.Main) { onResult(suggestions) }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) { onError("Search failed") }
+                withContext(Dispatchers.Main) { onError(application.getString(R.string.err_search_failed)) }
             }
         }
     }
