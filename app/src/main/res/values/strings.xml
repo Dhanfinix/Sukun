@@ -252,4 +252,5 @@
     <string name="bg_location_rationale_desc">To trigger silence automatically when you enter a zone, Sukun needs to access your location even when the app is closed.\n\nIn the next screen, please select \"Allow all the time\" for the most reliable experience.</string>
     <string name="btn_open_settings">Open Settings</string>
     <string name="btn_app_info">App Info (Fallback)</string>
+    <string name="btn_add_as_silence_zone">Add as Silence Zone</string>
 </resources>

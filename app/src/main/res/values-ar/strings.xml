@@ -243,4 +243,5 @@
     <string name="bg_location_rationale_desc">لتفعيل كتم الصوت تلقائيًا عند دخولك المنطقة، يحتاج Sukun إلى الوصول لموقعك حتى عند إغلاق التطبيق.\n\nفي الشاشة التالية، يرجى اختيار \"السماح طوال الوقت\" للحصول على أفضل تجربة.</string>
     <string name="btn_open_settings">فتح الإعدادات</string>
     <string name="btn_app_info">معلومات التطبيق (احتياطي)</string>
+    <string name="btn_add_as_silence_zone">إضافة كمنطقة صامتة</string>
 </resources>

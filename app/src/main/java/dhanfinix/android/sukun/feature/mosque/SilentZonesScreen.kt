@@ -136,7 +136,7 @@ fun SilentZonesScreen(
                 centerLat = lat
                 centerLng = lng
                 zoom = 16.0
-                focusedZoneId = null
+                focusedZoneId = -1L
                 searchPinLat = lat
                 searchPinLng = lng
                 searchPinLabel = searchQuery
@@ -164,7 +164,7 @@ fun SilentZonesScreen(
         centerLat = suggestion.latitude
         centerLng = suggestion.longitude
         zoom = 16.0
-        focusedZoneId = null
+        focusedZoneId = -1L
         searchPinLat = suggestion.latitude
         searchPinLng = suggestion.longitude
         searchPinLabel = suggestion.title
@@ -234,6 +234,13 @@ fun SilentZonesScreen(
                 },
                 onZoomChanged = {
                     zoom = it
+                },
+                onAddFromSearch = { label, lat, lng ->
+                    selectedLat = lat
+                    selectedLng = lng
+                    searchPinLabel = label
+                    editingZone = null
+                    showAddDialog = true
                 }
             )
 
@@ -309,6 +316,7 @@ fun SilentZonesScreen(
         val zone = editingZone
         SilentZoneEditDialog(
             zone = zone,
+            initialName = if (zone == null) searchPinLabel else null,
             onDismiss = {
                 showAddDialog = false
                 editingZone = null

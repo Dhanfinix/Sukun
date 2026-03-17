@@ -243,4 +243,5 @@
     <string name="bg_location_rationale_desc">Untuk memicu fitur hening otomatis saat Anda memasuki zona, Sukun butuh akses lokasi meskipun aplikasi ditutup.\n\nDi layar berikutnya, silakan pilih \"Izinkan sepanjang waktu\" untuk pengalaman terbaik.</string>
     <string name="btn_open_settings">Buka Pengaturan</string>
     <string name="btn_app_info">App Info (Fallback)</string>
+    <string name="btn_add_as_silence_zone">Tambah sebagai Zona Hening</string>
 </resources>

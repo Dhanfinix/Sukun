@@ -58,10 +58,11 @@ import dhanfinix.android.sukun.core.database.entity.SilentZone
 @Composable
 internal fun SilentZoneEditDialog(
     zone: SilentZone?,
+    initialName: String? = null,
     onDismiss: () -> Unit,
     onSave: (name: String, radius: Float, isAutoSilent: Boolean, silenceDuration: Int?) -> Unit
 ) {
-    var name by remember(zone) { mutableStateOf(zone?.name ?: "") }
+    var name by remember(zone, initialName) { mutableStateOf(zone?.name ?: initialName ?: "") }
     var radius by remember(zone) { mutableStateOf(zone?.radius?.toInt()?.toString() ?: "20") }
     var isAutoSilent by remember(zone) { mutableStateOf(zone?.isAutoSilent ?: true) }
     var silenceDuration by remember(zone) { mutableStateOf(zone?.silenceDuration ?: 30) }

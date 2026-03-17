@@ -43,7 +43,8 @@ fun OsmMapView(
     onMapLongClick: (Double, Double) -> Unit = { _, _ -> },
     onMarkerClick: (SilentZone) -> Unit = {},
     onCenterChanged: (Double, Double) -> Unit = { _, _ -> },
-    onZoomChanged: (Double) -> Unit = {}
+    onZoomChanged: (Double) -> Unit = {},
+    onAddFromSearch: (String, Double, Double) -> Unit = { _, _, _ -> }
 ) {
     val context = LocalContext.current
     
@@ -62,6 +63,7 @@ fun OsmMapView(
     }
     
     val zoneInfoWindow = remember(mapView) { SilentZoneInfoWindow(mapView) }
+    val searchInfoWindow = remember(mapView) { SearchResultInfoWindow(mapView, onAddFromSearch) }
 
     // Handle Map Click and Long Click
     val clickOverlay = remember {
@@ -191,6 +193,12 @@ fun OsmMapView(
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     title = searchLabel ?: mv.context.getString(R.string.label_search_result)
                     icon = ContextCompat.getDrawable(mv.context, R.drawable.ic_search_pin)
+                    infoWindow = searchInfoWindow
+                    
+                    setOnMarkerClickListener { m, _ ->
+                        m.showInfoWindow()
+                        true
+                    }
                 }
                 mv.overlays.add(searchMarker)
             }
@@ -200,7 +208,7 @@ fun OsmMapView(
             } else {
                 val focusedMarker = mv.overlays
                     .filterIsInstance<Marker>()
-                    .firstOrNull { it.id == focusedZoneId.toString() }
+                    .firstOrNull { it.id == focusedZoneId.toString() || (focusedZoneId == -1L && it.id == "search_location") }
                 if (focusedMarker != null) {
                     InfoWindow.closeAllInfoWindowsOn(mv)
                     focusedMarker.showInfoWindow()
@@ -306,5 +314,31 @@ private class SilentZoneInfoWindow(mapView: MapView) :
         modeChip.background = view.context.getDrawable(R.drawable.bg_zone_chip_neutral)
         modeChip.setTextColor(ContextCompat.getColor(view.context, R.color.zone_chip_neutral_text))
 
+    }
+}
+
+private class SearchResultInfoWindow(
+    mapView: MapView,
+    private val onAdd: (String, Double, Double) -> Unit
+) : MarkerInfoWindow(R.layout.view_search_result_popup, mapView) {
+
+    init {
+        mView.setBackgroundColor(Color.TRANSPARENT)
+    }
+
+    override fun onOpen(item: Any?) {
+        val marker = item as? Marker ?: return
+        val view = mView
+        
+        val nameText = view.findViewById<android.widget.TextView>(R.id.location_name)
+        val addButton = view.findViewById<android.widget.TextView>(R.id.btn_add_zone)
+        
+        val label = marker.title ?: ""
+        nameText.text = label
+        
+        addButton.setOnClickListener {
+            onAdd(label, marker.position.latitude, marker.position.longitude)
+            close()
+        }
     }
 }
