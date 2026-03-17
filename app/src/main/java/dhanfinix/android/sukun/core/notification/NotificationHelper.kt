@@ -29,8 +29,10 @@ object NotificationHelper {
 
     private const val CHANNEL_ID = "sukun_silence_channel"
     private const val REMINDER_CHANNEL_ID = "sukun_reminder_channel"
-    const val NOTIFICATION_ID = 1001
-    const val REMINDER_NOTIFICATION_ID = 1002
+    private const val GEOFENCE_CHANNEL_ID = "sukun_geofence_channel"
+
+    const val ID_ACTIVE_STATUS = 1001
+    const val ID_ALERT_EVENT = 1002
 
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
@@ -131,12 +133,14 @@ object NotificationHelper {
             .setTimeoutAfter(remainingMs)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(NOTIFICATION_ID, builder.build())
+        manager.notify(ID_ACTIVE_STATUS, builder.build())
+        // When active silence starts, clear any transient alerts (like "Entered Area" or "Reminder")
+        manager.cancel(ID_ALERT_EVENT)
     }
 
     fun cancelNotification(context: Context) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.cancel(NOTIFICATION_ID)
+        manager.cancel(ID_ACTIVE_STATUS)
     }
 
     fun showReminderNotification(context: Context, prayerName: String, minutesBefore: Int) {
@@ -173,7 +177,7 @@ object NotificationHelper {
             .addAction(0, context.getString(R.string.btn_prepare), openAppPending)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(REMINDER_NOTIFICATION_ID, builder.build())
+        manager.notify(ID_ALERT_EVENT, builder.build())
     }
 
     fun showGeofenceStatusNotification(
@@ -183,30 +187,32 @@ object NotificationHelper {
         isAutoSilent: Boolean = true,
         silenceDuration: Int? = null
     ) {
-        val channelId = "sukun_geofence_channel"
-        val channelName = "Silent Zone Status"
+        // Optimization: If it's auto-silent, the "Active Silence" notification (ID 1001) 
+        // will show up immediately. We don't need a separate "Entered" alert (ID 1002).
+        if (isEntering && isAutoSilent) return
+
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         
-        if (manager.getNotificationChannel(channelId) == null) {
-            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+        if (manager.getNotificationChannel(GEOFENCE_CHANNEL_ID) == null) {
+            val channel = NotificationChannel(
+                GEOFENCE_CHANNEL_ID, 
+                "Silent Zone Alerts", 
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
             manager.createNotificationChannel(channel)
         }
 
         val title = if (isEntering) "Entered $zoneName" else "Left $zoneName"
-        val content = if (isEntering) {
-            if (isAutoSilent) "Silent mode activated" else "Tap to activate silent mode"
-        } else {
-            "Volume restored to normal"
-        }
+        val content = if (isEntering) "Tap to activate silent mode" else "Volume restored to normal"
 
-        val builder = NotificationCompat.Builder(context, channelId)
+        val builder = NotificationCompat.Builder(context, GEOFENCE_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
 
-        if (isEntering && !isAutoSilent) {
+        if (isEntering) {
             val silenceIntent = Intent(context, SilenceReceiver::class.java).apply {
                 action = SilenceReceiver.ACTION_START_SILENCE
                 putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, "Location: $zoneName")
@@ -221,6 +227,6 @@ object NotificationHelper {
             builder.setContentIntent(silencePending)
         }
 
-        manager.notify(2001, builder.build())
+        manager.notify(ID_ALERT_EVENT, builder.build())
     }
 }
