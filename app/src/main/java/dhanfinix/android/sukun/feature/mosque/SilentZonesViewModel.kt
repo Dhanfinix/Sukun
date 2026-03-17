@@ -23,6 +23,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import dhanfinix.android.sukun.core.network.ApiClient
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
@@ -267,6 +268,28 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
             onError(application.getString(R.string.err_enter_location_search))
             return
         }
+        viewModelScope.launch {
+            try {
+                val results = ApiClient.nominatimApi.search(query, limit = 1)
+                val first = results.firstOrNull()
+                if (first != null) {
+                    onResult(first.lat.toDouble(), first.lon.toDouble())
+                } else {
+                    // Fallback to Geocoder
+                    searchLocationWithGeocoder(query, onResult, onError)
+                }
+            } catch (e: Exception) {
+                // Fallback to Geocoder
+                searchLocationWithGeocoder(query, onResult, onError)
+            }
+        }
+    }
+
+    private fun searchLocationWithGeocoder(
+        query: String,
+        onResult: (Double, Double) -> Unit,
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if (!Geocoder.isPresent()) {
@@ -303,6 +326,35 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
             onResult(emptyList())
             return
         }
+        viewModelScope.launch {
+            try {
+                val results = ApiClient.nominatimApi.search(query, limit = 5)
+                if (results.isNotEmpty()) {
+                    val suggestions = results.map { res ->
+                        val title = res.displayName.split(",").firstOrNull() ?: res.displayName
+                        val subtitle = res.displayName.substringAfter(",").trim().ifEmpty { null }
+                        MapSuggestion(
+                            title = title,
+                            subtitle = subtitle,
+                            latitude = res.lat.toDouble(),
+                            longitude = res.lon.toDouble()
+                        )
+                    }
+                    onResult(suggestions)
+                } else {
+                    searchLocationSuggestionsWithGeocoder(query, onResult, onError)
+                }
+            } catch (e: Exception) {
+                searchLocationSuggestionsWithGeocoder(query, onResult, onError)
+            }
+        }
+    }
+
+    private fun searchLocationSuggestionsWithGeocoder(
+        query: String,
+        onResult: (List<MapSuggestion>) -> Unit,
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if (!Geocoder.isPresent()) {

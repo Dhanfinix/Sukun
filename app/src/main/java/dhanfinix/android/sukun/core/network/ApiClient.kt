@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
 
     private const val BASE_URL = "https://api.aladhan.com/"
+    private const val NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -27,5 +28,14 @@ object ApiClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(AladhanService::class.java)
+    }
+
+    val nominatimApi: NominatimService by lazy {
+        Retrofit.Builder()
+            .baseUrl(NOMINATIM_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(NominatimService::class.java)
     }
 }
