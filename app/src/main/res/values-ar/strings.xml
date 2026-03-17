@@ -236,4 +236,6 @@
     <string name="err_search_failed">فشل البحث</string>
     <string name="err_geocoder_unavailable">خدمة تحديد الموقع غير متوفرة</string>
     <string name="label_location_prefix">الموقع: %1$s</string>
+    <string name="label_my_location">موقعي الحالي</string>
+    <string name="label_search_result">نتيجة البحث</string>
 </resources>

@@ -236,4 +236,6 @@
     <string name="err_search_failed">Pencarian gagal</string>
     <string name="err_geocoder_unavailable">Geocoder tidak tersedia</string>
     <string name="label_location_prefix">Lokasi: %1$s</string>
+    <string name="label_my_location">Lokasi Saya</string>
+    <string name="label_search_result">Hasil Pencarian</string>
 </resources>

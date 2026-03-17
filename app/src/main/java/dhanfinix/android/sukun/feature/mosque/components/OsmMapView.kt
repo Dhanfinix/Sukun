@@ -114,7 +114,7 @@ fun OsmMapView(
                     id = "user_location"
                     position = GeoPoint(userLat, userLng)
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                    title = "My Location"
+                    title = mv.context.getString(R.string.label_my_location)
                     
                     val size = (16 * mv.context.resources.displayMetrics.density).toInt()
                     val strokeWidth = (2 * mv.context.resources.displayMetrics.density).toInt()
@@ -189,7 +189,7 @@ fun OsmMapView(
                     id = "search_location"
                     position = GeoPoint(searchLat, searchLng)
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                    title = searchLabel ?: "Search Result"
+                    title = searchLabel ?: mv.context.getString(R.string.label_search_result)
                     icon = ContextCompat.getDrawable(mv.context, R.drawable.ic_search_pin)
                 }
                 mv.overlays.add(searchMarker)

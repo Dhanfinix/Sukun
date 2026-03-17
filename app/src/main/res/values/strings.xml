@@ -245,4 +245,6 @@
     <string name="err_search_failed">Search failed</string>
     <string name="err_geocoder_unavailable">Geocoder unavailable</string>
     <string name="label_location_prefix">Location: %1$s</string>
+    <string name="label_my_location">My Location</string>
+    <string name="label_search_result">Search Result</string>
 </resources>
