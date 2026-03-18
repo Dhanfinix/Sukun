@@ -3,7 +3,9 @@ package dhanfinix.android.sukun.feature.webview
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+import android.webkit.CookieManager
 import android.webkit.WebChromeClient
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
@@ -105,8 +107,14 @@ fun WebViewScreen(
                     WebView(context).apply {
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
+                        settings.databaseEnabled = true
                         settings.loadWithOverviewMode = true
                         settings.useWideViewPort = true
+                        settings.javaScriptCanOpenWindowsAutomatically = true
+                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        
+                        CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+
                         webViewClient = object : WebViewClient() {
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 super.onPageFinished(view, url)
