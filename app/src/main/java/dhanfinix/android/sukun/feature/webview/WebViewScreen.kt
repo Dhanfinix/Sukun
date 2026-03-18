@@ -3,6 +3,7 @@ package dhanfinix.android.sukun.feature.webview
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+import android.os.Message
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
@@ -122,6 +123,15 @@ fun WebViewScreen(
                                 isLoading = false
                                 canGoBack = view?.canGoBack() == true
                                 if (url != null) currentUrl = url
+                                
+                                // Fix WebView rendering bug with CSS backdrop-filters causing invisible modals
+                                view?.evaluateJavascript(
+                                    "(function() { " +
+                                    "var style = document.createElement('style'); " +
+                                    "style.innerHTML = '* { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }'; " +
+                                    "document.head.appendChild(style); " +
+                                    "})()", null
+                                )
                             }
 
                             override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
@@ -130,7 +140,33 @@ fun WebViewScreen(
                                 if (url != null) currentUrl = url
                             }
                         }
-                        webChromeClient = WebChromeClient()
+                        
+                        settings.setSupportMultipleWindows(true)
+                        webChromeClient = object : WebChromeClient() {
+                            override fun onCreateWindow(
+                                view: WebView?,
+                                isDialog: Boolean,
+                                isUserGesture: Boolean,
+                                resultMsg: Message?
+                            ): Boolean {
+                                val transport = resultMsg?.obj as? WebView.WebViewTransport
+                                if (transport != null) {
+                                    val popupWebView = WebView(context).apply {
+                                        webViewClient = object : WebViewClient() {
+                                            override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
+                                                val intent = Intent(Intent.ACTION_VIEW, request?.url)
+                                                context.startActivity(intent)
+                                                return true
+                                            }
+                                        }
+                                    }
+                                    transport.webView = popupWebView
+                                    resultMsg.sendToTarget()
+                                    return true
+                                }
+                                return super.onCreateWindow(view, isDialog, isUserGesture, resultMsg)
+                            }
+                        }
                         loadUrl(url)
                     }
                 },
