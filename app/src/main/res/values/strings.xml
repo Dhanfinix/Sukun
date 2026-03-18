@@ -204,6 +204,11 @@
     <string name="action_hide">Hide</string>
     <string name="no_zones_added">No zones added yet.</string>
     <string name="add_zone_instruction">Long press anywhere on the map to create a new silent zone.</string>
+    <string name="tab_custom">Custom</string>
+    <string name="tab_mosques">Mosques</string>
+    <string name="auto_mosque_silence_title">Auto-Mosque Silence</string>
+    <string name="auto_mosque_silence_desc">Automatically silence when entering mosque areas</string>
+    <string name="no_mosques_detected">No mosques detected nearby.</string>
     <string name="new_silent_zone">New Silent Zone</string>
     <string name="edit_silent_zone">Edit Silent Zone</string>
     <string name="zone_name">Zone Name</string>
@@ -268,4 +273,6 @@
     <string name="delete_zone_confirmation_title">Delete Zone?</string>
     <string name="delete_zone_confirmation_msg">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
     <string name="btn_delete">Delete</string>
+    <string name="btn_refresh">Refresh</string>
+    <string name="label_detected_mosques">Nearby Mosques</string>
 </resources>

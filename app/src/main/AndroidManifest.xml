@@ -53,6 +53,11 @@
             android:name=".worker.GeofenceReceiver"
             android:enabled="true"
             android:exported="true" />
+
+        <receiver
+            android:name=".worker.LocationReceiver"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

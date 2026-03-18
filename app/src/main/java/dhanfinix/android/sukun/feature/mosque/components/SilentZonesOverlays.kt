@@ -38,24 +38,16 @@ import androidx.compose.material.icons.rounded.LocationOff
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.MyLocation
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Warning
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SmallFloatingActionButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -67,6 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.database.entity.SilentZone
+import dhanfinix.android.sukun.core.database.entity.SilentZoneSource
 import dhanfinix.android.sukun.core.utils.withIsolate
 import dhanfinix.android.sukun.feature.mosque.MapSuggestion
 
@@ -366,6 +359,7 @@ private fun SilentZonesSearchPanel(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SilentZonesBottomOverlay(
     modifier: Modifier = Modifier,
@@ -375,6 +369,7 @@ internal fun SilentZonesBottomOverlay(
     isLocating: Boolean,
     isListExpanded: Boolean,
     isLocationSilenceEnabled: Boolean,
+    isAutoMosqueSilenceEnabled: Boolean,
     onToggleList: () -> Unit,
     onMyLocation: () -> Unit,
     onAddZone: () -> Unit,
@@ -383,8 +378,12 @@ internal fun SilentZonesBottomOverlay(
     onDeleteZone: (SilentZone) -> Unit,
     onToggleEnabled: (SilentZone) -> Unit,
     onToggleAutoSilent: (SilentZone) -> Unit,
-    onLocationSilenceToggled: (Boolean) -> Unit
+    onLocationSilenceToggled: (Boolean) -> Unit,
+    onAutoMosqueSilenceToggled: (Boolean) -> Unit,
+    onRefreshMosques: () -> Unit
 ) {
+    var selectedTab by remember { mutableIntStateOf(0) }
+    
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.End,
@@ -419,6 +418,10 @@ internal fun SilentZonesBottomOverlay(
                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
             ) {
                 Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.cd_add_zone))
+            }
+            
+            if (isListExpanded && selectedTab == 1) {
+                // FAB removed as per user feedback - moving to contextual list header/empty state
             }
         }
 
@@ -466,6 +469,24 @@ internal fun SilentZonesBottomOverlay(
                 }
 
                 if (isListExpanded) {
+                        SecondaryTabRow(
+                            selectedTabIndex = selectedTab,
+                            containerColor = Color.Transparent,
+                            divider = {},
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Tab(
+                                selected = selectedTab == 0,
+                                onClick = { selectedTab = 0 },
+                                text = { Text(stringResource(R.string.tab_custom)) }
+                            )
+                            Tab(
+                                selected = selectedTab == 1,
+                                onClick = { selectedTab = 1 },
+                                text = { Text(stringResource(R.string.tab_mosques)) }
+                            )
+                        }
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -473,9 +494,15 @@ internal fun SilentZonesBottomOverlay(
                             .padding(bottom = 12.dp)
                     ) {
                         Surface(
-                            onClick = { onLocationSilenceToggled(!isLocationSilenceEnabled) },
+                            onClick = { 
+                                if (selectedTab == 0) {
+                                    onLocationSilenceToggled(!isLocationSilenceEnabled)
+                                } else {
+                                    onAutoMosqueSilenceToggled(!isAutoMosqueSilenceEnabled)
+                                }
+                            },
                             shape = MaterialTheme.shapes.medium,
-                            color = if (isLocationSilenceEnabled) 
+                            color = if (if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled) 
                                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                             else 
                                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
@@ -487,21 +514,28 @@ internal fun SilentZonesBottomOverlay(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = if (isLocationSilenceEnabled) Icons.Rounded.GpsFixed else Icons.Rounded.LocationOff,
+                                    imageVector = if (selectedTab == 0) {
+                                        if (isLocationSilenceEnabled) Icons.Rounded.GpsFixed else Icons.Rounded.LocationOff
+                                    } else {
+                                        if (isAutoMosqueSilenceEnabled) Icons.Rounded.GpsFixed else Icons.Rounded.LocationOff
+                                    },
                                     contentDescription = null,
-                                    tint = if (isLocationSilenceEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    tint = if (if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled) 
+                                        MaterialTheme.colorScheme.primary 
+                                    else 
+                                        MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        stringResource(R.string.location_silence_title),
+                                        if (selectedTab == 0) stringResource(R.string.location_silence_title) else stringResource(R.string.auto_mosque_silence_title),
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeightCompose.Bold
                                     )
                                     Text(
-                                        if (isLocationSilenceEnabled) 
-                                            stringResource(R.string.location_silence_desc)
+                                        if (if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled) 
+                                            if (selectedTab == 0) stringResource(R.string.location_silence_desc) else stringResource(R.string.auto_mosque_silence_desc)
                                         else 
                                             stringResource(R.string.status_location_silence_disabled),
                                         style = MaterialTheme.typography.labelSmall,
@@ -509,25 +543,41 @@ internal fun SilentZonesBottomOverlay(
                                     )
                                 }
                                 Switch(
-                                    checked = isLocationSilenceEnabled,
-                                    onCheckedChange = onLocationSilenceToggled,
+                                    checked = if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled,
+                                    onCheckedChange = if (selectedTab == 0) onLocationSilenceToggled else onAutoMosqueSilenceToggled,
                                     modifier = Modifier.scale(0.8f)
                                 )
                             }
                         }
                     }
 
-                    if (zones.isEmpty()) {
-                        Box(
+                    val filteredZones = zones.filter { 
+                        if (selectedTab == 0) it.source == SilentZoneSource.MANUAL 
+                        else it.source == SilentZoneSource.AUTO_MOSQUE 
+                    }
+
+                    if (filteredZones.isEmpty()) {
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(32.dp),
-                            contentAlignment = Alignment.Center
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                stringResource(R.string.no_zones_added),
+                                if (selectedTab == 0) stringResource(R.string.no_zones_added) else stringResource(R.string.no_mosques_detected),
                                 color = MaterialTheme.colorScheme.secondary
                             )
+                            if (selectedTab == 1) {
+                                Spacer(Modifier.height(16.dp))
+                                FilledTonalButton(
+                                    onClick = onRefreshMosques,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(stringResource(R.string.btn_refresh))
+                                }
+                            }
                         }
                     } else {
                         LazyColumn(
@@ -535,12 +585,38 @@ internal fun SilentZonesBottomOverlay(
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxHeight(0.6f)
                         ) {
-                            items(zones) { zone ->
+                            if (selectedTab == 1) {
+                                item {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            stringResource(R.string.label_detected_mosques),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            fontWeight = FontWeightCompose.Bold
+                                        )
+                                        TextButton(
+                                            onClick = onRefreshMosques,
+                                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                            modifier = Modifier.height(28.dp)
+                                        ) {
+                                            Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                                            Spacer(Modifier.width(4.dp))
+                                            Text(stringResource(R.string.btn_refresh), style = MaterialTheme.typography.labelSmall)
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            items(filteredZones) { zone ->
                                 val isActive = activeZoneId == zone.id
                                 SilentZoneCard(
                                     zone = zone,
                                     isActive = isActive,
-                                    isGlobalEnabled = isLocationSilenceEnabled,
+                                    isGlobalEnabled = if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled,
                                     onToggleEnabled = { onToggleEnabled(zone) },
                                     onToggleAutoSilent = { onToggleAutoSilent(zone) },
                                     onFocus = { onFocusZone(zone) },

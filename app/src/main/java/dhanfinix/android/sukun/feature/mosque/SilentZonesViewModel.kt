@@ -37,6 +37,7 @@ import kotlin.coroutines.resume
 import android.annotation.SuppressLint
 import android.widget.Toast
 import dhanfinix.android.sukun.R
+import dhanfinix.android.sukun.core.database.entity.SilentZoneSource
 
 data class SilentZonesUiState(
     val zones: List<SilentZone> = emptyList(),
@@ -49,6 +50,7 @@ data class SilentZonesUiState(
     val isDndAccessGranted: Boolean = false,
     val activeZoneId: Long? = null,
     val isLocationSilenceEnabled: Boolean = true,
+    val isAutoMosqueSilenceEnabled: Boolean = true,
     val errorMessage: String? = null
 )
 
@@ -66,6 +68,7 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
     private val geofenceManager = GeofenceManager(application)
     private val notificationManager = application.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
+    private val mosqueRepository = dhanfinix.android.sukun.feature.mosque.data.MosqueRepository(application)
     private var singleFixJob: kotlinx.coroutines.Job? = null
 
     private val locationCallback = object : LocationCallback() {
@@ -76,6 +79,9 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
                 viewModelScope.launch {
                     userPrefs.setLocation(location.latitude, location.longitude)
                 }
+                viewModelScope.launch {
+                    mosqueRepository.fetchAndSaveMosques(location.latitude, location.longitude)
+                }
             }
         }
     }
@@ -85,11 +91,17 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
 
     init {
         viewModelScope.launch {
-            silentZoneDao.getAllSilentZones().collect { zones ->
+            combine(
+                silentZoneDao.getAllSilentZones(),
+                userPrefs.isAutoMosqueSilenceEnabled
+            ) { zones, autoMosqueEnabled ->
                 _uiState.update { it.copy(zones = zones) }
-                // Re-sync all enabled geofences if needed
-                reSyncGeofences(zones)
-            }
+                // Re-sync geofences, filtering out mosques if disabled
+                val effectiveZones = zones.filter { 
+                    if (it.source == SilentZoneSource.AUTO_MOSQUE) autoMosqueEnabled else true
+                }
+                reSyncGeofences(effectiveZones)
+            }.collect()
         }
         viewModelScope.launch {
             val lat = userPrefs.latitude.first()
@@ -113,7 +125,44 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
                 lastEnabled = enabled
             }
         }
+        viewModelScope.launch {
+            var lastEnabled: Boolean? = null
+            userPrefs.isAutoMosqueSilenceEnabled.collect { enabled ->
+                _uiState.update { it.copy(isAutoMosqueSilenceEnabled = enabled) }
+                if (enabled) {
+                    geofenceManager.requestBackgroundLocationUpdates()
+                    if (lastEnabled == false) {
+                        _uiState.value.userLat?.let { lat ->
+                            _uiState.value.userLng?.let { lng ->
+                                viewModelScope.launch {
+                                    mosqueRepository.fetchAndSaveMosques(lat, lng)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    geofenceManager.removeBackgroundLocationUpdates()
+                }
+                lastEnabled = enabled
+            }
+        }
         refreshPermissions()
+    }
+
+    // Removed fetchNearbyMosques as it is now handled by MosqueRepository.fetchAndSaveMosques
+
+    fun refreshMosques() {
+        viewModelScope.launch {
+            val lat = _uiState.value.userLat ?: return@launch
+            val lng = _uiState.value.userLng ?: return@launch
+            
+            _uiState.update { it.copy(isLoading = true) }
+            
+            // Fix: No longer deleting all auto mosques. Just force a fresh fetch.
+            mosqueRepository.fetchAndSaveMosques(lat, lng, force = true)
+            
+            _uiState.update { it.copy(isLoading = false) }
+        }
     }
 
     private fun checkAndTriggerActiveZone() {
@@ -238,6 +287,12 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
     fun setLocationSilenceEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPrefs.setLocationSilenceEnabled(enabled)
+        }
+    }
+
+    fun setAutoMosqueSilenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setAutoMosqueSilenceEnabled(enabled)
         }
     }
 

@@ -93,6 +93,7 @@ class UserPreferences(private val context: Context) {
     private val KEY_VOIP_LINKED = booleanPreferencesKey("voip_linked")
     private val KEY_NOTIF_LINKED = booleanPreferencesKey("is_notif_linked")
     private val KEY_LOCATION_SILENCE_ENABLED = booleanPreferencesKey("location_silence_enabled")
+    private val KEY_AUTO_MOSQUE_SILENCE_ENABLED = booleanPreferencesKey("auto_mosque_silence_enabled")
 
     // ── Onboarding ──
     private val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
@@ -111,6 +112,8 @@ class UserPreferences(private val context: Context) {
     private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
     private val KEY_HAS_RATED = booleanPreferencesKey("has_rated")
     private val KEY_ACTIVE_SILENT_ZONE_ID = longPreferencesKey("active_silent_zone_id")
+    private val KEY_LAST_FETCH_LAT = doublePreferencesKey("last_fetch_lat")
+    private val KEY_LAST_FETCH_LNG = doublePreferencesKey("last_fetch_lng")
 
     // ── Flows ──
 
@@ -208,6 +211,10 @@ class UserPreferences(private val context: Context) {
 
     val isLocationSilenceEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[KEY_LOCATION_SILENCE_ENABLED] ?: true
+    }.distinctUntilChanged()
+
+    val isAutoMosqueSilenceEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_AUTO_MOSQUE_SILENCE_ENABLED] ?: true
     }.distinctUntilChanged()
 
     val reminderMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
@@ -422,6 +429,12 @@ class UserPreferences(private val context: Context) {
         }
     }
 
+    suspend fun setAutoMosqueSilenceEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_AUTO_MOSQUE_SILENCE_ENABLED] = enabled
+        }
+    }
+
     val useDynamicColor: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[KEY_USE_DYNAMIC_COLOR] ?: false // Default: disable dynamic color
     }
@@ -494,6 +507,16 @@ class UserPreferences(private val context: Context) {
             } else {
                 prefs.remove(KEY_ACTIVE_SILENT_ZONE_ID)
             }
+        }
+    }
+
+    val lastFetchLat: Flow<Double?> = context.dataStore.data.map { it[KEY_LAST_FETCH_LAT] }
+    val lastFetchLng: Flow<Double?> = context.dataStore.data.map { it[KEY_LAST_FETCH_LNG] }
+
+    suspend fun setLastFetchLocation(lat: Double, lng: Double) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LAST_FETCH_LAT] = lat
+            prefs[KEY_LAST_FETCH_LNG] = lng
         }
     }
 }

@@ -79,6 +79,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = true
         )
 
+    val isAutoMosqueSilenceEnabled: StateFlow<Boolean> = userPrefs.isAutoMosqueSilenceEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
     val reminderMinutes: StateFlow<Int> = userPrefs.reminderMinutes
         .stateIn(
             scope = viewModelScope,
@@ -127,6 +134,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setLocationSilenceEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPrefs.setLocationSilenceEnabled(enabled)
+        }
+    }
+
+    fun setAutoMosqueSilenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setAutoMosqueSilenceEnabled(enabled)
         }
     }
 

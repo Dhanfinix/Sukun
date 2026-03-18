@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.toColorInt
 import dhanfinix.android.sukun.core.database.entity.SilentZone
+import dhanfinix.android.sukun.core.database.entity.SilentZoneSource
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.utils.withIsolate
 import androidx.core.content.ContextCompat
@@ -45,6 +46,7 @@ fun OsmMapView(
     centerLng: Double? = null,
     zoom: Double = 18.0,
     focusedZoneId: Long? = null,
+    activeZoneId: Long? = null,
     onMapClick: () -> Unit = {},
     onMapLongClick: (Double, Double) -> Unit = { _, _ -> },
     onMarkerClick: (SilentZone) -> Unit = {},
@@ -113,11 +115,20 @@ fun OsmMapView(
         
         // Polygons
         zones.forEach { zone ->
+            val isActive = activeZoneId == zone.id
             val circle = Polygon(mapView).apply {
                 id = "poly_${zone.id}"
                 points = Polygon.pointsAsCircle(GeoPoint(zone.latitude, zone.longitude), zone.radius.toDouble())
-                val colorHex = if (zone.isEnabled) "#4CAF50" else "#9E9E9E"
-                val fillColorHex = if (zone.isEnabled) "#334CAF50" else "#339E9E9E"
+                val colorHex = when {
+                    isActive -> "#2196F3"
+                    zone.isEnabled -> "#4CAF50"
+                    else -> "#9E9E9E"
+                }
+                val fillColorHex = when {
+                    isActive -> "#332196F3"
+                    zone.isEnabled -> "#334CAF50"
+                    else -> "#339E9E9E"
+                }
                 fillPaint.color = fillColorHex.toColorInt()
                 outlinePaint.color = colorHex.toColorInt()
                 outlinePaint.strokeWidth = 3f * context.resources.displayMetrics.density
@@ -131,6 +142,7 @@ fun OsmMapView(
 
         // Zone Markers
         zones.forEach { zone ->
+            val isActive = activeZoneId == zone.id
             val marker = Marker(mapView).apply {
                 id = zone.id.toString()
                 position = GeoPoint(zone.latitude, zone.longitude)
@@ -138,16 +150,33 @@ fun OsmMapView(
                 title = zone.name
                 relatedObject = zone
                 infoWindow = zoneInfoWindow
-                val density = context.resources.displayMetrics.density
-                val size = (14 * density).toInt()
-                val strokeWidth = (2 * density).toInt()
-                val shape = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor((if (zone.isEnabled) "#4CAF50" else "#9E9E9E").toColorInt())
-                    setStroke(strokeWidth, android.graphics.Color.WHITE)
-                    setSize(size, size)
+                
+                val colorHex = when {
+                    isActive -> "#2196F3"
+                    zone.isEnabled -> "#4CAF50"
+                    else -> "#9E9E9E"
                 }
-                icon = shape
+
+                if (zone.source == SilentZoneSource.AUTO_MOSQUE) {
+                    val drawable = ContextCompat.getDrawable(context, R.drawable.ic_mosque)?.mutate()
+                    drawable?.let {
+                        it.setTint(colorHex.toColorInt())
+                        icon = it
+                    }
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                } else {
+                    val density = context.resources.displayMetrics.density
+                    val size = (14 * density).toInt()
+                    val strokeWidth = (2 * density).toInt()
+                    val shape = GradientDrawable().apply {
+                        shape = GradientDrawable.OVAL
+                        setColor(colorHex.toColorInt())
+                        setStroke(strokeWidth, android.graphics.Color.WHITE)
+                        setSize(size, size)
+                    }
+                    icon = shape
+                }
+
                 setOnMarkerClickListener { m, _ ->
                     onMarkerClick(zone)
                     m.showInfoWindow()

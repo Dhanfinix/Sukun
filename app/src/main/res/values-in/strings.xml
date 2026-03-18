@@ -203,6 +203,11 @@
     <string name="action_hide">Sembunyikan</string>
     <string name="no_zones_added">Belum ada zona yang ditambahkan.</string>
     <string name="add_zone_instruction">Tekan lama di mana saja pada peta untuk membuat zona hening baru.</string>
+    <string name="tab_custom">Kustom</string>
+    <string name="tab_mosques">Masjid</string>
+    <string name="auto_mosque_silence_title">Hening Masjid Otomatis</string>
+    <string name="auto_mosque_silence_desc">Otomatis hening saat memasuki area masjid</string>
+    <string name="no_mosques_detected">Tidak ada masjid terdeteksi di sekitar.</string>
     <string name="new_silent_zone">Zona Hening Baru</string>
     <string name="edit_silent_zone">Edit Zona Hening</string>
     <string name="zone_name">Nama Zona</string>

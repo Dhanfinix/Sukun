@@ -7,6 +7,7 @@ import android.util.Log
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 import dhanfinix.android.sukun.core.database.SukunDatabase
+import dhanfinix.android.sukun.core.database.entity.SilentZoneSource
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.core.notification.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +38,7 @@ class GeofenceReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val isLocationSilenceEnabled = userPrefs.isLocationSilenceEnabled.first()
+                val isAutoMosqueSilenceEnabled = userPrefs.isAutoMosqueSilenceEnabled.first()
 
                 for (geofence in triggeringGeofences) {
                     val zoneId = geofence.requestId.toLongOrNull() ?: continue
@@ -49,6 +51,11 @@ class GeofenceReceiver : BroadcastReceiver() {
                             
                             if (!isLocationSilenceEnabled) {
                                 Log.d("GeofenceReceiver", "Master toggle OFF, skipping silence action but ID is saved.")
+                                continue
+                            }
+
+                            if (zone.source == SilentZoneSource.AUTO_MOSQUE && !isAutoMosqueSilenceEnabled) {
+                                Log.d("GeofenceReceiver", "Auto-Mosque toggle OFF, skipping silence action for detected mosque.")
                                 continue
                             }
 

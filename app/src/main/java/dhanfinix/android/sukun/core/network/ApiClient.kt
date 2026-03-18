@@ -10,6 +10,7 @@ object ApiClient {
 
     private const val BASE_URL = "https://api.aladhan.com/"
     private const val NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/"
+    private const val OVERPASS_BASE_URL = "https://overpass-api.de/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -37,5 +38,14 @@ object ApiClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(NominatimService::class.java)
+    }
+
+    val overpassApi: OverpassService by lazy {
+        Retrofit.Builder()
+            .baseUrl(OVERPASS_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(OverpassService::class.java)
     }
 }

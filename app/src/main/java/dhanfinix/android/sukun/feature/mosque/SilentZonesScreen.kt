@@ -239,6 +239,7 @@ fun SilentZonesScreen(
                     zoom = zoom,
                     cameraRequest = cameraRequest,
                     focusedZoneId = focusedZoneId,
+                    activeZoneId = uiState.activeZoneId,
                     onMapClick = {
                         isListExpanded = false
                         focusedZoneId = null
@@ -333,6 +334,7 @@ fun SilentZonesScreen(
                 isLocating = uiState.isLoading,
                 isListExpanded = isListExpanded,
                 isLocationSilenceEnabled = uiState.isLocationSilenceEnabled,
+                isAutoMosqueSilenceEnabled = uiState.isAutoMosqueSilenceEnabled,
                 onToggleList = { isListExpanded = !isListExpanded },
                 onMyLocation = {
                     when {
@@ -375,6 +377,12 @@ fun SilentZonesScreen(
                 onToggleAutoSilent = { zone -> viewModel.toggleAutoSilent(zone) },
                 onLocationSilenceToggled = { enabled ->
                     viewModel.setLocationSilenceEnabled(enabled)
+                },
+                onAutoMosqueSilenceToggled = { enabled ->
+                    viewModel.setAutoMosqueSilenceEnabled(enabled)
+                },
+                onRefreshMosques = {
+                    viewModel.refreshMosques()
                 }
             )
         }
