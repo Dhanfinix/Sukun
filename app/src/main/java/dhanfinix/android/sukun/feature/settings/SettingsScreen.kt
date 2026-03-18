@@ -47,6 +47,7 @@ fun SettingsScreen(
     var showLanguageSheet by remember { mutableStateOf(false) }
     var showTimeFormatSheet by remember { mutableStateOf(false) }
     var showReminderSheet by remember { mutableStateOf(false) }
+    var showDonationMethodSheet by remember { mutableStateOf(false) }
 
 
 
@@ -194,11 +195,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.label_support_sukun),
                 subtitle = stringResource(R.string.desc_support_sukun),
                 icon = Icons.Rounded.Favorite,
-                onClick = {
-                    val url = "https://ko-fi.com/dhandev"
-                    val intent = CustomTabsIntent.Builder().build()
-                    intent.launchUrl(context, Uri.parse(url))
-                }
+                onClick = { showDonationMethodSheet = true }
             )
         }
 
@@ -234,6 +231,24 @@ fun SettingsScreen(
                 currentMinutes = reminderMinutes,
                 onMinutesSelected = { mainVm.setReminderMinutes(it) },
                 onDismiss = { showReminderSheet = false }
+            )
+        }
+
+        if (showDonationMethodSheet) {
+            DonationMethodSheet(
+                onDonateKofi = {
+                    val url = "https://ko-fi.com/dhandev"
+                    val intent = CustomTabsIntent.Builder().build()
+                    intent.launchUrl(context, Uri.parse(url))
+                    showDonationMethodSheet = false
+                },
+                onDonateSaweria = {
+                    val url = "https://saweria.co/dhandev"
+                    val intent = CustomTabsIntent.Builder().build()
+                    intent.launchUrl(context, Uri.parse(url))
+                    showDonationMethodSheet = false
+                },
+                onDismiss = { showDonationMethodSheet = false }
             )
         }
     }
@@ -534,6 +549,68 @@ private fun ReminderSelectionSheet(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DonationMethodSheet(
+    onDonateKofi: () -> Unit,
+    onDonateSaweria: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.label_choose_donation_method),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp, start = 8.dp).align(Alignment.Start)
+            )
+
+            Button(
+                onClick = onDonateKofi,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.btn_donate_kofi),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Button(
+                onClick = onDonateSaweria,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                contentPadding = PaddingValues(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.btn_donate_saweria),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.btn_cancel))
             }
         }
     }

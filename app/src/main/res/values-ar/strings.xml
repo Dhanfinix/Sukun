@@ -278,4 +278,6 @@
     <string name="donation_sheet_title">دعم تطوير سكون</string>
     <string name="donation_sheet_desc">سكون مجاني تماماً وبدون إعلانات. إذا وجدت التطبيق مفيداً، فضلاً ادعمنا لمزيد من السكينة في الصلاة.</string>
     <string name="btn_maybe_later">ربما لاحقاً</string>
+    <string name="btn_donate_saweria">تبرع عبر Saweria</string>
+    <string name="label_choose_donation_method">اختر وسيلة التبرع</string>
 </resources>

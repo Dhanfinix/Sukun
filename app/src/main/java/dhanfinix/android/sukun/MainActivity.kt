@@ -121,8 +121,15 @@ class MainActivity : AppCompatActivity() {
                             showDonationSheet = false
                             mainVm.markDonationAsShown()
                         },
-                        onDonate = {
+                        onDonateKofi = {
                             val url = "https://ko-fi.com/dhandev"
+                            val intent = CustomTabsIntent.Builder().build()
+                            intent.launchUrl(this@MainActivity, Uri.parse(url))
+                            showDonationSheet = false
+                            mainVm.markDonationAsShown()
+                        },
+                        onDonateSaweria = {
+                            val url = "https://saweria.co/dhandev"
                             val intent = CustomTabsIntent.Builder().build()
                             intent.launchUrl(this@MainActivity, Uri.parse(url))
                             showDonationSheet = false
@@ -138,7 +145,8 @@ class MainActivity : AppCompatActivity() {
     @Composable
     private fun DonationBottomSheet(
         onDismiss: () -> Unit,
-        onDonate: () -> Unit
+        onDonateKofi: () -> Unit,
+        onDonateSaweria: () -> Unit
     ) {
         ModalBottomSheet(
             onDismissRequest = onDismiss,
@@ -185,13 +193,30 @@ class MainActivity : AppCompatActivity() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = onDonate,
+                    onClick = onDonateKofi,
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.large,
                     contentPadding = PaddingValues(16.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.btn_donate_kofi),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Button(
+                    onClick = onDonateSaweria,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    contentPadding = PaddingValues(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.btn_donate_saweria),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )

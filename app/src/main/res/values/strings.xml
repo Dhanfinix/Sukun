@@ -281,4 +281,6 @@
     <string name="donation_sheet_title">Support Sukun\'s Development</string>
     <string name="donation_sheet_desc">Sukun is free and ad-free. If you find it helpful, consider supporting for more peace in pray.</string>
     <string name="btn_maybe_later">Maybe Later</string>
+    <string name="btn_donate_saweria">Donate via Saweria</string>
+    <string name="label_choose_donation_method">Choose Donation Method</string>
 </resources>

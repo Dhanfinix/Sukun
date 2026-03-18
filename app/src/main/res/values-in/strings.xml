@@ -278,4 +278,6 @@
     <string name="donation_sheet_title">Dukung Pengembangan Sukun</string>
     <string name="donation_sheet_desc">Sukun gratis dan tanpa iklan. Jika Anda merasa terbantu, pertimbangkan untuk mendukung agar ibadah lebih tenang.</string>
     <string name="btn_maybe_later">Mungkin Nanti</string>
+    <string name="btn_donate_saweria">Donasi via Saweria</string>
+    <string name="label_choose_donation_method">Pilih Metode Donasi</string>
 </resources>
