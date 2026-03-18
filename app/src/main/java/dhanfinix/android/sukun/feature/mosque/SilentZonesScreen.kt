@@ -151,6 +151,7 @@ fun SilentZonesScreen(
         viewModel.searchLocation(
             query = searchQuery,
             onResult = { lat, lng ->
+                zoom = 16.0
                 cameraRequest = CameraRequest(lat, lng, 16.0)
                 focusedZoneId = -1L
                 searchPinLat = lat
@@ -167,6 +168,7 @@ fun SilentZonesScreen(
 
     val handleZoneMatchClick: (SilentZone) -> Unit = { zone ->
         focusedZoneId = zone.id
+        zoom = 18.0
         cameraRequest = CameraRequest(zone.latitude, zone.longitude, 18.0)
         searchPinLat = null
         searchPinLng = null
@@ -175,6 +177,7 @@ fun SilentZonesScreen(
     }
 
     val handleMapSuggestionClick: (MapSuggestion) -> Unit = { suggestion ->
+        zoom = 16.0
         cameraRequest = CameraRequest(suggestion.latitude, suggestion.longitude, 16.0)
         focusedZoneId = -1L
         searchPinLat = suggestion.latitude
@@ -332,6 +335,7 @@ fun SilentZonesScreen(
                         }
                         uiState.userLat != null && uiState.userLng != null -> {
                             // Center immediately to whatever we have, even if stale, then try to refresh.
+                            zoom = 18.0
                             cameraRequest = CameraRequest(uiState.userLat!!, uiState.userLng!!, 18.0)
                             viewModel.requestSingleLocationFix {
                                 Toast.makeText(context, R.string.err_location_not_found_gps, Toast.LENGTH_SHORT).show()
@@ -352,6 +356,7 @@ fun SilentZonesScreen(
                 },
                 onFocusZone = { zone ->
                     focusedZoneId = zone.id
+                    zoom = 18.0
                     cameraRequest = CameraRequest(zone.latitude, zone.longitude, 18.0)
                 },
                 onEditZone = { zone -> editingZone = zone },

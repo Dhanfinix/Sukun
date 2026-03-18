@@ -203,8 +203,8 @@ fun OsmMapView(
     LaunchedEffect(cameraRequest) {
         cameraRequest?.let { request ->
             val target = GeoPoint(request.lat, request.lng)
+            mapView.controller.setZoom(request.zoom)
             mapView.controller.animateTo(target)
-            mapView.controller.zoomTo(request.zoom)
         }
     }
 
