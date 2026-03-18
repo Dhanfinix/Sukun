@@ -36,6 +36,8 @@ class GeofenceReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                val isLocationSilenceEnabled = userPrefs.isLocationSilenceEnabled.first()
+
                 for (geofence in triggeringGeofences) {
                     val zoneId = geofence.requestId.toLongOrNull() ?: continue
                     val zone = silentZoneDao.getSilentZoneById(zoneId) ?: continue
@@ -45,6 +47,11 @@ class GeofenceReceiver : BroadcastReceiver() {
                             Log.d("GeofenceReceiver", "Entered/Dwell geofence: ${zone.name} (type: $transitionType)")
                             userPrefs.setActiveSilentZoneId(zone.id)
                             
+                            if (!isLocationSilenceEnabled) {
+                                Log.d("GeofenceReceiver", "Master toggle OFF, skipping silence action but ID is saved.")
+                                continue
+                            }
+
                             if (zone.isAutoSilent) {
                                 val durationToUse = zone.silenceDuration ?: 30
                                 val silenceIntent = Intent(context, SilenceReceiver::class.java).apply {

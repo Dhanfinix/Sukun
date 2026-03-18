@@ -92,6 +92,7 @@ class UserPreferences(private val context: Context) {
     // ── VOIP toggle ──
     private val KEY_VOIP_LINKED = booleanPreferencesKey("voip_linked")
     private val KEY_NOTIF_LINKED = booleanPreferencesKey("is_notif_linked")
+    private val KEY_LOCATION_SILENCE_ENABLED = booleanPreferencesKey("location_silence_enabled")
 
     // ── Onboarding ──
     private val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
@@ -204,6 +205,10 @@ class UserPreferences(private val context: Context) {
     val isReminderEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[KEY_REMINDER_ENABLED] ?: true
     }
+
+    val isLocationSilenceEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_LOCATION_SILENCE_ENABLED] ?: true
+    }.distinctUntilChanged()
 
     val reminderMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[KEY_REMINDER_MINUTES] ?: 10
@@ -408,6 +413,12 @@ class UserPreferences(private val context: Context) {
     suspend fun setReminderMinutes(minutes: Int) {
         context.dataStore.edit { prefs ->
             prefs[KEY_REMINDER_MINUTES] = minutes
+        }
+    }
+
+    suspend fun setLocationSilenceEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LOCATION_SILENCE_ENABLED] = enabled
         }
     }
 

@@ -87,6 +87,7 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             is VolumeEvent.DismissOverwrite -> _uiState.update { it.copy(pendingOverwriteDurationMin = null) }
             is VolumeEvent.SnackbarMessageConsumed -> _uiState.update { it.copy(snackbarMessage = null) }
             is VolumeEvent.SilenceNow -> handleSilenceNow()
+            is VolumeEvent.LocationSilenceToggled -> setLocationSilenceEnabled(event.enabled)
         }
     }
 
@@ -270,6 +271,38 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
                 _uiState.update { it.copy(silenceMode = mode) }
             }
         }
+        viewModelScope.launch {
+            var lastEnabled: Boolean? = null
+            userPrefs.isLocationSilenceEnabled.collect { enabled ->
+                _uiState.update { it.copy(isLocationSilenceEnabled = enabled) }
+                if (enabled && lastEnabled == false) {
+                    checkAndTriggerActiveZone()
+                }
+                lastEnabled = enabled
+            }
+        }
+    }
+
+    private fun checkAndTriggerActiveZone() {
+        viewModelScope.launch {
+            val zones = silentZoneDao.getAllSilentZones().first()
+            val activeId = userPrefs.activeSilentZoneId.first()
+            
+            // If there's an active geofence ID but silence isn't active, 
+            // it means the GeofenceReceiver might have ignored it because the toggle was OFF.
+            if (activeId != null && !_uiState.value.isSukunActive) {
+                val zone = zones.find { it.id == activeId }
+                if (zone != null && zone.isEnabled) {
+                    handleSilenceNow()
+                }
+            }
+        }
+    }
+
+    private fun setLocationSilenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setLocationSilenceEnabled(enabled)
+        }
     }
 
     private var silenceTickerJob: kotlinx.coroutines.Job? = null
@@ -414,6 +447,11 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun handleSilenceNow() {
         viewModelScope.launch {
+            if (!userPrefs.isLocationSilenceEnabled.first()) {
+                Toast.makeText(getApplication(), R.string.status_location_silence_disabled, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
             val activeId = userPrefs.activeSilentZoneId.first() ?: return@launch
             val zone = silentZoneDao.getSilentZoneById(activeId) ?: return@launch
             

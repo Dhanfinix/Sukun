@@ -196,6 +196,8 @@
     <string name="language_restart_msg">يجب إعادة تشغيل سكون لتطبيق اللغة الجديدة. هل تود الاستمرار؟</string>
     <!-- Location Silence -->
     <string name="location_silence_title">كتم الموقع</string>
+    <string name="location_silence_desc">تفعيل أو تعطيل جميع مسببات الكتم التلقائي بناءً على الموقع</string>
+    <string name="status_location_silence_disabled">كتم الموقع معطل. قم بتفعيله لبدء الكتم التلقائي.</string>
     <string name="hold_to_add_zone">اضغط مطولاً لإضافة منطقة</string>
     <string name="action_list">المناطق المحفوظة</string>
     <string name="action_hide">إخفاء</string>
@@ -262,4 +264,7 @@
     <string name="btn_open_settings">فتح الإعدادات</string>
     <string name="btn_app_info">معلومات التطبيق (احتياطي)</string>
     <string name="btn_add_as_silence_zone">إضافة كمنطقة صامتة</string>
+    <string name="delete_zone_confirmation_title">حذف المنطقة؟</string>
+    <string name="delete_zone_confirmation_msg">هل أنت متأكد أنك تريد حذف "%1$s"؟ لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="btn_delete">حذف</string>
 </resources>

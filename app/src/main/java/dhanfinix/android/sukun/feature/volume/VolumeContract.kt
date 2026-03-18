@@ -28,7 +28,8 @@ data class VolumeUiState(
     
     // Silent Zone tracking for Home Screen
     val silentZoneCount: Int = 0,
-    val activeSilentZoneName: String? = null
+    val activeSilentZoneName: String? = null,
+    val isLocationSilenceEnabled: Boolean = true
 )
 
 /**
@@ -53,4 +54,5 @@ sealed class VolumeEvent {
     data object DismissOverwrite : VolumeEvent()
     data object SnackbarMessageConsumed : VolumeEvent()
     data object SilenceNow : VolumeEvent()
+    data class LocationSilenceToggled(val enabled: Boolean) : VolumeEvent()
 }

@@ -250,6 +250,9 @@ fun HomeScreen(
                     state = volumeState,
                     onManageClick = onOpenLocationSilent,
                     onSilenceNowClick = { volumeVm.onEvent(VolumeEvent.SilenceNow) },
+                    onLocationSilenceToggled = { enabled ->
+                        volumeVm.onEvent(VolumeEvent.LocationSilenceToggled(enabled))
+                    },
                     modifier = Modifier.padding(horizontal = 16.dp),
                     onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
                 )

@@ -196,6 +196,8 @@
     <string name="language_restart_msg">Sukun perlu dimulai ulang untuk menerapkan bahasa baru. Lanjutkan?</string>
     <!-- Location Silence -->
     <string name="location_silence_title">Hening Lokasi</string>
+    <string name="location_silence_desc">Aktifkan atau nonaktifkan semua pemicu hening berbasis lokasi</string>
+    <string name="status_location_silence_disabled">Hening Lokasi nonaktif. Aktifkan untuk mulai hening otomatis.</string>
     <string name="hold_to_add_zone">Tahan untuk tambah zona</string>
     <string name="action_list">Zona Tersimpan</string>
     <string name="action_hide">Sembunyikan</string>
@@ -262,4 +264,7 @@
     <string name="btn_open_settings">Buka Pengaturan</string>
     <string name="btn_app_info">App Info (Fallback)</string>
     <string name="btn_add_as_silence_zone">Tambah sebagai Zona Hening</string>
+    <string name="delete_zone_confirmation_title">Hapus Zona?</string>
+    <string name="delete_zone_confirmation_msg">Apakah Anda yakin ingin menghapus "%1$s"? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="btn_delete">Hapus</string>
 </resources>

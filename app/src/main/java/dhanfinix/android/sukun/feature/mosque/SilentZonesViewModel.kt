@@ -35,6 +35,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 import android.annotation.SuppressLint
+import android.widget.Toast
 import dhanfinix.android.sukun.R
 
 data class SilentZonesUiState(
@@ -47,6 +48,7 @@ data class SilentZonesUiState(
     val isBackgroundLocationGranted: Boolean = false,
     val isDndAccessGranted: Boolean = false,
     val activeZoneId: Long? = null,
+    val isLocationSilenceEnabled: Boolean = true,
     val errorMessage: String? = null
 )
 
@@ -100,7 +102,33 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
                 _uiState.update { it.copy(activeZoneId = id) }
             }
         }
+        viewModelScope.launch {
+            var lastEnabled: Boolean? = null
+            userPrefs.isLocationSilenceEnabled.collect { enabled ->
+                _uiState.update { it.copy(isLocationSilenceEnabled = enabled) }
+                if (enabled && lastEnabled == false) {
+                    // Re-evaluate current location to see if we should trigger any zone
+                    checkAndTriggerActiveZone()
+                }
+                lastEnabled = enabled
+            }
+        }
         refreshPermissions()
+    }
+
+    private fun checkAndTriggerActiveZone() {
+        val lat = _uiState.value.userLat ?: return
+        val lng = _uiState.value.userLng ?: return
+        val zones = _uiState.value.zones
+        
+        val activeZone = zones.find { zone ->
+            if (!zone.isEnabled) return@find false
+            val results = FloatArray(1)
+            Location.distanceBetween(lat, lng, zone.latitude, zone.longitude, results)
+            results[0] <= zone.radius
+        }
+
+        activeZone?.let { triggerZoneManually(it) }
     }
 
     fun refreshPermissions() {
@@ -207,6 +235,12 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
         _uiState.update { it.copy(isLoading = false) }
     }
 
+    fun setLocationSilenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setLocationSilenceEnabled(enabled)
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         stopLocationUpdates()
@@ -224,7 +258,13 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
 
     private fun triggerZoneManually(zone: SilentZone) {
         viewModelScope.launch {
+            val isEnabled = userPrefs.isLocationSilenceEnabled.first()
             userPrefs.setActiveSilentZoneId(zone.id)
+            
+            if (!isEnabled) {
+                Toast.makeText(application, R.string.status_location_silence_disabled, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
             
             if (zone.isAutoSilent) {
                 val durationToUse = zone.silenceDuration ?: 30 // Default 30 min to match receiver

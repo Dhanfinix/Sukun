@@ -34,6 +34,7 @@ import androidx.compose.material.icons.rounded.GpsFixed
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.LocationOff
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.MyLocation
@@ -58,6 +59,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight as FontWeightCompose
@@ -81,6 +83,7 @@ internal fun SilentZonesTopOverlay(
     isDndAccessGranted: Boolean,
     isLocating: Boolean,
     isLocationFresh: Boolean,
+    isLocationSilenceEnabled: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onClearSearch: () -> Unit,
     onToggleIncludeZones: (Boolean) -> Unit,
@@ -371,6 +374,7 @@ internal fun SilentZonesBottomOverlay(
     isLocationFresh: Boolean,
     isLocating: Boolean,
     isListExpanded: Boolean,
+    isLocationSilenceEnabled: Boolean,
     onToggleList: () -> Unit,
     onMyLocation: () -> Unit,
     onAddZone: () -> Unit,
@@ -378,7 +382,8 @@ internal fun SilentZonesBottomOverlay(
     onEditZone: (SilentZone) -> Unit,
     onDeleteZone: (SilentZone) -> Unit,
     onToggleEnabled: (SilentZone) -> Unit,
-    onToggleAutoSilent: (SilentZone) -> Unit
+    onToggleAutoSilent: (SilentZone) -> Unit,
+    onLocationSilenceToggled: (Boolean) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -461,6 +466,57 @@ internal fun SilentZonesBottomOverlay(
                 }
 
                 if (isListExpanded) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 12.dp)
+                    ) {
+                        Surface(
+                            onClick = { onLocationSilenceToggled(!isLocationSilenceEnabled) },
+                            shape = MaterialTheme.shapes.medium,
+                            color = if (isLocationSilenceEnabled) 
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                            else 
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = if (isLocationSilenceEnabled) Icons.Rounded.GpsFixed else Icons.Rounded.LocationOff,
+                                    contentDescription = null,
+                                    tint = if (isLocationSilenceEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        stringResource(R.string.location_silence_title),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeightCompose.Bold
+                                    )
+                                    Text(
+                                        if (isLocationSilenceEnabled) 
+                                            stringResource(R.string.location_silence_desc)
+                                        else 
+                                            stringResource(R.string.status_location_silence_disabled),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Switch(
+                                    checked = isLocationSilenceEnabled,
+                                    onCheckedChange = onLocationSilenceToggled,
+                                    modifier = Modifier.scale(0.8f)
+                                )
+                            }
+                        }
+                    }
+
                     if (zones.isEmpty()) {
                         Box(
                             modifier = Modifier
@@ -484,6 +540,7 @@ internal fun SilentZonesBottomOverlay(
                                 SilentZoneCard(
                                     zone = zone,
                                     isActive = isActive,
+                                    isGlobalEnabled = isLocationSilenceEnabled,
                                     onToggleEnabled = { onToggleEnabled(zone) },
                                     onToggleAutoSilent = { onToggleAutoSilent(zone) },
                                     onFocus = { onFocusZone(zone) },
@@ -503,6 +560,7 @@ internal fun SilentZonesBottomOverlay(
 private fun SilentZoneCard(
     zone: SilentZone,
     isActive: Boolean,
+    isGlobalEnabled: Boolean,
     onToggleEnabled: () -> Unit,
     onToggleAutoSilent: () -> Unit,
     onFocus: () -> Unit,
@@ -515,20 +573,33 @@ private fun SilentZoneCard(
             .clickable { onFocus() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = if (isActive) MaterialTheme.colorScheme.primaryContainer
-            else MaterialTheme.colorScheme.surface
+            containerColor = when {
+                !isGlobalEnabled -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                isActive -> MaterialTheme.colorScheme.primaryContainer
+                else -> MaterialTheme.colorScheme.surface
+            }
+        ),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = if (isGlobalEnabled) 2.dp else 0.dp
         )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             zone.name,
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeightCompose.Bold
+                            fontWeight = FontWeightCompose.Bold,
+                            color = when {
+                                !isGlobalEnabled -> MaterialTheme.colorScheme.onSurfaceVariant
+                                isActive -> MaterialTheme.colorScheme.onPrimaryContainer
+                                else -> MaterialTheme.colorScheme.onSurface
+                            }
                         )
-                        if (isActive) {
+                        if (isActive && isGlobalEnabled) {
                             Spacer(Modifier.width(8.dp))
                             Surface(
                                 color = MaterialTheme.colorScheme.primary,
@@ -550,55 +621,44 @@ private fun SilentZoneCard(
                             zone.radius.toInt()
                         ),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = if (isGlobalEnabled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
 
                 Switch(
                     checked = zone.isEnabled,
-                    onCheckedChange = { onToggleEnabled() }
+                    onCheckedChange = { onToggleEnabled() },
+                    enabled = isGlobalEnabled
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp).alpha(0.5f))
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = if (isGlobalEnabled) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         stringResource(R.string.auto_silent),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isGlobalEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         if (zone.isAutoSilent) stringResource(R.string.status_enabled)
                         else stringResource(R.string.status_notification_only),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Text(
-                        if (zone.silenceDuration != null && zone.silenceDuration >= 60) {
-                            java.lang.String.format(
-                                java.util.Locale.US,
-                                stringResource(R.string.ends_in_hours),
-                                zone.silenceDuration / 60
-                            )
-                        } else {
-                            java.lang.String.format(
-                                java.util.Locale.US,
-                                stringResource(R.string.ends_in_mins),
-                                zone.silenceDuration ?: 30
-                            )
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeightCompose.Bold
+                        color = if (isGlobalEnabled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
 
-                IconButton(onClick = onEdit) {
+                IconButton(
+                    onClick = onEdit
+                ) {
                     Icon(
                         Icons.Rounded.Edit,
                         contentDescription = stringResource(R.string.cd_edit_zone),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -606,7 +666,7 @@ private fun SilentZoneCard(
                     Icon(
                         Icons.Rounded.Delete,
                         contentDescription = stringResource(R.string.cd_delete_zone),
-                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             }

@@ -44,6 +44,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.TextButton
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.database.entity.SilentZone
 import dhanfinix.android.sukun.feature.mosque.components.BackgroundLocationRationaleDialog
@@ -84,6 +87,8 @@ fun SilentZonesScreen(
     var searchPinLabel by remember { mutableStateOf<String?>(null) }
     var showBackgroundRationale by remember { mutableStateOf(false) }
     var cameraRequest by remember { mutableStateOf<CameraRequest?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var zoneToDelete by remember { mutableStateOf<SilentZone?>(null) }
 
     val zoneMatches = remember(uiState.zones, searchQuery, includeZones) {
         if (!includeZones || searchQuery.isBlank()) {
@@ -292,6 +297,7 @@ fun SilentZonesScreen(
                 isDndAccessGranted = uiState.isDndAccessGranted,
                 isLocating = uiState.isLoading,
                 isLocationFresh = uiState.isLocationFresh,
+                isLocationSilenceEnabled = uiState.isLocationSilenceEnabled,
                 onSearchQueryChange = { searchQuery = it },
                 onClearSearch = { searchQuery = "" },
                 onToggleIncludeZones = { includeZones = it },
@@ -326,6 +332,7 @@ fun SilentZonesScreen(
                 isLocationFresh = uiState.isLocationFresh,
                 isLocating = uiState.isLoading,
                 isListExpanded = isListExpanded,
+                isLocationSilenceEnabled = uiState.isLocationSilenceEnabled,
                 onToggleList = { isListExpanded = !isListExpanded },
                 onMyLocation = {
                     when {
@@ -360,9 +367,15 @@ fun SilentZonesScreen(
                     cameraRequest = CameraRequest(zone.latitude, zone.longitude, 18.0)
                 },
                 onEditZone = { zone -> editingZone = zone },
-                onDeleteZone = { zone -> viewModel.deleteSilentZone(zone) },
+                onDeleteZone = { zone -> 
+                    zoneToDelete = zone
+                    showDeleteConfirmation = true
+                },
                 onToggleEnabled = { zone -> viewModel.toggleSilentZone(zone) },
-                onToggleAutoSilent = { zone -> viewModel.toggleAutoSilent(zone) }
+                onToggleAutoSilent = { zone -> viewModel.toggleAutoSilent(zone) },
+                onLocationSilenceToggled = { enabled ->
+                    viewModel.setLocationSilenceEnabled(enabled)
+                }
             )
         }
     }
@@ -415,6 +428,37 @@ fun SilentZonesScreen(
                     data = Uri.fromParts("package", context.packageName, null)
                 }
                 context.startActivity(intent)
+            }
+        )
+    }
+
+    if (showDeleteConfirmation && zoneToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteConfirmation = false
+                zoneToDelete = null
+            },
+            title = { Text(stringResource(R.string.delete_zone_confirmation_title)) },
+            text = { Text(stringResource(R.string.delete_zone_confirmation_msg, zoneToDelete?.name ?: "")) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        zoneToDelete?.let { viewModel.deleteSilentZone(it) }
+                        showDeleteConfirmation = false
+                        zoneToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.btn_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDeleteConfirmation = false
+                    zoneToDelete = null
+                }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
             }
         )
     }

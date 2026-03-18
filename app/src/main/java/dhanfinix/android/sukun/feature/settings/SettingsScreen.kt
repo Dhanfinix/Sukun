@@ -153,8 +153,6 @@ fun SettingsScreen(
                 )
             }
 
-
-
             // General Section
             SettingsSectionTitle(stringResource(R.string.section_general))
             

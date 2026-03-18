@@ -72,6 +72,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = true
         )
 
+    val isLocationSilenceEnabled: StateFlow<Boolean> = userPrefs.isLocationSilenceEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
     val reminderMinutes: StateFlow<Int> = userPrefs.reminderMinutes
         .stateIn(
             scope = viewModelScope,
@@ -114,6 +121,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setReminderEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPrefs.setReminderEnabled(enabled)
+        }
+    }
+
+    fun setLocationSilenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setLocationSilenceEnabled(enabled)
         }
     }
 

@@ -13,8 +13,10 @@ import androidx.compose.material.icons.rounded.NotificationsOff
 import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,10 +33,12 @@ fun LocationSilenceSection(
     state: VolumeUiState,
     onManageClick: () -> Unit,
     onSilenceNowClick: () -> Unit,
+    onLocationSilenceToggled: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onTargetPositioned: ((CoachMarkTarget, Rect) -> Unit)? = null
 ) {
     ElevatedCard(
+        onClick = onManageClick,
         modifier = modifier
             .fillMaxWidth()
             .onGloballyPositioned { coordinates ->
@@ -57,12 +61,17 @@ fun LocationSilenceSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = if (state.activeSilentZoneName != null) Icons.Rounded.GpsFixed else Icons.Rounded.LocationOn,
+                    imageVector = when {
+                        !state.isLocationSilenceEnabled -> Icons.Rounded.LocationOff
+                        state.activeSilentZoneName != null -> Icons.Rounded.GpsFixed
+                        else -> Icons.Rounded.LocationOn
+                    },
                     contentDescription = null,
-                    tint = if (state.activeSilentZoneName != null) 
-                        MaterialTheme.colorScheme.primary 
-                    else 
-                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = when {
+                        !state.isLocationSilenceEnabled -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        state.activeSilentZoneName != null -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    },
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -70,10 +79,15 @@ fun LocationSilenceSection(
                     Text(
                         text = stringResource(R.string.location_silence_title),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = if (state.isLocationSilenceEnabled) 
+                            MaterialTheme.colorScheme.onSurface 
+                        else 
+                            MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = when {
+                            !state.isLocationSilenceEnabled -> stringResource(R.string.status_location_silence_disabled)
                             state.activeSilentZoneName != null && state.isSukunActive -> stringResource(R.string.status_protection_active)
                             state.activeSilentZoneName != null && !state.isSukunActive -> stringResource(R.string.status_inside_protection_zone)
                             state.silentZoneCount > 0 -> stringResource(R.string.status_zones_active, state.silentZoneCount)
@@ -84,13 +98,17 @@ fun LocationSilenceSection(
                     )
                 }
 
-                TextButton(onClick = onManageClick) {
-                    Text(stringResource(R.string.action_manage))
+                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                    Switch(
+                        checked = state.isLocationSilenceEnabled,
+                        onCheckedChange = onLocationSilenceToggled,
+                        modifier = Modifier.scale(0.8f)
+                    )
                 }
             }
 
             AnimatedVisibility(
-                visible = state.activeSilentZoneName != null,
+                visible = state.activeSilentZoneName != null && state.isLocationSilenceEnabled,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
