@@ -40,6 +40,7 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.review.ReviewManagerFactory
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.designsystem.SukunTheme
+import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
 import dhanfinix.android.sukun.core.notification.NotificationHelper
 import dhanfinix.android.sukun.navigation.AppNavigation
 
@@ -117,7 +118,7 @@ class MainActivity : AppCompatActivity() {
 
                 if (showDonationSheet) {
                     DonationBottomSheet(
-                        onDismiss = {
+                        onDismissRequest = {
                             showDonationSheet = false
                             mainVm.markDonationAsShown()
                         },
@@ -135,118 +136,6 @@ class MainActivity : AppCompatActivity() {
                             showDonationSheet = false
                             mainVm.markDonationAsShown()
                         }
-                    )
-                }
-            }
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    private fun DonationBottomSheet(
-        onDismiss: () -> Unit,
-        onDonateKofi: () -> Unit,
-        onDonateSaweria: () -> Unit
-    ) {
-        ModalBottomSheet(
-            onDismissRequest = onDismiss,
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 48.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Surface(
-                    shape = androidx.compose.foundation.shape.CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(64.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.Favorite,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-
-                Text(
-                    text = stringResource(R.string.donation_sheet_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-
-                Text(
-                    text = stringResource(R.string.donation_sheet_persuasive_desc),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Button(
-                        onClick = onDonateKofi,
-                        modifier = Modifier.weight(1f),
-                        shape = MaterialTheme.shapes.large,
-                        contentPadding = PaddingValues(vertical = 16.dp)
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Ko-fi",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "(${stringResource(R.string.label_global)})",
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
-                    }
-
-                    Button(
-                        onClick = onDonateSaweria,
-                        modifier = Modifier.weight(1f),
-                        shape = MaterialTheme.shapes.large,
-                        contentPadding = PaddingValues(vertical = 16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Saweria",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "(${stringResource(R.string.label_indonesia)})",
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
-                    }
-                }
-
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(R.string.btn_maybe_later),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

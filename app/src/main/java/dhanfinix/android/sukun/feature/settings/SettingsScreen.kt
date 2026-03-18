@@ -25,6 +25,9 @@ import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.AppTheme
 import dhanfinix.android.sukun.core.datastore.TimeFormat
+import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
+import dhanfinix.android.sukun.core.notification.NotificationHelper
+import dhanfinix.android.sukun.feature.mosque.MosqueViewModel.TimeFormat
 import androidx.browser.customtabs.CustomTabsIntent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -235,7 +238,7 @@ fun SettingsScreen(
         }
 
         if (showDonationMethodSheet) {
-            DonationMethodSheet(
+            DonationBottomSheet(
                 onDonateKofi = {
                     val url = "https://ko-fi.com/dhandev"
                     val intent = CustomTabsIntent.Builder().build()
@@ -248,7 +251,8 @@ fun SettingsScreen(
                     intent.launchUrl(context, Uri.parse(url))
                     showDonationMethodSheet = false
                 },
-                onDismiss = { showDonationMethodSheet = false }
+                onDismissRequest = { showDonationMethodSheet = false },
+                dismissTextContext = R.string.btn_cancel
             )
         }
     }
@@ -554,81 +558,3 @@ private fun ReminderSelectionSheet(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DonationMethodSheet(
-    onDonateKofi: () -> Unit,
-    onDonateSaweria: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.label_donate_via),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp, start = 8.dp).align(Alignment.Start)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Button(
-                    onClick = onDonateKofi,
-                    modifier = Modifier.weight(1f),
-                    shape = MaterialTheme.shapes.large,
-                    contentPadding = PaddingValues(vertical = 16.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Ko-fi",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "(${stringResource(R.string.label_global)})",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                }
-
-                Button(
-                    onClick = onDonateSaweria,
-                    modifier = Modifier.weight(1f),
-                    shape = MaterialTheme.shapes.large,
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Saweria",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "(${stringResource(R.string.label_indonesia)})",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                }
-            }
-
-            TextButton(
-                onClick = onDismiss,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.btn_cancel))
-            }
-        }
-    }
-}
