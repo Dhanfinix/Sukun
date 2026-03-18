@@ -8,15 +8,18 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import dhanfinix.android.sukun.MainViewModel
+import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
 import dhanfinix.android.sukun.feature.home.HomeScreen
 import dhanfinix.android.sukun.feature.landing.LandingScreen
 import dhanfinix.android.sukun.feature.onboarding.OnboardingScreen
@@ -24,6 +27,7 @@ import dhanfinix.android.sukun.feature.settings.AboutScreen
 import dhanfinix.android.sukun.feature.settings.SettingsScreen
 import dhanfinix.android.sukun.feature.splash.SplashScreen
 import dhanfinix.android.sukun.feature.mosque.SilentZonesScreen
+import dhanfinix.android.sukun.feature.webview.WebViewScreen
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -35,6 +39,33 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     val hasSeenLanding by mainVm.hasSeenLanding.collectAsState()
+    val shouldShowDonation by mainVm.shouldShowDonation.collectAsState()
+    var showDonationSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(shouldShowDonation) {
+        if (shouldShowDonation) {
+            showDonationSheet = true
+        }
+    }
+
+    if (showDonationSheet) {
+        DonationBottomSheet(
+            onDismissRequest = {
+                showDonationSheet = false
+                mainVm.markDonationAsShown()
+            },
+            onDonateKofi = {
+                showDonationSheet = false
+                mainVm.markDonationAsShown()
+                navController.navigate(Route.WebView("https://ko-fi.com/dhandev", "Donate via Ko-fi"))
+            },
+            onDonateSaweria = {
+                showDonationSheet = false
+                mainVm.markDonationAsShown()
+                navController.navigate(Route.WebView("https://saweria.co/dhandev", "Donate via Saweria"))
+            }
+        )
+    }
 
     SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
         NavHost(
@@ -113,6 +144,7 @@ fun AppNavigation(
                     mainVm = mainVm,
                     onOpenAbout = { navController.navigate(Route.About) },
                     onOpenLocationSilent = { navController.navigate(Route.LocationSilent) },
+                    onOpenWebView = { url, title -> navController.navigate(Route.WebView(url, title)) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -131,6 +163,20 @@ fun AppNavigation(
                 popExitTransition = { slideOutHorizontally(tween(300)) { it } + fadeOut(tween(300)) }
             ) {
                 AboutScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<Route.WebView>(
+                enterTransition = { slideInHorizontally(tween(350)) { it } + fadeIn(tween(350)) },
+                exitTransition = { slideOutHorizontally(tween(300)) { -it } + fadeOut(tween(300)) },
+                popEnterTransition = { slideInHorizontally(tween(350)) { -it } + fadeIn(tween(350)) },
+                popExitTransition = { slideOutHorizontally(tween(300)) { it } + fadeOut(tween(300)) }
+            ) { backStackEntry ->
+                val webViewRoute = backStackEntry.toRoute<Route.WebView>()
+                WebViewScreen(
+                    url = webViewRoute.url,
+                    title = webViewRoute.title,
                     onBack = { navController.popBackStack() }
                 )
             }

@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import java.util.Locale
 import android.net.Uri
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
@@ -40,7 +39,6 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.review.ReviewManagerFactory
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.designsystem.SukunTheme
-import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
 import dhanfinix.android.sukun.core.notification.NotificationHelper
 import dhanfinix.android.sukun.navigation.AppNavigation
 
@@ -79,15 +77,6 @@ class MainActivity : AppCompatActivity() {
             val useDynamicColor by mainVm.useDynamicColor.collectAsState()
             val appLanguage by mainVm.appLanguage.collectAsState()
             val shouldShowReview by mainVm.shouldShowReview.collectAsState()
-            val shouldShowDonation by mainVm.shouldShowDonation.collectAsState()
-
-            var showDonationSheet by remember { mutableStateOf(false) }
-
-            LaunchedEffect(shouldShowDonation) {
-                if (shouldShowDonation) {
-                    showDonationSheet = true
-                }
-            }
 
             LaunchedEffect(appLanguage) {
                 val localeList = when (appLanguage) {
@@ -115,29 +104,6 @@ class MainActivity : AppCompatActivity() {
                     isOnboardingCompleted = isOnboardingCompleted,
                     isReady = isReady
                 )
-
-                if (showDonationSheet) {
-                    DonationBottomSheet(
-                        onDismissRequest = {
-                            showDonationSheet = false
-                            mainVm.markDonationAsShown()
-                        },
-                        onDonateKofi = {
-                            val url = "https://ko-fi.com/dhandev"
-                            val intent = CustomTabsIntent.Builder().build()
-                            intent.launchUrl(this@MainActivity, Uri.parse(url))
-                            showDonationSheet = false
-                            mainVm.markDonationAsShown()
-                        },
-                        onDonateSaweria = {
-                            val url = "https://saweria.co/dhandev"
-                            val intent = CustomTabsIntent.Builder().build()
-                            intent.launchUrl(this@MainActivity, Uri.parse(url))
-                            showDonationSheet = false
-                            mainVm.markDonationAsShown()
-                        }
-                    )
-                }
             }
         }
     }

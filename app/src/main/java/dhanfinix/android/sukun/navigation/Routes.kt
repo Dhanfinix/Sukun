@@ -26,6 +26,9 @@ sealed interface Route {
 
     @Serializable
     data object About : Route
+
+    @Serializable
+    data class WebView(val url: String, val title: String) : Route
 }
 
 sealed class Screen(val route: String) {

@@ -24,11 +24,9 @@ import dhanfinix.android.sukun.MainViewModel
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.AppTheme
-import dhanfinix.android.sukun.core.datastore.TimeFormat
 import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
 import dhanfinix.android.sukun.core.notification.NotificationHelper
 import dhanfinix.android.sukun.feature.mosque.MosqueViewModel.TimeFormat
-import androidx.browser.customtabs.CustomTabsIntent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +34,7 @@ fun SettingsScreen(
     mainVm: MainViewModel,
     onOpenAbout: () -> Unit,
     onOpenLocationSilent: () -> Unit,
+    onOpenWebView: (String, String) -> Unit,
     onBack: () -> Unit
 ) {
     val appTheme by mainVm.appTheme.collectAsState()
@@ -240,15 +239,11 @@ fun SettingsScreen(
         if (showDonationMethodSheet) {
             DonationBottomSheet(
                 onDonateKofi = {
-                    val url = "https://ko-fi.com/dhandev"
-                    val intent = CustomTabsIntent.Builder().build()
-                    intent.launchUrl(context, Uri.parse(url))
+                    onOpenWebView("https://ko-fi.com/dhandev", "Donate via Ko-fi")
                     showDonationMethodSheet = false
                 },
                 onDonateSaweria = {
-                    val url = "https://saweria.co/dhandev"
-                    val intent = CustomTabsIntent.Builder().build()
-                    intent.launchUrl(context, Uri.parse(url))
+                    onOpenWebView("https://saweria.co/dhandev", "Donate via Saweria")
                     showDonationMethodSheet = false
                 },
                 onDismissRequest = { showDonationMethodSheet = false },
