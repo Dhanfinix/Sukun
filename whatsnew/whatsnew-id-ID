@@ -1,4 +1,3 @@
-🔔 Baru: Zona Hening! Otomatis bisukan ponsel Anda saat tiba di masjid atau tempat kerja.
-✨ Peningkatan: Meningkatkan keandalan dan akurasi fitur Zona Hening berbasis lokasi.
-✨ Peningkatan: Desain ulang kartu "Terdekat" dan dashboard zona hening untuk tampilan lebih elegan.
-Perbaikan: Memperbaiki bug pada panduan awal (coachmark) dan durasi senyap manual.
+🔔 Baru: Deteksi Masjid Latar Belakang! Sukun kini otomatis menemukan masjid terdekat bahkan saat aplikasi ditutup.
+✨ Peningkatan: Daftar masjid kini persisten. Memperbarui daftar tidak lagi menghapus masjid yang sudah tersimpan.
+✨ Peningkatan: Tombol refresh kontekstual untuk pengalaman peta yang lebih bersih dan intuitif.
