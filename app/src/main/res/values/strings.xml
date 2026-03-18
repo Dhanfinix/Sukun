@@ -250,6 +250,13 @@
     <string name="label_my_location">My Location</string>
     <string name="label_last_location_used">Showing last saved location</string>
     <string name="label_search_result">Search Result</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="cd_my_location">My location</string>
+    <string name="cd_add_zone">Add new silent zone</string>
+    <string name="cd_collapse">Collapse</string>
+    <string name="cd_expand">Expand</string>
+    <string name="cd_edit_zone">Edit zone</string>
+    <string name="cd_delete_zone">Delete zone</string>
     <!-- Background Location Rationale -->
     <string name="bg_location_rationale_title">Enable Background Location</string>
     <string name="bg_location_rationale_desc">To trigger silence automatically when you enter a zone, Sukun needs to access your location even when the app is closed.\n\nIn the next screen, please select \"Allow all the time\" for the most reliable experience.</string>

@@ -17,6 +17,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.toColorInt
 import dhanfinix.android.sukun.core.database.entity.SilentZone
 import dhanfinix.android.sukun.R
+import dhanfinix.android.sukun.core.utils.withIsolate
 import androidx.core.content.ContextCompat
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -66,10 +67,8 @@ fun OsmMapView(
             zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
             setMultiTouchControls(true)
             
-            // Set a sensible default center (Jakarta) immediately to avoid (0,0) Atlantic Ocean
+            // No hardcoded default here anymore; center is set by factory or cameraRequest
             controller.setZoom(zoom)
-            val defaultPoint = GeoPoint(-6.2088, 106.8456)
-            controller.setCenter(defaultPoint)
         }
     }
     
@@ -290,17 +289,26 @@ private class SilentZoneInfoWindow(mapView: MapView) :
         val duration = view.findViewById<android.widget.TextView>(R.id.zone_duration)
 
         name.text = zone.name
-        radius.text = view.resources.getString(
-            R.string.radius_value_format,
+        radius.text = java.lang.String.format(
+            java.util.Locale.US,
+            view.resources.getString(R.string.radius_value_format),
             zone.radius.toInt()
         )
 
         val durationMinutes = zone.silenceDuration ?: 30
         duration.text = if (zone.isAutoSilent) {
             if (durationMinutes >= 60) {
-                view.resources.getString(R.string.ends_in_hours, durationMinutes / 60)
+                java.lang.String.format(
+                    java.util.Locale.US,
+                    view.resources.getString(R.string.ends_in_hours),
+                    durationMinutes / 60
+                )
             } else {
-                view.resources.getString(R.string.ends_in_mins, durationMinutes)
+                java.lang.String.format(
+                    java.util.Locale.US,
+                    view.resources.getString(R.string.ends_in_mins),
+                    durationMinutes
+                )
             }
         } else {
             view.resources.getString(R.string.status_notification_only)

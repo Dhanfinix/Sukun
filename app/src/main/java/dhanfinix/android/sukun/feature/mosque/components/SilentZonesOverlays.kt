@@ -65,6 +65,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.database.entity.SilentZone
+import dhanfinix.android.sukun.core.utils.withIsolate
 import dhanfinix.android.sukun.feature.mosque.MapSuggestion
 
 @Composable
@@ -78,6 +79,8 @@ internal fun SilentZonesTopOverlay(
     hasZones: Boolean,
     isBackgroundLocationGranted: Boolean,
     isDndAccessGranted: Boolean,
+    isLocating: Boolean,
+    isLocationFresh: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onClearSearch: () -> Unit,
     onToggleIncludeZones: (Boolean) -> Unit,
@@ -95,6 +98,26 @@ internal fun SilentZonesTopOverlay(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        AnimatedVisibility(
+            visible = isLocating || !isLocationFresh,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Surface(
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = 6.dp
+            ) {
+                Text(
+                    text = if (isLocating) stringResource(R.string.msg_requesting_location)
+                    else stringResource(R.string.label_last_location_used),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
         Surface(
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
             shape = RoundedCornerShape(16.dp),
@@ -215,7 +238,7 @@ private fun SilentZonesSearchPanel(
                 trailingIcon = {
                     if (searchQuery.isNotBlank()) {
                         IconButton(onClick = onClearSearch) {
-                            Icon(Icons.Rounded.Close, contentDescription = "Clear")
+                            Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.cd_clear_search))
                         }
                     }
                 },
@@ -382,7 +405,7 @@ internal fun SilentZonesBottomOverlay(
             ) {
                 Icon(
                     imageVector = if (isLocating) Icons.Rounded.GpsFixed else Icons.Rounded.MyLocation,
-                    contentDescription = "My Location"
+                    contentDescription = stringResource(R.string.cd_my_location)
                 )
             }
             Spacer(Modifier.height(16.dp))
@@ -390,7 +413,7 @@ internal fun SilentZonesBottomOverlay(
                 onClick = onAddZone,
                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
             ) {
-                Icon(Icons.Rounded.Add, contentDescription = "Add Zone")
+                Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.cd_add_zone))
             }
         }
 
@@ -426,14 +449,14 @@ internal fun SilentZonesBottomOverlay(
                         )
                         Spacer(Modifier.width(12.dp))
                         Text(
-                            text = "${stringResource(R.string.action_list)} (${zones.size})",
+                            text = "${stringResource(R.string.action_list)} (${java.lang.String.format(java.util.Locale.US, "%d", zones.size)})",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeightCompose.SemiBold
                         )
                     }
                     Icon(
                         imageVector = if (isListExpanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
-                        contentDescription = if (isListExpanded) "Collapse" else "Expand"
+                        contentDescription = if (isListExpanded) stringResource(R.string.cd_collapse) else stringResource(R.string.cd_expand)
                     )
                 }
 
@@ -521,7 +544,11 @@ private fun SilentZoneCard(
                         }
                     }
                     Text(
-                        stringResource(R.string.radius_value_format, zone.radius.toInt()),
+                        java.lang.String.format(
+                            java.util.Locale.US,
+                            stringResource(R.string.radius_value_format),
+                            zone.radius.toInt()
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -549,9 +576,17 @@ private fun SilentZoneCard(
                     )
                     Text(
                         if (zone.silenceDuration != null && zone.silenceDuration >= 60) {
-                            stringResource(R.string.ends_in_hours, zone.silenceDuration / 60)
+                            java.lang.String.format(
+                                java.util.Locale.US,
+                                stringResource(R.string.ends_in_hours),
+                                zone.silenceDuration / 60
+                            )
                         } else {
-                            stringResource(R.string.ends_in_mins, zone.silenceDuration ?: 30)
+                            java.lang.String.format(
+                                java.util.Locale.US,
+                                stringResource(R.string.ends_in_mins),
+                                zone.silenceDuration ?: 30
+                            )
                         },
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
@@ -562,7 +597,7 @@ private fun SilentZoneCard(
                 IconButton(onClick = onEdit) {
                     Icon(
                         Icons.Rounded.Edit,
-                        contentDescription = "Edit",
+                        contentDescription = stringResource(R.string.cd_edit_zone),
                         tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                     )
                 }
@@ -570,7 +605,7 @@ private fun SilentZoneCard(
                 IconButton(onClick = onDelete) {
                     Icon(
                         Icons.Rounded.Delete,
-                        contentDescription = "Delete",
+                        contentDescription = stringResource(R.string.cd_delete_zone),
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
                     )
                 }

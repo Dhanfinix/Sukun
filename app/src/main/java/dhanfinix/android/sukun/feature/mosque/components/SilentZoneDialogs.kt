@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.database.entity.SilentZone
+import dhanfinix.android.sukun.core.utils.withIsolate
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +85,7 @@ internal fun SilentZoneEditDialog(
                     onClick = onDismiss,
                     modifier = Modifier.align(Alignment.TopEnd).offset(x = 12.dp, y = (-12).dp)
                 ) {
-                    Icon(Icons.Rounded.Close, contentDescription = "Close")
+                    Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.btn_close))
                 }
             }
         },
@@ -131,13 +132,14 @@ internal fun SilentZoneEditDialog(
                                 tint = MaterialTheme.colorScheme.secondary
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(
-                                stringResource(
-                                    R.string.radius_format,
-                                    radius.toIntOrNull() ?: 20
-                                ),
-                                style = MaterialTheme.typography.labelLarge
-                            )
+                             Text(
+                                 java.lang.String.format(
+                                     java.util.Locale.US,
+                                     stringResource(R.string.radius_format),
+                                     radius.toIntOrNull() ?: 20
+                                 ),
+                                 style = MaterialTheme.typography.labelLarge
+                             )
                         }
                         Slider(
                             value = (radius.toFloatOrNull() ?: 20f).coerceIn(10f, 100f),
@@ -184,11 +186,16 @@ internal fun SilentZoneEditDialog(
                         value = when {
                             silenceDuration == 15 -> stringResource(R.string.duration_15_min)
                             silenceDuration == 30 -> stringResource(R.string.duration_30_min)
-                            (silenceDuration ?: 30) % 60 == 0 -> stringResource(
-                                R.string.duration_hours,
-                                (silenceDuration ?: 30) / 60
-                            )
-                            else -> stringResource(R.string.duration_minutes, silenceDuration ?: 30)
+                             (silenceDuration ?: 30) % 60 == 0 -> java.lang.String.format(
+                                 java.util.Locale.US,
+                                 stringResource(R.string.duration_hours),
+                                 (silenceDuration ?: 30) / 60
+                             )
+                             else -> java.lang.String.format(
+                                 java.util.Locale.US,
+                                 stringResource(R.string.duration_minutes),
+                                 silenceDuration ?: 30
+                             )
                         },
                         onValueChange = {},
                         readOnly = true,
@@ -211,11 +218,16 @@ internal fun SilentZoneEditDialog(
                                         when {
                                             dur == 15 -> stringResource(R.string.duration_15_min)
                                             dur == 30 -> stringResource(R.string.duration_30_min)
-                                            dur % 60 == 0 -> stringResource(
-                                                R.string.duration_hours,
-                                                dur / 60
-                                            )
-                                            else -> stringResource(R.string.duration_minutes, dur)
+                                             dur % 60 == 0 -> java.lang.String.format(
+                                                 java.util.Locale.US,
+                                                 stringResource(R.string.duration_hours),
+                                                 dur / 60
+                                             )
+                                             else -> java.lang.String.format(
+                                                 java.util.Locale.US,
+                                                 stringResource(R.string.duration_minutes),
+                                                 dur
+                                             )
                                         }
                                     )
                                 },

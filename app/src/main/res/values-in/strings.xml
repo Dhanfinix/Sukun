@@ -70,6 +70,13 @@
     <string name="detect_location">Deteksi Lokasi</string>
     <string name="unknown_location">Lokasi Tidak Diketahui</string>
     <string name="search_location_placeholder">cth. Jakarta, London</string>
+    <string name="include_zones">Sertakan zona tersimpan</string>
+    <string name="include_zones_desc">Cocokkan dengan zona hening Anda</string>
+    <string name="suggestions_zones">Zona tersimpan</string>
+    <string name="suggestions_map">Saran peta</string>
+    <string name="suggestion_search_map">Cari di peta: %1$s</string>
+    <string name="search_zones_placeholder">Cari zona</string>
+    <string name="search">Cari</string>
     <string name="copyright_text">© 2026 Dhandev</string>
     <string name="prayer_fajr">Subuh</string>
     <string name="prayer_sunrise">Terbit</string>
@@ -163,6 +170,8 @@
     <string name="err_load_prayer_times">Gagal memuat waktu salat</string>
     <string name="err_unexpected">Kesalahan tidak terduga: %1$s</string>
     <string name="err_permission_denied">Izin lokasi ditolak</string>
+    <string name="err_location_permission_needed">Izinkan akses lokasi untuk memusatkan peta</string>
+    <string name="msg_requesting_location">Mendapatkan lokasi Anda saat ini…</string>
     <string name="err_location_not_found_gps">Lokasi tidak ditemukan via GPS</string>
     <string name="err_location_timeout">Waktu deteksi lokasi habis</string>
     <string name="err_location_not_found">Lokasi tidak ditemukan</string>
@@ -199,6 +208,7 @@
     <string name="radius_format">Radius: %1$dm</string>
     <string name="auto_silent">Otomatis Hening</string>
     <string name="status_enabled">Aktif</string>
+    <string name="status_disabled">Nonaktif</string>
     <string name="status_notification_only">Hanya Notifikasi</string>
     <string name="auto_silent_desc">Mulai otomatis</string>
     <string name="notify_only_desc">Hanya notifikasi</string>
@@ -237,7 +247,15 @@
     <string name="err_geocoder_unavailable">Geocoder tidak tersedia</string>
     <string name="label_location_prefix">Lokasi: %1$s</string>
     <string name="label_my_location">Lokasi Saya</string>
+    <string name="label_last_location_used">Menampilkan lokasi terakhir yang tersimpan</string>
     <string name="label_search_result">Hasil Pencarian</string>
+    <string name="cd_clear_search">Hapus pencarian</string>
+    <string name="cd_my_location">Lokasi saya</string>
+    <string name="cd_add_zone">Tambah zona hening baru</string>
+    <string name="cd_collapse">Tutup</string>
+    <string name="cd_expand">Buka</string>
+    <string name="cd_edit_zone">Edit zona</string>
+    <string name="cd_delete_zone">Hapus zona</string>
     <!-- Background Location Rationale -->
     <string name="bg_location_rationale_title">Aktifkan Lokasi Latar Belakang</string>
     <string name="bg_location_rationale_desc">Untuk memicu fitur hening otomatis saat Anda memasuki zona, Sukun butuh akses lokasi meskipun aplikasi ditutup.\n\nDi layar berikutnya, silakan pilih \"Izinkan sepanjang waktu\" untuk pengalaman terbaik.</string>

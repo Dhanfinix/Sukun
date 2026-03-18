@@ -70,6 +70,13 @@
     <string name="detect_location">تحديد الموقع الحالي</string>
     <string name="unknown_location">موقع غير معروف</string>
     <string name="search_location_placeholder">مثلاً: جاكرتا، الرياض</string>
+    <string name="include_zones">تضمين المناطق المحفوظة</string>
+    <string name="include_zones_desc">مطابقة مناطق الكتم الخاصة بك</string>
+    <string name="suggestions_zones">المناطق المحفوظة</string>
+    <string name="suggestions_map">اقتراحات الخريطة</string>
+    <string name="suggestion_search_map">البحث في الخريطة: %1$s</string>
+    <string name="search_zones_placeholder">البحث في المناطق</string>
+    <string name="search">بحث</string>
     <string name="copyright_text">© 2026 Dhandev</string>
     <string name="prayer_fajr">الفجر</string>
     <string name="prayer_sunrise">الشروق</string>
@@ -164,6 +171,8 @@
     <string name="err_load_prayer_times">فشل تحميل مواقيت الصلاة</string>
     <string name="err_unexpected">خطأ غير متوقع: %1$s</string>
     <string name="err_permission_denied">تم رفض إذن الوصول للموقع</string>
+    <string name="err_location_permission_needed">اسمح بالوصول للموقع لتوسيط الخريطة</string>
+    <string name="msg_requesting_location">جاري تحديد موقعك الحالي...</string>
     <string name="err_location_not_found_gps">لم يتم العثور على الموقع عبر GPS</string>
     <string name="err_location_timeout">انتهت مهلة تحديد الموقع</string>
     <string name="err_location_not_found">لم يتم العثور على الموقع</string>
@@ -199,6 +208,7 @@
     <string name="radius_format">النطاق: %1$dm</string>
     <string name="auto_silent">كتم تلقائي</string>
     <string name="status_enabled">مفعل</string>
+    <string name="status_disabled">معطل</string>
     <string name="status_notification_only">إشعار فقط</string>
     <string name="auto_silent_desc">يبدأ تلقائياً</string>
     <string name="notify_only_desc">إشعار فقط</string>
@@ -237,7 +247,15 @@
     <string name="err_geocoder_unavailable">خدمة تحديد الموقع غير متوفرة</string>
     <string name="label_location_prefix">الموقع: %1$s</string>
     <string name="label_my_location">موقعي الحالي</string>
+    <string name="label_last_location_used">عرض آخر موقع تم حفظه</string>
     <string name="label_search_result">نتيجة البحث</string>
+    <string name="cd_clear_search">مسح البحث</string>
+    <string name="cd_my_location">موقعي الحالي</string>
+    <string name="cd_add_zone">إضافة منطقة كتم جديدة</string>
+    <string name="cd_collapse">طي</string>
+    <string name="cd_expand">توسيع</string>
+    <string name="cd_edit_zone">تعديل المنطقة</string>
+    <string name="cd_delete_zone">حذف المنطقة</string>
     <!-- Background Location Rationale -->
     <string name="bg_location_rationale_title">تفعيل الموقع في الخلفية</string>
     <string name="bg_location_rationale_desc">لتفعيل كتم الصوت تلقائيًا عند دخولك المنطقة، يحتاج Sukun إلى الوصول لموقعك حتى عند إغلاق التطبيق.\n\nفي الشاشة التالية، يرجى اختيار \"السماح طوال الوقت\" للحصول على أفضل تجربة.</string>

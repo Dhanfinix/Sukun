@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,8 +30,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
@@ -63,8 +68,9 @@ fun SilentZonesScreen(
     var selectedLat by remember { mutableStateOf(0.0) }
     var selectedLng by remember { mutableStateOf(0.0) }
 
-    var centerLat by remember { mutableStateOf(uiState.userLat) }
-    var centerLng by remember { mutableStateOf(uiState.userLng) }
+    // Initialize centering from uiState once it arrives from DataStore
+    var centerLat by remember(uiState.userLat != null) { mutableStateOf(uiState.userLat) }
+    var centerLng by remember(uiState.userLng != null) { mutableStateOf(uiState.userLng) }
     var zoom by remember { mutableStateOf(18.0) }
     var isListExpanded by remember { mutableStateOf(false) }
     var editingZone by remember { mutableStateOf<SilentZone?>(null) }
@@ -211,46 +217,65 @@ fun SilentZonesScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            OsmMapView(
-                zones = uiState.zones,
-                userLat = uiState.userLat,
-                userLng = uiState.userLng,
-                isUserLocationFresh = uiState.isLocationFresh,
-                searchLat = searchPinLat,
-                searchLng = searchPinLng,
-                searchLabel = searchPinLabel,
-                centerLat = centerLat,
-                centerLng = centerLng,
-                zoom = zoom,
-                cameraRequest = cameraRequest,
-                focusedZoneId = focusedZoneId,
-                onMapClick = {
-                    isListExpanded = false
-                    focusedZoneId = null
-                },
-                onMapLongClick = { lat, lng ->
-                    selectedLat = lat
-                    selectedLng = lng
-                    showAddDialog = true
-                },
-                onMarkerClick = { zone ->
-                    focusedZoneId = zone.id
-                },
-                onCenterChanged = { lat, lng ->
-                    centerLat = lat
-                    centerLng = lng
-                },
-                onZoomChanged = {
-                    zoom = it
-                },
-                onAddFromSearch = { label, lat, lng ->
-                    selectedLat = lat
-                    selectedLng = lng
-                    searchPinLabel = label
-                    editingZone = null
-                    showAddDialog = true
+            if (uiState.userLat != null && uiState.userLng != null) {
+                OsmMapView(
+                    zones = uiState.zones,
+                    userLat = uiState.userLat,
+                    userLng = uiState.userLng,
+                    isUserLocationFresh = uiState.isLocationFresh,
+                    searchLat = searchPinLat,
+                    searchLng = searchPinLng,
+                    searchLabel = searchPinLabel,
+                    centerLat = centerLat,
+                    centerLng = centerLng,
+                    zoom = zoom,
+                    cameraRequest = cameraRequest,
+                    focusedZoneId = focusedZoneId,
+                    onMapClick = {
+                        isListExpanded = false
+                        focusedZoneId = null
+                    },
+                    onMapLongClick = { lat, lng ->
+                        selectedLat = lat
+                        selectedLng = lng
+                        showAddDialog = true
+                    },
+                    onMarkerClick = { zone ->
+                        focusedZoneId = zone.id
+                    },
+                    onCenterChanged = { lat, lng ->
+                        centerLat = lat
+                        centerLng = lng
+                    },
+                    onZoomChanged = {
+                        zoom = it
+                    },
+                    onAddFromSearch = { label, lat, lng ->
+                        selectedLat = lat
+                        selectedLng = lng
+                        searchPinLabel = label
+                        editingZone = null
+                        showAddDialog = true
+                    }
+                )
+            } else {
+                // Show a clean loading state instead of a blinking map
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.msg_requesting_location),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-            )
+            }
 
             SilentZonesTopOverlay(
                 modifier = Modifier.align(Alignment.TopCenter),
@@ -262,6 +287,8 @@ fun SilentZonesScreen(
                 hasZones = uiState.zones.isNotEmpty(),
                 isBackgroundLocationGranted = uiState.isBackgroundLocationGranted,
                 isDndAccessGranted = uiState.isDndAccessGranted,
+                isLocating = uiState.isLoading,
+                isLocationFresh = uiState.isLocationFresh,
                 onSearchQueryChange = { searchQuery = it },
                 onClearSearch = { searchQuery = "" },
                 onToggleIncludeZones = { includeZones = it },
@@ -288,26 +315,6 @@ fun SilentZonesScreen(
                 }
             )
 
-            androidx.compose.animation.AnimatedVisibility(
-                visible = uiState.isLoading || !uiState.isLocationFresh,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 16.dp, top = 16.dp)
-            ) {
-                androidx.compose.material3.Surface(
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                    shape = MaterialTheme.shapes.medium,
-                    tonalElevation = 3.dp
-                ) {
-                    Text(
-                        text = if (uiState.isLoading) stringResource(R.string.msg_requesting_location)
-                        else stringResource(R.string.label_last_location_used),
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
 
             SilentZonesBottomOverlay(
                 modifier = Modifier.align(Alignment.BottomCenter),
