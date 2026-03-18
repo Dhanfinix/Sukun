@@ -90,6 +90,7 @@ fun HomeScreen(
     onShowOnboarding: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenLocationSilent: () -> Unit,
+    onShowDonation: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val volumeVm: VolumeViewModel = viewModel()
@@ -270,6 +271,45 @@ fun HomeScreen(
                     onManualSilenceDismiss = { showManualSilenceSheet = false },
                     onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
                 )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                ElevatedCard(
+                    onClick = onShowDonation,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    ),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Favorite,
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp),
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.label_support_sukun),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = stringResource(R.string.desc_support_sukun),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
             }

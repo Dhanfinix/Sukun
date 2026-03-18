@@ -112,6 +112,7 @@ fun WebViewScreen(
                         settings.useWideViewPort = true
                         settings.javaScriptCanOpenWindowsAutomatically = true
                         settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        settings.userAgentString = settings.userAgentString.replace("; wv", "")
                         
                         CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
 

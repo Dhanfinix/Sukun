@@ -133,7 +133,8 @@ fun AppNavigation(
                     mainVm = mainVm,
                     onShowOnboarding = { navController.navigate(Route.Onboarding) },
                     onOpenSettings = { navController.navigate(Route.Settings) },
-                    onOpenLocationSilent = { navController.navigate(Route.LocationSilent) }
+                    onOpenLocationSilent = { navController.navigate(Route.LocationSilent) },
+                    onShowDonation = { showDonationSheet = true }
                 )
             }
 
