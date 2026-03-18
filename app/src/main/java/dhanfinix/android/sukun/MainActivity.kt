@@ -184,7 +184,7 @@ class MainActivity : AppCompatActivity() {
                 )
 
                 Text(
-                    text = stringResource(R.string.donation_sheet_desc),
+                    text = stringResource(R.string.donation_sheet_persuasive_desc),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -192,34 +192,51 @@ class MainActivity : AppCompatActivity() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Button(
-                    onClick = onDonateKofi,
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.large,
-                    contentPadding = PaddingValues(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.btn_donate_kofi),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                    Button(
+                        onClick = onDonateKofi,
+                        modifier = Modifier.weight(1f),
+                        shape = MaterialTheme.shapes.large,
+                        contentPadding = PaddingValues(vertical = 16.dp)
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Ko-fi",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "(${stringResource(R.string.label_global)})",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                    }
 
-                Button(
-                    onClick = onDonateSaweria,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.large,
-                    contentPadding = PaddingValues(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                ) {
-                    Text(
-                        text = stringResource(R.string.btn_donate_saweria),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Button(
+                        onClick = onDonateSaweria,
+                        modifier = Modifier.weight(1f),
+                        shape = MaterialTheme.shapes.large,
+                        contentPadding = PaddingValues(vertical = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Saweria",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "(${stringResource(R.string.label_indonesia)})",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                    }
                 }
 
                 TextButton(

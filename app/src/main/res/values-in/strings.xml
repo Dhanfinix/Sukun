@@ -277,7 +277,11 @@
     <string name="btn_donate_kofi">Donasi via Ko-fi</string>
     <string name="donation_sheet_title">Dukung Pengembangan Sukun</string>
     <string name="donation_sheet_desc">Sukun gratis dan tanpa iklan. Jika Anda merasa terbantu, pertimbangkan untuk mendukung agar ibadah lebih tenang.</string>
+    <string name="donation_sheet_persuasive_desc">Dukungan Anda menjaga Sukun bebas iklan dan membantu kami terus berinovasi untuk pengalaman ibadah yang lebih tenang. Setiap kontribusi sangat berarti bagi kami.</string>
     <string name="btn_maybe_later">Mungkin Nanti</string>
     <string name="btn_donate_saweria">Donasi via Saweria</string>
     <string name="label_choose_donation_method">Pilih Metode Donasi</string>
+    <string name="label_donate_via">Donasi melalui</string>
+    <string name="label_global">Global</string>
+    <string name="label_indonesia">Indonesia</string>
 </resources>
