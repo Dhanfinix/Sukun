@@ -7,7 +7,9 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -20,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.viewinterop.AndroidView
 import dhanfinix.android.sukun.R
 
@@ -35,6 +38,8 @@ fun WebViewScreen(
     var isLoading by remember { mutableStateOf(true) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var canGoBack by remember { mutableStateOf(false) }
+    var currentUrl by remember { mutableStateOf(url) }
+    var showUrl by remember { mutableStateOf(false) }
 
     BackHandler(enabled = canGoBack) {
         webViewRef?.goBack()
@@ -43,7 +48,19 @@ fun WebViewScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = title) },
+                title = {
+                    Column(modifier = Modifier.clickable { showUrl = !showUrl }) {
+                        Text(text = title)
+                        if (showUrl) {
+                            Text(
+                                text = currentUrl,
+                                style = MaterialTheme.typography.bodySmall,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -60,7 +77,7 @@ fun WebViewScreen(
                         )
                     }
                     IconButton(onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
                         context.startActivity(intent)
                     }) {
                         Icon(
@@ -95,11 +112,13 @@ fun WebViewScreen(
                                 super.onPageFinished(view, url)
                                 isLoading = false
                                 canGoBack = view?.canGoBack() == true
+                                if (url != null) currentUrl = url
                             }
 
                             override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
                                 super.doUpdateVisitedHistory(view, url, isReload)
                                 canGoBack = view?.canGoBack() == true
+                                if (url != null) currentUrl = url
                             }
                         }
                         webChromeClient = WebChromeClient()
