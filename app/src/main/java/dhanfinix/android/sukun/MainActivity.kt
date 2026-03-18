@@ -13,8 +13,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import java.util.Locale
+import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.os.LocaleListCompat
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
@@ -63,6 +78,15 @@ class MainActivity : AppCompatActivity() {
             val useDynamicColor by mainVm.useDynamicColor.collectAsState()
             val appLanguage by mainVm.appLanguage.collectAsState()
             val shouldShowReview by mainVm.shouldShowReview.collectAsState()
+            val shouldShowDonation by mainVm.shouldShowDonation.collectAsState()
+
+            var showDonationSheet by remember { mutableStateOf(false) }
+
+            LaunchedEffect(shouldShowDonation) {
+                if (shouldShowDonation) {
+                    showDonationSheet = true
+                }
+            }
 
             LaunchedEffect(appLanguage) {
                 val localeList = when (appLanguage) {
@@ -90,6 +114,99 @@ class MainActivity : AppCompatActivity() {
                     isOnboardingCompleted = isOnboardingCompleted,
                     isReady = isReady
                 )
+
+                if (showDonationSheet) {
+                    DonationBottomSheet(
+                        onDismiss = {
+                            showDonationSheet = false
+                            mainVm.markDonationAsShown()
+                        },
+                        onDonate = {
+                            val url = "https://ko-fi.com/dhandev"
+                            val intent = CustomTabsIntent.Builder().build()
+                            intent.launchUrl(this@MainActivity, Uri.parse(url))
+                            showDonationSheet = false
+                            mainVm.markDonationAsShown()
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun DonationBottomSheet(
+        onDismiss: () -> Unit,
+        onDonate: () -> Unit
+    ) {
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 48.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Surface(
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.Favorite,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+
+                Text(
+                    text = stringResource(R.string.donation_sheet_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = stringResource(R.string.donation_sheet_desc),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = onDonate,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    contentPadding = PaddingValues(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.btn_donate_kofi),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.btn_maybe_later),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

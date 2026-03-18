@@ -272,4 +272,10 @@
     <string name="delete_zone_confirmation_title">حذف المنطقة؟</string>
     <string name="delete_zone_confirmation_msg">هل أنت متأكد أنك تريد حذف "%1$s"؟ لا يمكن التراجع عن هذا الإجراء.</string>
     <string name="btn_delete">حذف</string>
+    <string name="label_support_sukun">دعم سكون</string>
+    <string name="desc_support_sukun">ادعمنا لمزيد من السكينة في الصلاة</string>
+    <string name="btn_donate_kofi">تبرع عبر Ko-fi</string>
+    <string name="donation_sheet_title">دعم تطوير سكون</string>
+    <string name="donation_sheet_desc">سكون مجاني تماماً وبدون إعلانات. إذا وجدت التطبيق مفيداً، فضلاً ادعمنا لمزيد من السكينة في الصلاة.</string>
+    <string name="btn_maybe_later">ربما لاحقاً</string>
 </resources>

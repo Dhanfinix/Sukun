@@ -25,6 +25,7 @@ import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.AppTheme
 import dhanfinix.android.sukun.core.datastore.TimeFormat
+import androidx.browser.customtabs.CustomTabsIntent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -182,6 +183,22 @@ fun SettingsScreen(
                 subtitle = null,
                 icon = Icons.Rounded.Info,
                 onClick = onOpenAbout
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Support Section
+            SettingsSectionTitle(stringResource(R.string.label_support_sukun))
+
+            SettingsItem(
+                title = stringResource(R.string.label_support_sukun),
+                subtitle = stringResource(R.string.desc_support_sukun),
+                icon = Icons.Rounded.Favorite,
+                onClick = {
+                    val url = "https://ko-fi.com/dhandev"
+                    val intent = CustomTabsIntent.Builder().build()
+                    intent.launchUrl(context, Uri.parse(url))
+                }
             )
         }
 

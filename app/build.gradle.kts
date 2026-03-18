@@ -100,6 +100,8 @@ dependencies {
     implementation(libs.play.app.update.ktx)
     implementation(libs.play.app.review)
     implementation(libs.play.app.review.ktx)
+
+    implementation(libs.androidx.browser)
     
     // Map (OSM)
     implementation(libs.osmdroid.android)

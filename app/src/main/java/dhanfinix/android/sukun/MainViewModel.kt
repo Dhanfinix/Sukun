@@ -182,6 +182,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = false
         )
 
+    val shouldShowDonation: StateFlow<Boolean> = userPrefs.shouldShowDonation
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     init {
         viewModelScope.launch {
             userPrefs.incrementAppOpenCount()
@@ -191,6 +198,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun markAsRated() {
         viewModelScope.launch {
             userPrefs.setHasRated(true)
+        }
+    }
+
+    fun markDonationAsShown() {
+        viewModelScope.launch {
+            userPrefs.setHasShownDonation(true)
         }
     }
 }

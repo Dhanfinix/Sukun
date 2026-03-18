@@ -114,6 +114,7 @@ class UserPreferences(private val context: Context) {
     private val KEY_ACTIVE_SILENT_ZONE_ID = longPreferencesKey("active_silent_zone_id")
     private val KEY_LAST_FETCH_LAT = doublePreferencesKey("last_fetch_lat")
     private val KEY_LAST_FETCH_LNG = doublePreferencesKey("last_fetch_lng")
+    private val KEY_HAS_SHOWN_DONATION = booleanPreferencesKey("has_shown_donation")
 
     // ── Flows ──
 
@@ -483,6 +484,12 @@ class UserPreferences(private val context: Context) {
         count >= 5 && !rated
     }
 
+    val shouldShowDonation: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        val count = prefs[KEY_APP_OPEN_COUNT] ?: 0
+        val shown = prefs[KEY_HAS_SHOWN_DONATION] ?: false
+        count >= 3 && !shown
+    }
+
     suspend fun incrementAppOpenCount() {
         context.dataStore.edit { prefs ->
             val current = prefs[KEY_APP_OPEN_COUNT] ?: 0
@@ -493,6 +500,12 @@ class UserPreferences(private val context: Context) {
     suspend fun setHasRated(rated: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[KEY_HAS_RATED] = rated
+        }
+    }
+
+    suspend fun setHasShownDonation(shown: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_HAS_SHOWN_DONATION] = shown
         }
     }
 
