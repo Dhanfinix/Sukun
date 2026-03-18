@@ -1,18 +1,24 @@
 package dhanfinix.android.sukun.feature.webview
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.OpenInBrowser
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import dhanfinix.android.sukun.R
@@ -25,7 +31,14 @@ fun WebViewScreen(
     title: String,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     var isLoading by remember { mutableStateOf(true) }
+    var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    var canGoBack by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = canGoBack) {
+        webViewRef?.goBack()
+    }
 
     Scaffold(
         topBar = {
@@ -35,7 +48,24 @@ fun WebViewScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { webViewRef?.reload() }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = "Refresh"
+                        )
+                    }
+                    IconButton(onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Rounded.OpenInBrowser,
+                            contentDescription = "Open in external browser"
                         )
                     }
                 },
@@ -64,6 +94,12 @@ fun WebViewScreen(
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 super.onPageFinished(view, url)
                                 isLoading = false
+                                canGoBack = view?.canGoBack() == true
+                            }
+
+                            override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                                super.doUpdateVisitedHistory(view, url, isReload)
+                                canGoBack = view?.canGoBack() == true
                             }
                         }
                         webChromeClient = WebChromeClient()
@@ -71,7 +107,7 @@ fun WebViewScreen(
                     }
                 },
                 update = { webView ->
-                    // Just in case url changes
+                    webViewRef = webView
                 }
             )
 
