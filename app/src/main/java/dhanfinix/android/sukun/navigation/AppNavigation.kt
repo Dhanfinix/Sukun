@@ -24,6 +24,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.browser.customtabs.CustomTabsIntent
 import android.net.Uri
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.toArgb
+import dhanfinix.android.sukun.core.designsystem.util.launchSukunCustomTab
 import dhanfinix.android.sukun.MainViewModel
 import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
 import dhanfinix.android.sukun.feature.home.HomeScreen
@@ -48,6 +51,8 @@ fun AppNavigation(
     val shouldShowDonation by mainVm.shouldShowDonation.collectAsState()
     var showDonationSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary.toArgb()
 
     LaunchedEffect(shouldShowDonation) {
         if (shouldShowDonation) {
@@ -64,14 +69,12 @@ fun AppNavigation(
             onDonateKofi = {
                 showDonationSheet = false
                 mainVm.markDonationAsShown()
-                val customTabsIntent = CustomTabsIntent.Builder().build()
-                customTabsIntent.launchUrl(context, Uri.parse("https://ko-fi.com/dhandev"))
+                launchSukunCustomTab(context, "https://ko-fi.com/dhandev", primaryColor, onPrimaryColor)
             },
             onDonateSaweria = {
                 showDonationSheet = false
                 mainVm.markDonationAsShown()
-                val customTabsIntent = CustomTabsIntent.Builder().build()
-                customTabsIntent.launchUrl(context, Uri.parse("https://saweria.co/dhandev"))
+                launchSukunCustomTab(context, "https://saweria.co/dhandev", primaryColor, onPrimaryColor)
             }
         )
     }

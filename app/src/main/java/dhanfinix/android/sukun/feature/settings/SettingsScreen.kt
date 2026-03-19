@@ -3,6 +3,9 @@ package dhanfinix.android.sukun.feature.settings
 import android.content.Intent
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.toArgb
+import dhanfinix.android.sukun.core.designsystem.util.launchSukunCustomTab
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -55,6 +58,8 @@ fun SettingsScreen(
 
     val isArabic = java.util.Locale.getDefault().language == "ar"
     val context = LocalContext.current
+    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary.toArgb()
 
     Scaffold(
         topBar = {
@@ -239,13 +244,11 @@ fun SettingsScreen(
         if (showDonationMethodSheet) {
             DonationBottomSheet(
                 onDonateKofi = {
-                    val customTabsIntent = CustomTabsIntent.Builder().build()
-                    customTabsIntent.launchUrl(context, Uri.parse("https://ko-fi.com/dhandev"))
+                    launchSukunCustomTab(context, "https://ko-fi.com/dhandev", primaryColor, onPrimaryColor)
                     showDonationMethodSheet = false
                 },
                 onDonateSaweria = {
-                    val customTabsIntent = CustomTabsIntent.Builder().build()
-                    customTabsIntent.launchUrl(context, Uri.parse("https://saweria.co/dhandev"))
+                    launchSukunCustomTab(context, "https://saweria.co/dhandev", primaryColor, onPrimaryColor)
                     showDonationMethodSheet = false
                 },
                 onDismissRequest = { showDonationMethodSheet = false },
