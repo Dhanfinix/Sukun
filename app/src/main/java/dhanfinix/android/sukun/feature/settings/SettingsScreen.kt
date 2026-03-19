@@ -2,6 +2,7 @@ package dhanfinix.android.sukun.feature.settings
 
 import android.content.Intent
 import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -238,7 +239,8 @@ fun SettingsScreen(
         if (showDonationMethodSheet) {
             DonationBottomSheet(
                 onDonateKofi = {
-                    onOpenWebView("https://ko-fi.com/dhandev", "Donate via Ko-fi")
+                    val customTabsIntent = CustomTabsIntent.Builder().build()
+                    customTabsIntent.launchUrl(context, Uri.parse("https://ko-fi.com/dhandev"))
                     showDonationMethodSheet = false
                 },
                 onDonateSaweria = {

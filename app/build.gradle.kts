@@ -104,6 +104,9 @@ dependencies {
     // Map (OSM)
     implementation(libs.osmdroid.android)
 
+    // Browser (Custom Tabs for Ko-fi)
+    implementation(libs.androidx.browser)
+
 
 
     // Testing

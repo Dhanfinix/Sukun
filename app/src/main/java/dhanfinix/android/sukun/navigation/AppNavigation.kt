@@ -16,11 +16,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.browser.customtabs.CustomTabsIntent
+import android.net.Uri
 import dhanfinix.android.sukun.MainViewModel
 import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
 import dhanfinix.android.sukun.feature.home.HomeScreen
@@ -44,6 +47,7 @@ fun AppNavigation(
     val hasSeenLanding by mainVm.hasSeenLanding.collectAsState()
     val shouldShowDonation by mainVm.shouldShowDonation.collectAsState()
     var showDonationSheet by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(shouldShowDonation) {
         if (shouldShowDonation) {
@@ -60,7 +64,8 @@ fun AppNavigation(
             onDonateKofi = {
                 showDonationSheet = false
                 mainVm.markDonationAsShown()
-                navController.navigate(Route.WebView("https://ko-fi.com/dhandev", "Donate via Ko-fi"))
+                val customTabsIntent = CustomTabsIntent.Builder().build()
+                customTabsIntent.launchUrl(context, Uri.parse("https://ko-fi.com/dhandev"))
             },
             onDonateSaweria = {
                 showDonationSheet = false
