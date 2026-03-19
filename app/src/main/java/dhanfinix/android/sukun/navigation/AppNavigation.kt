@@ -70,7 +70,8 @@ fun AppNavigation(
             onDonateSaweria = {
                 showDonationSheet = false
                 mainVm.markDonationAsShown()
-                navController.navigate(Route.WebView("https://saweria.co/dhandev", "Donate via Saweria"))
+                val customTabsIntent = CustomTabsIntent.Builder().build()
+                customTabsIntent.launchUrl(context, Uri.parse("https://saweria.co/dhandev"))
             }
         )
     }

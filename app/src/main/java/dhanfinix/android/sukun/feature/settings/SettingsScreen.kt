@@ -244,7 +244,8 @@ fun SettingsScreen(
                     showDonationMethodSheet = false
                 },
                 onDonateSaweria = {
-                    onOpenWebView("https://saweria.co/dhandev", "Donate via Saweria")
+                    val customTabsIntent = CustomTabsIntent.Builder().build()
+                    customTabsIntent.launchUrl(context, Uri.parse("https://saweria.co/dhandev"))
                     showDonationMethodSheet = false
                 },
                 onDismissRequest = { showDonationMethodSheet = false },
