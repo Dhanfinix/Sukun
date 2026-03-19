@@ -272,6 +272,8 @@
     <string name="delete_zone_confirmation_title">Hapus Zona?</string>
     <string name="delete_zone_confirmation_msg">Apakah Anda yakin ingin menghapus "%1$s"? Tindakan ini tidak dapat dibatalkan.</string>
     <string name="btn_delete">Hapus</string>
+    <string name="btn_refresh">Segarkan</string>
+    <string name="label_detected_mosques">Masjid Terdekat</string>
     <string name="label_support_sukun">Dukung Sukun</string>
     <string name="desc_support_sukun">Dukung pengembangan untuk ibadah yang lebih tenang</string>
     <string name="btn_donate_kofi">Donasi via Ko-fi</string>
