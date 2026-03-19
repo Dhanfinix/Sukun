@@ -38,10 +38,16 @@ class BootReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Bug Fix: Re-register all enabled geofences
+                // Re-register all enabled geofences
                 val enabledZones = database.silentZoneDao().getEnabledSilentZones()
                 if (enabledZones.isNotEmpty()) {
                     geofenceManager.addAllGeofences(enabledZones)
+                }
+
+                // Re-register background location updates for mosque discovery after reboot
+                val isAutoMosqueEnabled = userPrefs.isAutoMosqueSilenceEnabled.first()
+                if (isAutoMosqueEnabled) {
+                    geofenceManager.requestBackgroundLocationUpdates()
                 }
 
                 // Bug 7 Fix: Mid-Silence Reboot Amnesia

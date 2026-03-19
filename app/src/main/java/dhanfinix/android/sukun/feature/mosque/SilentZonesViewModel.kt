@@ -130,8 +130,10 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
             userPrefs.isAutoMosqueSilenceEnabled.collect { enabled ->
                 _uiState.update { it.copy(isAutoMosqueSilenceEnabled = enabled) }
                 if (enabled) {
+                    // Register on cold start (lastEnabled == null) OR when toggled back on
                     geofenceManager.requestBackgroundLocationUpdates()
                     if (lastEnabled == false) {
+                        // Immediate fetch when toggling from off -> on
                         _uiState.value.userLat?.let { lat ->
                             _uiState.value.userLng?.let { lng ->
                                 viewModelScope.launch {
