@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.OpenInBrowser
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.*
@@ -26,7 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import dhanfinix.android.sukun.R
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -43,9 +47,15 @@ fun WebViewScreen(
     var canGoBack by remember { mutableStateOf(false) }
     var currentUrl by remember { mutableStateOf(url) }
     var showUrl by remember { mutableStateOf(false) }
+    var popupWebView by remember { mutableStateOf<WebView?>(null) }
 
-    BackHandler(enabled = canGoBack) {
-        webViewRef?.goBack()
+    BackHandler(enabled = canGoBack || popupWebView != null) {
+        if (popupWebView != null) {
+            popupWebView?.destroy()
+            popupWebView = null
+        } else {
+            webViewRef?.goBack()
+        }
     }
 
     Scaffold(
@@ -109,10 +119,8 @@ fun WebViewScreen(
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.databaseEnabled = true
-                        settings.loadWithOverviewMode = true
-                        settings.useWideViewPort = true
                         settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                        settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
+                        settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Pixel 7 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
                         
                         CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
 
@@ -131,7 +139,47 @@ fun WebViewScreen(
                             }
                         }
                         
-                        webChromeClient = WebChromeClient()
+                        settings.setSupportMultipleWindows(true)
+                        webChromeClient = object : WebChromeClient() {
+                            override fun onCreateWindow(
+                                view: WebView?,
+                                isDialog: Boolean,
+                                isUserGesture: Boolean,
+                                resultMsg: Message?
+                            ): Boolean {
+                                val transport = resultMsg?.obj as? WebView.WebViewTransport
+                                if (transport != null) {
+                                    val newWebView = WebView(context).apply {
+                                        settings.javaScriptEnabled = true
+                                        settings.domStorageEnabled = true
+                                        settings.databaseEnabled = true
+                                        settings.setSupportMultipleWindows(true)
+                                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                                        CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+                                        
+                                        webViewClient = object : WebViewClient() {
+                                            override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
+                                                return false // Let it load inside the popup webview
+                                            }
+                                        }
+                                        
+                                        webChromeClient = object : WebChromeClient() {
+                                            override fun onCloseWindow(window: WebView?) {
+                                                popupWebView?.destroy()
+                                                popupWebView = null
+                                            }
+                                        }
+                                    }
+                                    
+                                    transport.webView = newWebView
+                                    resultMsg.sendToTarget()
+                                    popupWebView = newWebView
+                                    return true
+                                }
+                                return super.onCreateWindow(view, isDialog, isUserGesture, resultMsg)
+                            }
+                        }
+                        
                         loadUrl(url)
                     }
                 },
@@ -144,6 +192,49 @@ fun WebViewScreen(
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
+            }
+        }
+    }
+
+    if (popupWebView != null) {
+        Dialog(
+            onDismissRequest = { 
+                popupWebView?.destroy()
+                popupWebView = null
+            },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 32.dp, horizontal = 16.dp)
+            ) {
+                Surface(
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    AndroidView(
+                        factory = { popupWebView!! },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                IconButton(
+                    onClick = { 
+                        popupWebView?.destroy()
+                        popupWebView = null
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        Icons.Rounded.Close,
+                        contentDescription = stringResource(R.string.btn_cancel),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
     }

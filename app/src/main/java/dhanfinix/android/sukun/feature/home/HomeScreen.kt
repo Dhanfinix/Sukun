@@ -227,6 +227,7 @@ fun HomeScreen(
                                 contentDescription = null,
                                 modifier = Modifier.size(28.dp)
                             )
+                            //todo: ko-fi donate popup not shown
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
