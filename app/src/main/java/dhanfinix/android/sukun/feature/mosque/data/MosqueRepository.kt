@@ -20,8 +20,18 @@ class MosqueRepository(private val context: Context) {
     private val geofenceManager = GeofenceManager(context)
 
     /**
-     * Fetches nearby mosques and saves them to the database if they don't already exist.
-     * Uses a 1km threshold to avoid redundant network calls.
+     * Fetches nearby mosques and maintains a sliding window of the N closest ones as geofences.
+     *
+     * Strategy (solves the dense-area problem):
+     * 1. Fetch all mosques within [radiusMeters] of current position.
+     * 2. Sort by distance and take only the nearest [MAX_ACTIVE_MOSQUE_GEOFENCES].
+     * 3. Persist all of them to DB (for UI list display).
+     * 4. Remove geofences for previously-registered mosques no longer in the top-N.
+     * 5. Add geofences only for new top-N mosques.
+     * 6. Remove DB entries for mosques >10km away (stale cleanup).
+     *
+     * This guarantees geofence count is always ≤ MAX_ACTIVE_MOSQUE_GEOFENCES,
+     * regardless of how many mosques exist in the area (e.g., central Jakarta).
      */
     suspend fun fetchAndSaveMosques(latitude: Double, longitude: Double, force: Boolean = false) {
         if (!force) {
@@ -30,50 +40,71 @@ class MosqueRepository(private val context: Context) {
             if (lastLat != null && lastLng != null) {
                 val results = FloatArray(1)
                 Location.distanceBetween(latitude, longitude, lastLat, lastLng, results)
-                if (results[0] < 1000f) {
-                    Log.d("MosqueRepository", "Skipping fetch: moved less than 1km since last fetch")
+                if (results[0] < 500f) {
+                    Log.d("MosqueRepository", "Skipping fetch: moved less than 500m since last fetch")
                     return
                 }
             }
         }
 
-        val mosques = getNearbyMosques(latitude, longitude)
+        val freshMosques = getNearbyMosques(latitude, longitude)
 
-        // IMPROVE-3: Remove stale auto-mosque zones that are >10km from the current position.
-        // This prevents ghost geofences accumulating for places no longer relevant.
-        val allAutoMosques = silentZoneDao.getAutoMosqueZones()
-        allAutoMosques.forEach { existing ->
-            val results = FloatArray(1)
-            Location.distanceBetween(latitude, longitude, existing.latitude, existing.longitude, results)
-            if (results[0] > 10_000f) {
-                silentZoneDao.deleteSilentZone(existing)
-                geofenceManager.removeGeofence(existing.id)
-                Log.d("MosqueRepository", "Removed stale mosque zone: ${existing.name} (${results[0].toInt()}m away)")
+        // Sort by distance, keep only the nearest N for geofencing
+        val nearestMosques = freshMosques
+            .map { mosque ->
+                val dist = FloatArray(1)
+                Location.distanceBetween(latitude, longitude, mosque.latitude, mosque.longitude, dist)
+                mosque to dist[0]
             }
-        }
+            .sortedBy { it.second }
+            .take(MAX_ACTIVE_MOSQUE_GEOFENCES)
+            .map { it.first }
 
-        // ISSUE-4: Android limits geofences to 100. Cap auto-mosque inserts at 80
-        // to leave 20 slots for manual zones. Count existing enabled auto-mosques.
-        val currentAutoCount = silentZoneDao.getAutoMosqueZones().count { it.isEnabled }
-        var slotsAvailable = MAX_AUTO_MOSQUE_GEOFENCES - currentAutoCount
+        val nearestExternalIds = nearestMosques.mapNotNull { it.externalId }.toSet()
 
-        mosques.forEach { mosque ->
+        // Step 1: Persist all fresh mosques to DB (for the UI list)
+        freshMosques.forEach { mosque ->
             val existing = silentZoneDao.getSilentZoneByExternalId(mosque.externalId!!)
             if (existing == null) {
-                if (slotsAvailable <= 0) {
-                    Log.w("MosqueRepository", "Geofence cap reached ($MAX_AUTO_MOSQUE_GEOFENCES), skipping ${mosque.name}")
-                    return@forEach
-                }
-                val id = silentZoneDao.insertSilentZone(mosque)
-                val savedZone = mosque.copy(id = id)
-                geofenceManager.addGeofence(savedZone)
-                slotsAvailable--
-            } else if (!existing.isEnabled) {
-               // Keep existing disabled zones as-is.
+                silentZoneDao.insertSilentZone(mosque)
             }
         }
+
+        // Step 2: Get all currently-registered auto-mosque geofences
+        val allAutoMosques = silentZoneDao.getAutoMosqueZones()
+
+        // Step 3: Remove geofences for mosques that fell OUT of the nearest-N window
+        allAutoMosques.forEach { existing ->
+            if (existing.externalId != null && existing.externalId !in nearestExternalIds && existing.isEnabled) {
+                geofenceManager.removeGeofence(existing.id)
+                Log.d("MosqueRepository", "Removed geofence for out-of-window mosque: ${existing.name}")
+            }
+        }
+
+        // Step 4: Stale cleanup — remove DB entries for mosques >10km away
+        allAutoMosques.forEach { existing ->
+            val dist = FloatArray(1)
+            Location.distanceBetween(latitude, longitude, existing.latitude, existing.longitude, dist)
+            if (dist[0] > 10_000f) {
+                silentZoneDao.deleteSilentZone(existing)
+                geofenceManager.removeGeofence(existing.id)
+                Log.d("MosqueRepository", "Removed stale mosque: ${existing.name} (${dist[0].toInt()}m away)")
+            }
+        }
+
+        // Step 5: Register geofences only for the nearest N mosques
+        nearestMosques.forEach { mosque ->
+            val existing = silentZoneDao.getSilentZoneByExternalId(mosque.externalId!!)
+            val dbZone = existing ?: silentZoneDao.getSilentZoneByExternalId(mosque.externalId) ?: return@forEach
+            if (dbZone.isEnabled) {
+                geofenceManager.addGeofence(dbZone)
+                Log.d("MosqueRepository", "Ensured geofence for nearest mosque: ${dbZone.name}")
+            }
+        }
+
         userPrefs.setLastFetchLocation(latitude, longitude)
     }
+
 
     suspend fun getNearbyMosques(latitude: Double, longitude: Double, radiusMeters: Int = 500): List<SilentZone> {
         val query = """
@@ -125,7 +156,12 @@ class MosqueRepository(private val context: Context) {
     }
 
     companion object {
-        /** Leave 20 slots for manual zones. Android hard limit is 100. */
-        private const val MAX_AUTO_MOSQUE_GEOFENCES = 80
+        /**
+         * Maximum number of mosque geofences kept ACTIVE (registered with the OS) at any time.
+         * Only the nearest N mosques from the last fetch are active geofences.
+         * All mosques are still stored in the DB for display purposes.
+         * Android hard limit is 100 total (all geofences, all apps). We leave ample room.
+         */
+        private const val MAX_ACTIVE_MOSQUE_GEOFENCES = 10
     }
 }
