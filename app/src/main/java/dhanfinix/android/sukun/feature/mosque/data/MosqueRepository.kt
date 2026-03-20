@@ -92,17 +92,67 @@ class MosqueRepository(private val context: Context) {
             }
         }
 
-        // Step 5: Register geofences only for the nearest N mosques
-        nearestMosques.forEach { mosque ->
-            val existing = silentZoneDao.getSilentZoneByExternalId(mosque.externalId!!)
-            val dbZone = existing ?: silentZoneDao.getSilentZoneByExternalId(mosque.externalId) ?: return@forEach
-            if (dbZone.isEnabled) {
-                geofenceManager.addGeofence(dbZone)
-                Log.d("MosqueRepository", "Ensured geofence for nearest mosque: ${dbZone.name}")
+        // Step 5: Build the final set of mosques to geofence:
+        // - Pinned mosques ALWAYS get a geofence (user intent overrides auto-selection)
+        // - Remaining slots → nearest non-pinned mosques by distance
+        val allAutoMosques2 = silentZoneDao.getAutoMosqueZones() // re-fetch after stale cleanup
+        val pinnedMosques = allAutoMosques2.filter { it.isUserPinned && it.isEnabled }
+        val remainingSlots = (MAX_ACTIVE_MOSQUE_GEOFENCES - pinnedMosques.size).coerceAtLeast(0)
+
+        val nearestNonPinned = nearestMosques
+            .mapNotNull { mosque ->
+                val existing = silentZoneDao.getSilentZoneByExternalId(mosque.externalId ?: return@mapNotNull null)
+                existing?.takeIf { !it.isUserPinned && it.isEnabled }
+            }
+            .take(remainingSlots)
+
+        val shouldBeActive: Set<Long> = (pinnedMosques + nearestNonPinned).map { it.id }.toSet()
+
+        // Remove geofences for mosques no longer in the active set
+        allAutoMosques2.forEach { existing ->
+            if (existing.id !in shouldBeActive && existing.hasActiveGeofence) {
+                geofenceManager.removeGeofence(existing.id)
+                silentZoneDao.updateGeofenceActive(existing.id, false)
+                Log.d("MosqueRepository", "Deactivated geofence: ${existing.name}")
+            }
+        }
+
+        // Register geofences for the active set
+        allAutoMosques2.forEach { existing ->
+            if (existing.id in shouldBeActive && existing.isEnabled) {
+                geofenceManager.addGeofence(existing)
+                silentZoneDao.updateGeofenceActive(existing.id, true)
+                Log.d("MosqueRepository", "Activated geofence: ${existing.name} (pinned=${existing.isUserPinned})")
             }
         }
 
         userPrefs.setLastFetchLocation(latitude, longitude)
+    }
+
+    /**
+     * Toggle user pin for a mosque. Re-syncs geofences immediately.
+     * Returns false if pinning would exceed the cap.
+     */
+    suspend fun toggleUserPin(zone: SilentZone, maxSlots: Int = MAX_ACTIVE_MOSQUE_GEOFENCES): Boolean {
+        val pinned = !zone.isUserPinned
+        if (pinned) {
+            // Check if there's room
+            val currentPinned = silentZoneDao.getPinnedAutoMosques().size
+            if (currentPinned >= maxSlots) return false
+        }
+        silentZoneDao.updateUserPinned(zone.id, pinned)
+        if (!pinned && zone.hasActiveGeofence) {
+            // If unpinning, the geofence may be replaced by nearest — handle in next fetch cycle
+            // For now remove it immediately; sliding window will re-activate if still nearest
+            geofenceManager.removeGeofence(zone.id)
+            silentZoneDao.updateGeofenceActive(zone.id, false)
+        } else if (pinned) {
+            // Immediately activate geofence for newly pinned mosque
+            val updated = zone.copy(isUserPinned = true)
+            geofenceManager.addGeofence(updated)
+            silentZoneDao.updateGeofenceActive(zone.id, true)
+        }
+        return true
     }
 
 

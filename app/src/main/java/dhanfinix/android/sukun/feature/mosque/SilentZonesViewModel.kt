@@ -51,7 +51,11 @@ data class SilentZonesUiState(
     val activeZoneId: Long? = null,
     val isLocationSilenceEnabled: Boolean = true,
     val isAutoMosqueSilenceEnabled: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    /** Number of currently OS-registered geofences for auto-mosques */
+    val activeGeofenceCount: Int = 0,
+    /** Maximum allowed active mosque geofences */
+    val maxGeofenceSlots: Int = 10
 )
 
 data class MapSuggestion(
@@ -149,6 +153,13 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
             }
         }
         refreshPermissions()
+
+        // Observe active geofence count live from DB
+        viewModelScope.launch {
+            silentZoneDao.getActiveGeofenceCount().collect { count ->
+                _uiState.update { it.copy(activeGeofenceCount = count) }
+            }
+        }
     }
 
     // Removed fetchNearbyMosques as it is now handled by MosqueRepository.fetchAndSaveMosques
@@ -157,13 +168,25 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
         viewModelScope.launch {
             val lat = _uiState.value.userLat ?: return@launch
             val lng = _uiState.value.userLng ?: return@launch
-            
+
             _uiState.update { it.copy(isLoading = true) }
             
             // Fix: No longer deleting all auto mosques. Just force a fresh fetch.
             mosqueRepository.fetchAndSaveMosques(lat, lng, force = true)
             
             _uiState.update { it.copy(isLoading = false) }
+        }
+    }
+
+    fun toggleMosquePinned(zone: SilentZone) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val success = mosqueRepository.toggleUserPin(zone, _uiState.value.maxGeofenceSlots)
+            if (!success) {
+                val max = _uiState.value.maxGeofenceSlots
+                _uiState.update {
+                    it.copy(errorMessage = "geofence_cap:$max")
+                }
+            }
         }
     }
 

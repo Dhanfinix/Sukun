@@ -12,7 +12,7 @@ import dhanfinix.android.sukun.core.database.dao.SilentZoneDao
 import dhanfinix.android.sukun.core.database.entity.PrayerDay
 import dhanfinix.android.sukun.core.database.entity.SilentZone
 
-@Database(entities = [PrayerDay::class, SilentZone::class], version = 5, exportSchema = false)
+@Database(entities = [PrayerDay::class, SilentZone::class], version = 6, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class SukunDatabase : RoomDatabase() {
     abstract fun prayerDao(): PrayerDao
@@ -29,6 +29,13 @@ abstract class SukunDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE silent_zones ADD COLUMN isUserPinned INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE silent_zones ADD COLUMN hasActiveGeofence INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         fun getDatabase(context: Context): SukunDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -36,7 +43,7 @@ abstract class SukunDatabase : RoomDatabase() {
                     SukunDatabase::class.java,
                     "sukun_database"
                 )
-                .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
@@ -45,3 +52,4 @@ abstract class SukunDatabase : RoomDatabase() {
         }
     }
 }
+

@@ -1,4 +1,4 @@
-🕌 New: Tap "Support Sukun" from the home screen or settings to donate directly within the app — no external browser needed.
-🔧 Fixed: Background mosque discovery now properly activates on app start and after device reboot.
-✅ Improved: Donation experience now uses a branded in-app browser that matches Sukun's look and feel.
+🕌 New: Geofence tracking status badges for nearby mosques.
+📌 New: Pin your favorite mosques to keep them active regardless of the 10-slot limit.
+📊 Improved: Visual counter for active geofence slots in the mosque list.
 🌐 Improved: All translations (English, Indonesian, Arabic) are now fully synchronized.

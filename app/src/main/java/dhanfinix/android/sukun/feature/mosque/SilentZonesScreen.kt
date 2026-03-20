@@ -335,6 +335,8 @@ fun SilentZonesScreen(
                 isListExpanded = isListExpanded,
                 isLocationSilenceEnabled = uiState.isLocationSilenceEnabled,
                 isAutoMosqueSilenceEnabled = uiState.isAutoMosqueSilenceEnabled,
+                activeGeofenceCount = uiState.activeGeofenceCount,
+                maxGeofenceSlots = uiState.maxGeofenceSlots,
                 onToggleList = { isListExpanded = !isListExpanded },
                 onMyLocation = {
                     when {
@@ -383,6 +385,9 @@ fun SilentZonesScreen(
                 },
                 onRefreshMosques = {
                     viewModel.refreshMosques()
+                },
+                onToggleMosquePin = { zone ->
+                    viewModel.toggleMosquePinned(zone)
                 }
             )
         }

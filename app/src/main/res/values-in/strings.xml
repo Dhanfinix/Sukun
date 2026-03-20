@@ -284,6 +284,12 @@
     <string name="btn_donate_saweria">Donasi via Saweria</string>
     <string name="label_choose_donation_method">Pilih Metode Donasi</string>
     <string name="label_donate_via">Donasi melalui</string>
-    <string name="label_global">Global</string>
     <string name="label_indonesia">Indonesia</string>
+
+    <!-- Mosque Geofence Tracking -->
+    <string name="geofence_active">Aktif</string>
+    <string name="geofence_inactive">Nonaktif</string>
+    <string name="geofence_pinned">Disematkan</string>
+    <string name="geofence_counter">%1$d / %2$d aktif</string>
+    <string name="geofence_cap">Batas slot tercapai (%1$d/%2$d). Lepas sematan masjid lain dulu.</string>
 </resources>

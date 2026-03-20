@@ -370,6 +370,8 @@ internal fun SilentZonesBottomOverlay(
     isListExpanded: Boolean,
     isLocationSilenceEnabled: Boolean,
     isAutoMosqueSilenceEnabled: Boolean,
+    activeGeofenceCount: Int = 0,
+    maxGeofenceSlots: Int = 10,
     onToggleList: () -> Unit,
     onMyLocation: () -> Unit,
     onAddZone: () -> Unit,
@@ -380,7 +382,8 @@ internal fun SilentZonesBottomOverlay(
     onToggleAutoSilent: (SilentZone) -> Unit,
     onLocationSilenceToggled: (Boolean) -> Unit,
     onAutoMosqueSilenceToggled: (Boolean) -> Unit,
-    onRefreshMosques: () -> Unit
+    onRefreshMosques: () -> Unit,
+    onToggleMosquePin: (SilentZone) -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     
@@ -598,14 +601,40 @@ internal fun SilentZonesBottomOverlay(
                                             color = MaterialTheme.colorScheme.secondary,
                                             fontWeight = FontWeightCompose.Bold
                                         )
-                                        TextButton(
-                                            onClick = onRefreshMosques,
-                                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                                            modifier = Modifier.height(28.dp)
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                                         ) {
-                                            Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                                            Spacer(Modifier.width(4.dp))
-                                            Text(stringResource(R.string.btn_refresh), style = MaterialTheme.typography.labelSmall)
+                                            // Geofence slot counter chip
+                                            val slotColor = if (activeGeofenceCount >= maxGeofenceSlots)
+                                                MaterialTheme.colorScheme.errorContainer
+                                            else
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            val slotTextColor = if (activeGeofenceCount >= maxGeofenceSlots)
+                                                MaterialTheme.colorScheme.onErrorContainer
+                                            else
+                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                            Surface(
+                                                color = slotColor,
+                                                shape = RoundedCornerShape(50),
+                                                tonalElevation = 0.dp
+                                            ) {
+                                                Text(
+                                                    stringResource(R.string.geofence_counter, activeGeofenceCount, maxGeofenceSlots),
+                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = slotTextColor
+                                                )
+                                            }
+                                            TextButton(
+                                                onClick = onRefreshMosques,
+                                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                                modifier = Modifier.height(28.dp)
+                                            ) {
+                                                Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                                                Spacer(Modifier.width(4.dp))
+                                                Text(stringResource(R.string.btn_refresh), style = MaterialTheme.typography.labelSmall)
+                                            }
                                         }
                                     }
                                 }
@@ -621,7 +650,10 @@ internal fun SilentZonesBottomOverlay(
                                     onToggleAutoSilent = { onToggleAutoSilent(zone) },
                                     onFocus = { onFocusZone(zone) },
                                     onEdit = { onEditZone(zone) },
-                                    onDelete = { onDeleteZone(zone) }
+                                    onDelete = { onDeleteZone(zone) },
+                                    onTogglePin = if (zone.source == SilentZoneSource.AUTO_MOSQUE) {
+                                        { onToggleMosquePin(zone) }
+                                    } else null
                                 )
                             }
                         }
@@ -641,7 +673,8 @@ private fun SilentZoneCard(
     onToggleAutoSilent: () -> Unit,
     onFocus: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onTogglePin: (() -> Unit)? = null
 ) {
     ElevatedCard(
         modifier = Modifier
@@ -690,6 +723,8 @@ private fun SilentZoneCard(
                             }
                         }
                     }
+
+                    // Zone radius
                     Text(
                         java.lang.String.format(
                             java.util.Locale.US,
@@ -699,6 +734,42 @@ private fun SilentZoneCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = if (isGlobalEnabled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
+
+                    // Pinning / Geofence status badge for Auto-Mosque zones
+                    if (onTogglePin != null) {
+                        Spacer(Modifier.height(8.dp))
+                        val (badgeText, badgeColor, badgeTextColor) = when {
+                            zone.isUserPinned -> Triple(
+                                stringResource(R.string.geofence_pinned),
+                                MaterialTheme.colorScheme.primaryContainer,
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            zone.hasActiveGeofence -> Triple(
+                                stringResource(R.string.geofence_active),
+                                MaterialTheme.colorScheme.tertiaryContainer,
+                                MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            else -> Triple(
+                                stringResource(R.string.geofence_inactive),
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Surface(
+                            color = badgeColor,
+                            shape = RoundedCornerShape(8.dp),
+                            onClick = onTogglePin,
+                            enabled = isGlobalEnabled
+                        ) {
+                            Text(
+                                badgeText,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = badgeTextColor
+                            )
+                        }
+                    }
                 }
 
                 Switch(

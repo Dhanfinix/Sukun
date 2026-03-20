@@ -284,6 +284,12 @@
     <string name="btn_donate_saweria">تبرع عبر Saweria</string>
     <string name="label_choose_donation_method">اختر وسيلة التبرع</string>
     <string name="label_donate_via">التبرع عبر</string>
-    <string name="label_global">عالمي</string>
     <string name="label_indonesia">إندونيسيا</string>
+
+    <!-- Mosque Geofence Tracking -->
+    <string name="geofence_active">نشط</string>
+    <string name="geofence_inactive">غير نشط</string>
+    <string name="geofence_pinned">مثبت</string>
+    <string name="geofence_counter">%1$d / %2$d نشط</string>
+    <string name="geofence_cap">تم الوصول للحد الأقصى (%1$d/%2$d). قم بإلغاء تثبيت مسجد آخر أولاً.</string>
 </resources>

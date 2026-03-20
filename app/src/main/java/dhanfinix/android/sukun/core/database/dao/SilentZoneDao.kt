@@ -39,6 +39,18 @@ interface SilentZoneDao {
     @Query("DELETE FROM silent_zones WHERE source = 'AUTO_MOSQUE'")
     suspend fun deleteAllAutoMosques()
 
+    @Query("UPDATE silent_zones SET hasActiveGeofence = :active WHERE id = :id")
+    suspend fun updateGeofenceActive(id: Long, active: Boolean)
+
+    @Query("UPDATE silent_zones SET isUserPinned = :pinned WHERE id = :id")
+    suspend fun updateUserPinned(id: Long, pinned: Boolean)
+
+    @Query("SELECT COUNT(*) FROM silent_zones WHERE hasActiveGeofence = 1")
+    fun getActiveGeofenceCount(): Flow<Int>
+
+    @Query("SELECT * FROM silent_zones WHERE isUserPinned = 1 AND source = 'AUTO_MOSQUE'")
+    suspend fun getPinnedAutoMosques(): List<SilentZone>
+
     @Query("SELECT * FROM silent_zones WHERE isEnabled = 1")
     suspend fun getEnabledSilentZones(): List<SilentZone>
 }
