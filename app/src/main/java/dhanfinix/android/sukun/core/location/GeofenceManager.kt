@@ -44,7 +44,7 @@ class GeofenceManager(private val context: Context) {
             Priority.PRIORITY_BALANCED_POWER_ACCURACY, 
             30 * 60 * 1000L // 30 minutes
         ).apply {
-            setMinUpdateDistanceMeters(1000f) // 1km
+            setMinUpdateDistanceMeters(500f) // Match the 500m mosque fetch radius for full coverage overlap
         }.build()
 
         try {
