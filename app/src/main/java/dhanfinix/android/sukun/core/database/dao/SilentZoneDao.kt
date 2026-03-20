@@ -33,6 +33,9 @@ interface SilentZoneDao {
     @Query("SELECT * FROM silent_zones WHERE source = :source")
     fun getSilentZonesBySource(source: dhanfinix.android.sukun.core.database.entity.SilentZoneSource): Flow<List<SilentZone>>
 
+    @Query("SELECT * FROM silent_zones WHERE source = 'AUTO_MOSQUE'")
+    suspend fun getAutoMosqueZones(): List<SilentZone>
+
     @Query("DELETE FROM silent_zones WHERE source = 'AUTO_MOSQUE'")
     suspend fun deleteAllAutoMosques()
 
