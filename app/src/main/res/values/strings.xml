@@ -253,6 +253,7 @@
     <string name="fg_service_notification_desc">Sukun is monitoring active zones instantly.</string>
     <string name="fg_service_channel_name">Location Monitoring</string>
     <string name="fg_service_channel_desc">Active while Instant Geofence mode is enabled</string>
+    <string name="action_disable">Disable</string>
     
     <string name="permission_setup_required_title">Required for better reliability</string>
     <string name="permission_background_location_title">Background Location (Select \'Allow all the time\')</string>

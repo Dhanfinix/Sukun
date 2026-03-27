@@ -252,6 +252,7 @@
     <string name="fg_service_notification_desc">يقوم سكون بمراقبة المناطق النشطة فوراً.</string>
     <string name="fg_service_channel_name">مراقبة الموقع</string>
     <string name="fg_service_channel_desc">نشط طالما وضع النطاق الجغرافي الفوري مفعل</string>
+    <string name="action_disable">تعطيل</string>
     <!-- Permissions -->
     <string name="permission_setup_required_title">مطلوب لضمان موثوقية أفضل</string>
     <string name="permission_background_location_title">الموقع في الخلفية (اختر "السماح طوال الوقت")</string>

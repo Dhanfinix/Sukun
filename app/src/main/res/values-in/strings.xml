@@ -252,6 +252,7 @@
     <string name="fg_service_notification_desc">Sukun sedang memantau zona aktif secara instan.</string>
     <string name="fg_service_channel_name">Pemantauan Lokasi</string>
     <string name="fg_service_channel_desc">Aktif selama mode Geofence Instan diaktifkan</string>
+    <string name="action_disable">Nonaktifkan</string>
     <!-- Permissions -->
     <string name="permission_setup_required_title">Dibutuhkan untuk keandalan fitur</string>
     <string name="permission_background_location_title">Lokasi Latar Belakang (Pilih \'Izinkan sepanjang waktu\')</string>

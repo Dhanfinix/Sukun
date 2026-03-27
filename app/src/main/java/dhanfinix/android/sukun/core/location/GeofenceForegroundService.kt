@@ -2,6 +2,7 @@ package dhanfinix.android.sukun.core.location
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -51,7 +52,24 @@ class GeofenceForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP_SERVICE) {
+            serviceScope.launch {
+                userPrefs.setAggressiveLocationEnabled(false)
+                stopSelf()
+            }
+            return START_NOT_STICKY
+        }
+
         createNotificationChannel()
+        
+        val stopIntent = Intent(this, GeofenceForegroundService::class.java).apply {
+            action = ACTION_STOP_SERVICE
+        }
+        val stopPendingIntent = PendingIntent.getService(
+            this, 0, stopIntent, 
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.fg_service_notification_title))
             .setContentText(getString(R.string.fg_service_notification_desc))
@@ -60,6 +78,7 @@ class GeofenceForegroundService : Service() {
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setOngoing(true)
+            .addAction(0, getString(R.string.action_disable), stopPendingIntent)
             .build()
             
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -190,5 +209,6 @@ class GeofenceForegroundService : Service() {
     companion object {
         private const val CHANNEL_ID = "GeofenceForegroundChannel"
         private const val NOTIFICATION_ID = 888
+        private const val ACTION_STOP_SERVICE = "dhanfinix.android.sukun.ACTION_STOP_SERVICE"
     }
 }
