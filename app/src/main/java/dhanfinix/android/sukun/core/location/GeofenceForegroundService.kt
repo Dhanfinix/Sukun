@@ -57,6 +57,8 @@ class GeofenceForegroundService : Service() {
             .setContentText(getString(R.string.fg_service_notification_desc))
             .setSmallIcon(R.drawable.ic_notification)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setOngoing(true)
             .build()
             
