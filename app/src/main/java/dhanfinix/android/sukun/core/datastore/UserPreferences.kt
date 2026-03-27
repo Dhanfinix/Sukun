@@ -94,6 +94,7 @@ class UserPreferences(private val context: Context) {
     private val KEY_NOTIF_LINKED = booleanPreferencesKey("is_notif_linked")
     private val KEY_LOCATION_SILENCE_ENABLED = booleanPreferencesKey("location_silence_enabled")
     private val KEY_AUTO_MOSQUE_SILENCE_ENABLED = booleanPreferencesKey("auto_mosque_silence_enabled")
+    private val KEY_AGGRESSIVE_LOCATION_ENABLED = booleanPreferencesKey("aggressive_location_enabled")
 
     // ── Onboarding ──
     private val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
@@ -216,6 +217,10 @@ class UserPreferences(private val context: Context) {
 
     val isAutoMosqueSilenceEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[KEY_AUTO_MOSQUE_SILENCE_ENABLED] ?: true
+    }.distinctUntilChanged()
+
+    val isAggressiveLocationEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_AGGRESSIVE_LOCATION_ENABLED] ?: false
     }.distinctUntilChanged()
 
     val reminderMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
@@ -433,6 +438,12 @@ class UserPreferences(private val context: Context) {
     suspend fun setAutoMosqueSilenceEnabled(enabled: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[KEY_AUTO_MOSQUE_SILENCE_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setAggressiveLocationEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_AGGRESSIVE_LOCATION_ENABLED] = enabled
         }
     }
 

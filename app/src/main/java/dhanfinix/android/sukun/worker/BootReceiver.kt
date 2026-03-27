@@ -26,7 +26,16 @@ import java.time.LocalDate
 class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
+        val intentAction = intent.action ?: return
+        val validActions = listOf(
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED,
+            "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"
+        )
+        
+        if (intentAction !in validActions) return
 
         val userPrefs = UserPreferences(context)
         val prayerRepo = PrayerRepository(context)
@@ -46,8 +55,9 @@ class BootReceiver : BroadcastReceiver() {
 
                 // Re-register background location updates for mosque discovery after reboot
                 val isAutoMosqueEnabled = userPrefs.isAutoMosqueSilenceEnabled.first()
+                val isAggressive = userPrefs.isAggressiveLocationEnabled.first()
                 if (isAutoMosqueEnabled) {
-                    geofenceManager.requestBackgroundLocationUpdates()
+                    geofenceManager.requestBackgroundLocationUpdates(isAggressive)
                 }
 
                 // Bug 7 Fix: Mid-Silence Reboot Amnesia
@@ -64,7 +74,15 @@ class BootReceiver : BroadcastReceiver() {
                         PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
                     try {
-                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, endTime, pendingRestore)
+                        // Use setAlarmClock for consistency with prayer alarms
+                        val showIntent = Intent(context, dhanfinix.android.sukun.MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        val pendingShow = PendingIntent.getActivity(
+                            context, 0, showIntent, PendingIntent.FLAG_IMMUTABLE
+                        )
+                        val alarmClockInfo = AlarmManager.AlarmClockInfo(endTime, pendingShow)
+                        alarmManager.setAlarmClock(alarmClockInfo, pendingRestore)
                     } catch (e: SecurityException) {
                         alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, endTime, pendingRestore)
                     }

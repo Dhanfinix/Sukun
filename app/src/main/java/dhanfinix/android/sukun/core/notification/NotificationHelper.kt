@@ -202,8 +202,10 @@ object NotificationHelper {
             manager.createNotificationChannel(channel)
         }
 
-        val title = if (isEntering) "Entered $zoneName" else "Left $zoneName"
-        val content = if (isEntering) "Tap to activate silent mode" else "Volume restored to normal"
+        val title = if (isEntering) context.getString(R.string.notif_geofence_entered, zoneName) 
+                    else context.getString(R.string.notif_geofence_left, zoneName)
+        val content = if (isEntering) context.getString(R.string.notif_geofence_enter_action)
+                      else context.getString(R.string.notif_volume_restored)
 
         val builder = NotificationCompat.Builder(context, GEOFENCE_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
@@ -223,7 +225,7 @@ object NotificationHelper {
                 context, 3001, silenceIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            builder.addAction(R.drawable.ic_notification, "Silence Now", silencePending)
+            builder.addAction(R.drawable.ic_notification, context.getString(R.string.action_silence_now), silencePending)
             builder.setContentIntent(silencePending)
         }
 

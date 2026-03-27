@@ -38,8 +38,19 @@ class GeofenceManager(private val context: Context) {
         )
     }
 
-    @SuppressLint("MissingPermission")
-    fun requestBackgroundLocationUpdates() {
+    fun requestBackgroundLocationUpdates(isAggressive: Boolean = false) {
+        if (isAggressive) {
+            removeBackgroundLocationUpdates() // Stop the standard one
+            val serviceIntent = Intent(context, GeofenceForegroundService::class.java)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.startService(serviceIntent)
+            }
+            Log.d("GeofenceManager", "Foreground location service requested")
+            return
+        }
+
         val locationRequest = LocationRequest.Builder(
             Priority.PRIORITY_BALANCED_POWER_ACCURACY, 
             30 * 60 * 1000L // 30 minutes
@@ -48,9 +59,14 @@ class GeofenceManager(private val context: Context) {
         }.build()
 
         try {
-            fusedLocationClient.removeLocationUpdates(locationPendingIntent)
-            fusedLocationClient.requestLocationUpdates(locationRequest, locationPendingIntent)
-            Log.d("GeofenceManager", "Background location updates requested")
+            // Stop foreground if it was running
+            context.stopService(Intent(context, GeofenceForegroundService::class.java))
+            
+            if (androidx.core.app.ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                fusedLocationClient.removeLocationUpdates(locationPendingIntent)
+                fusedLocationClient.requestLocationUpdates(locationRequest, locationPendingIntent)
+                Log.d("GeofenceManager", "Background location updates requested")
+            }
         } catch (e: Exception) {
             Log.e("GeofenceManager", "Failed to request background location updates", e)
         }
@@ -58,6 +74,7 @@ class GeofenceManager(private val context: Context) {
 
     fun removeBackgroundLocationUpdates() {
         try {
+            context.stopService(Intent(context, GeofenceForegroundService::class.java))
             fusedLocationClient.removeLocationUpdates(locationPendingIntent)
             Log.d("GeofenceManager", "Background location updates removed")
         } catch (e: Exception) {

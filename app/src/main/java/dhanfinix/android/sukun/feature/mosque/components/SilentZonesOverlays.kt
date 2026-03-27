@@ -370,6 +370,7 @@ internal fun SilentZonesBottomOverlay(
     isListExpanded: Boolean,
     isLocationSilenceEnabled: Boolean,
     isAutoMosqueSilenceEnabled: Boolean,
+    isAggressiveLocationEnabled: Boolean,
     activeGeofenceCount: Int = 0,
     maxGeofenceSlots: Int = 10,
     onToggleList: () -> Unit,
@@ -382,6 +383,7 @@ internal fun SilentZonesBottomOverlay(
     onToggleAutoSilent: (SilentZone) -> Unit,
     onLocationSilenceToggled: (Boolean) -> Unit,
     onAutoMosqueSilenceToggled: (Boolean) -> Unit,
+    onAggressiveLocationToggled: (Boolean) -> Unit,
     onRefreshMosques: () -> Unit,
     onToggleMosquePin: (SilentZone) -> Unit = {}
 ) {
@@ -550,6 +552,52 @@ internal fun SilentZonesBottomOverlay(
                                     onCheckedChange = if (selectedTab == 0) onLocationSilenceToggled else onAutoMosqueSilenceToggled,
                                     modifier = Modifier.scale(0.8f)
                                 )
+                            }
+                        }
+
+                        // Aggressive Location Toggle - only relevant on the Mosque tab
+                        AnimatedVisibility(
+                            visible = selectedTab == 1 && isAutoMosqueSilenceEnabled,
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            Surface(
+                                onClick = { onAggressiveLocationToggled(!isAggressiveLocationEnabled) },
+                                shape = MaterialTheme.shapes.medium,
+                                color = Color.Transparent,
+                                modifier = Modifier.padding(top = 4.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.GpsFixed,
+                                        contentDescription = null,
+                                        tint = if (isAggressiveLocationEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(Modifier.width(12.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            stringResource(R.string.aggressive_location_mode_title),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = if (isAggressiveLocationEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            stringResource(R.string.aggressive_location_mode_desc),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    Switch(
+                                        checked = isAggressiveLocationEnabled,
+                                        onCheckedChange = onAggressiveLocationToggled,
+                                        modifier = Modifier.scale(0.7f)
+                                    )
+                                }
                             }
                         }
                     }

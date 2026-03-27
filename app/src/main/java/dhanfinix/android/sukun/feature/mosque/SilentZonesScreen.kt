@@ -335,6 +335,7 @@ fun SilentZonesScreen(
                 isListExpanded = isListExpanded,
                 isLocationSilenceEnabled = uiState.isLocationSilenceEnabled,
                 isAutoMosqueSilenceEnabled = uiState.isAutoMosqueSilenceEnabled,
+                isAggressiveLocationEnabled = uiState.isAggressiveLocationEnabled,
                 activeGeofenceCount = uiState.activeGeofenceCount,
                 maxGeofenceSlots = uiState.maxGeofenceSlots,
                 onToggleList = { isListExpanded = !isListExpanded },
@@ -382,6 +383,9 @@ fun SilentZonesScreen(
                 },
                 onAutoMosqueSilenceToggled = { enabled ->
                     viewModel.setAutoMosqueSilenceEnabled(enabled)
+                },
+                onAggressiveLocationToggled = { enabled ->
+                    viewModel.setAggressiveLocationEnabled(enabled)
                 },
                 onRefreshMosques = {
                     viewModel.refreshMosques()

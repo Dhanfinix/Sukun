@@ -242,7 +242,18 @@
     <string name="status_silenced_at">Silenced at %1$s</string>
     <string name="status_nearby">Nearby %1$s</string>
     <string name="action_silence_now">Silence Now</string>
-    <!-- Permissions -->
+    <string name="notif_geofence_entered">Entered %1$s</string>
+    <string name="notif_geofence_left">Left %1$s</string>
+    <string name="notif_geofence_enter_action">Tap to activate silent mode</string>
+    <string name="notif_volume_restored">Volume restored to normal</string>
+    <!-- Aggressive Location / Instant Geofence Mode -->
+    <string name="aggressive_location_mode_title">Instant Geofence</string>
+    <string name="aggressive_location_mode_desc">Keeps the app awake for instant mosque silence. Uses more battery.</string>
+    <string name="fg_service_notification_title">Instant Location Mode Active</string>
+    <string name="fg_service_notification_desc">Sukun is monitoring active zones instantly.</string>
+    <string name="fg_service_channel_name">Location Monitoring</string>
+    <string name="fg_service_channel_desc">Active while Instant Geofence mode is enabled</string>
+    
     <string name="permission_setup_required_title">Required for better reliability</string>
     <string name="permission_background_location_title">Background Location (Select \'Allow all the time\')</string>
     <string name="permission_background_location_desc">Required to trigger silence automatically even when the app is closed.</string>

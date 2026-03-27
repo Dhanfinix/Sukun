@@ -51,6 +51,7 @@ data class SilentZonesUiState(
     val activeZoneId: Long? = null,
     val isLocationSilenceEnabled: Boolean = true,
     val isAutoMosqueSilenceEnabled: Boolean = true,
+    val isAggressiveLocationEnabled: Boolean = false,
     val errorMessage: String? = null,
     /** Number of currently OS-registered geofences for auto-mosques */
     val activeGeofenceCount: Int = 0,
@@ -134,10 +135,9 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
             userPrefs.isAutoMosqueSilenceEnabled.collect { enabled ->
                 _uiState.update { it.copy(isAutoMosqueSilenceEnabled = enabled) }
                 if (enabled) {
-                    // Register on cold start (lastEnabled == null) OR when toggled back on
-                    geofenceManager.requestBackgroundLocationUpdates()
+                    val isAggressive = _uiState.value.isAggressiveLocationEnabled
+                    geofenceManager.requestBackgroundLocationUpdates(isAggressive)
                     if (lastEnabled == false) {
-                        // Immediate fetch when toggling from off -> on
                         _uiState.value.userLat?.let { lat ->
                             _uiState.value.userLng?.let { lng ->
                                 viewModelScope.launch {
@@ -150,6 +150,14 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
                     geofenceManager.removeBackgroundLocationUpdates()
                 }
                 lastEnabled = enabled
+            }
+        }
+        viewModelScope.launch {
+            userPrefs.isAggressiveLocationEnabled.collect { enabled ->
+                _uiState.update { it.copy(isAggressiveLocationEnabled = enabled) }
+                if (_uiState.value.isAutoMosqueSilenceEnabled) {
+                    geofenceManager.requestBackgroundLocationUpdates(enabled)
+                }
             }
         }
         refreshPermissions()
@@ -318,6 +326,12 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
     fun setAutoMosqueSilenceEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPrefs.setAutoMosqueSilenceEnabled(enabled)
+        }
+    }
+
+    fun setAggressiveLocationEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setAggressiveLocationEnabled(enabled)
         }
     }
 
