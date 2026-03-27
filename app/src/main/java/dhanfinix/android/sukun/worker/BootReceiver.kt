@@ -74,15 +74,7 @@ class BootReceiver : BroadcastReceiver() {
                         PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
                     try {
-                        // Use setAlarmClock for consistency with prayer alarms
-                        val showIntent = Intent(context, dhanfinix.android.sukun.MainActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        }
-                        val pendingShow = PendingIntent.getActivity(
-                            context, 0, showIntent, PendingIntent.FLAG_IMMUTABLE
-                        )
-                        val alarmClockInfo = AlarmManager.AlarmClockInfo(endTime, pendingShow)
-                        alarmManager.setAlarmClock(alarmClockInfo, pendingRestore)
+                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, endTime, pendingRestore)
                     } catch (e: SecurityException) {
                         alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, endTime, pendingRestore)
                     }

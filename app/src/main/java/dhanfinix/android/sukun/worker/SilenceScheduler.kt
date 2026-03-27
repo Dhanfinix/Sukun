@@ -233,17 +233,7 @@ class SilenceScheduler(private val context: Context) {
 
     private fun scheduleExactAlarmSafely(timeMs: Long, pendingIntent: PendingIntent) {
         try {
-            val showIntent = Intent(context, dhanfinix.android.sukun.MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            }
-            val pendingShow = PendingIntent.getActivity(
-                context, 
-                0, 
-                showIntent, 
-                PendingIntent.FLAG_IMMUTABLE
-            )
-            val alarmClockInfo = AlarmManager.AlarmClockInfo(timeMs, pendingShow)
-            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMs, pendingIntent)
         } catch (e: SecurityException) {
             // Fallback to inexact alarm if the exact permission was revoked
             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMs, pendingIntent)
