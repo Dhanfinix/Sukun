@@ -80,12 +80,13 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
         override fun onLocationResult(result: LocationResult) {
             result.lastLocation?.let { location ->
                 _uiState.update { it.copy(userLat = location.latitude, userLng = location.longitude, isLocationFresh = true, isLoading = false) }
-                // Persist to userPrefs for other features
+                // Persist to userPrefs so foreground service distance checks are based on latest position
                 viewModelScope.launch {
                     userPrefs.setLocation(location.latitude, location.longitude)
-                }
-                viewModelScope.launch {
-                    mosqueRepository.fetchAndSaveMosques(location.latitude, location.longitude)
+                    // Always fetch mosques when we get fresh location on map open (once)
+                    if (_uiState.value.isAutoMosqueSilenceEnabled) {
+                        mosqueRepository.fetchAndSaveMosques(location.latitude, location.longitude)
+                    }
                 }
             }
         }
@@ -131,13 +132,14 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
             }
         }
         viewModelScope.launch {
-            var lastEnabled: Boolean? = null
+            var lastAutoMosque: Boolean? = null
             userPrefs.isAutoMosqueSilenceEnabled.collect { enabled ->
                 _uiState.update { it.copy(isAutoMosqueSilenceEnabled = enabled) }
-                if (enabled) {
-                    val isAggressive = _uiState.value.isAggressiveLocationEnabled
-                    geofenceManager.requestBackgroundLocationUpdates(isAggressive)
-                    if (lastEnabled == false) {
+                // Only act if the value actually changed (not on initial emission)
+                if (lastAutoMosque != null && lastAutoMosque != enabled) {
+                    if (enabled) {
+                        val isAggressive = _uiState.value.isAggressiveLocationEnabled
+                        geofenceManager.requestBackgroundLocationUpdates(isAggressive)
                         _uiState.value.userLat?.let { lat ->
                             _uiState.value.userLng?.let { lng ->
                                 viewModelScope.launch {
@@ -145,19 +147,33 @@ class SilentZonesViewModel(private val application: Application) : AndroidViewMo
                                 }
                             }
                         }
+                    } else {
+                        geofenceManager.removeBackgroundLocationUpdates()
                     }
-                } else {
-                    geofenceManager.removeBackgroundLocationUpdates()
+                } else if (lastAutoMosque == null && enabled) {
+                    // First emit: just start the appropriate location tracking without restarting service
+                    val isAggressive = _uiState.value.isAggressiveLocationEnabled
+                    if (!isAggressive) {
+                        // Only start standard background updates; foreground service is started by
+                        // GeofenceForegroundService itself on reboot / user toggle
+                        geofenceManager.requestBackgroundLocationUpdates(false)
+                    }
+                    // Do NOT startForeground here — it's managed by the aggressive toggle
                 }
-                lastEnabled = enabled
+                lastAutoMosque = enabled
             }
         }
         viewModelScope.launch {
+            var lastAggressive: Boolean? = null
             userPrefs.isAggressiveLocationEnabled.collect { enabled ->
                 _uiState.update { it.copy(isAggressiveLocationEnabled = enabled) }
-                if (_uiState.value.isAutoMosqueSilenceEnabled) {
-                    geofenceManager.requestBackgroundLocationUpdates(enabled)
+                // Only restart location tracking when aggressive setting actually changes
+                if (lastAggressive != null && lastAggressive != enabled) {
+                    if (_uiState.value.isAutoMosqueSilenceEnabled) {
+                        geofenceManager.requestBackgroundLocationUpdates(enabled)
+                    }
                 }
+                lastAggressive = enabled
             }
         }
         refreshPermissions()
