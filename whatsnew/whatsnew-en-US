@@ -1,4 +1,4 @@
-🕌 New: Geofence tracking status badges for nearby mosques.
-📌 New: Pin your favorite mosques to keep them active regardless of the 10-slot limit.
-📊 Improved: Visual counter for active geofence slots in the mosque list.
-🌐 Improved: All translations (English, Indonesian, Arabic) are now fully synchronized.
+⚡ New: Instant Geofence mode — keeps app awake for instant mosque silence on arrival.
+🌍 New: Auto-updates prayer times when you travel more than 10km.
+🔔 Improved: Prayer silence alarms now bypass Doze mode using AlarmClock API.
+🔁 Fixed: Silence scheduling now fully recovers after device reboot or time change.

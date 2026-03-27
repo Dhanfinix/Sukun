@@ -1,4 +1,4 @@
-🕌 Baru: Lencana status pelacakan geofence untuk masjid terdekat.
-📌 Baru: Sematkan masjid favorit Anda agar tetap aktif meskipun batas 10 slot tercapai.
-📊 Peningkatan: Penghitung visual slot geofence aktif di daftar masjid.
-🌐 Peningkatan: Semua terjemahan (Inggris, Indonesia, Arab) sekarang dissinkronkan sepenuhnya.
+⚡ Baru: Mode Geofence Instan — aplikasi tetap aktif agar langsung hening saat memasuki masjid.
+🌍 Baru: Waktu sholat otomatis diperbarui ketika kamu bepergian lebih dari 10 km.
+🔔 Peningkatan: Alarm hening sholat kini melewati Doze mode menggunakan AlarmClock API.
+🔁 Perbaikan: Penjadwalan hening kini pulih sepenuhnya setelah reboot atau perubahan waktu.
