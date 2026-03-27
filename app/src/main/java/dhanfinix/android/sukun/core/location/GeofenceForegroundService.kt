@@ -74,7 +74,7 @@ class GeofenceForegroundService : Service() {
             .setContentTitle(getString(R.string.fg_service_notification_title))
             .setContentText(getString(R.string.fg_service_notification_desc))
             .setSmallIcon(R.drawable.ic_notification)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setOngoing(true)
@@ -197,7 +197,7 @@ class GeofenceForegroundService : Service() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 getString(R.string.fg_service_channel_name),
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = getString(R.string.fg_service_channel_desc)
             }
@@ -207,7 +207,7 @@ class GeofenceForegroundService : Service() {
     }
 
     companion object {
-        private const val CHANNEL_ID = "GeofenceForegroundChannel"
+        private const val CHANNEL_ID = "GeofenceForegroundChannelV2"
         private const val NOTIFICATION_ID = 888
         private const val ACTION_STOP_SERVICE = "dhanfinix.android.sukun.ACTION_STOP_SERVICE"
     }
