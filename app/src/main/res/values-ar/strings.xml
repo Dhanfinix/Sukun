@@ -241,6 +241,17 @@
     <string name="status_silenced_at">تم الكتم في %1$s</string>
     <string name="status_nearby">بالقرب من %1$s</string>
     <string name="action_silence_now">الكتم الآن</string>
+    <string name="notif_geofence_entered">تم دخول %1$s</string>
+    <string name="notif_geofence_left">تم الخروج من %1$s</string>
+    <string name="notif_geofence_enter_action">اضغط لتفعيل الوضع الصامت</string>
+    <string name="notif_volume_restored">تم استعادة مستوى الصوت الطبيعي</string>
+    <!-- Aggressive Location / Instant Geofence Mode -->
+    <string name="aggressive_location_mode_title">نطاق جغرافي فوري</string>
+    <string name="aggressive_location_mode_desc">يبقي التطبيق مستيقظاً لصمت فوري عند الوصول للمسجد. يستهلك طاقة بطارية أكثر.</string>
+    <string name="fg_service_notification_title">وضع الموقع الفوري نشط</string>
+    <string name="fg_service_notification_desc">يقوم سكون بمراقبة المناطق النشطة فوراً.</string>
+    <string name="fg_service_channel_name">مراقبة الموقع</string>
+    <string name="fg_service_channel_desc">نشط طالما وضع النطاق الجغرافي الفوري مفعل</string>
     <!-- Permissions -->
     <string name="permission_setup_required_title">مطلوب لضمان موثوقية أفضل</string>
     <string name="permission_background_location_title">الموقع في الخلفية (اختر "السماح طوال الوقت")</string>
