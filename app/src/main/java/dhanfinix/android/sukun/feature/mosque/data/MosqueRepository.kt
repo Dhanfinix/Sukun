@@ -50,6 +50,10 @@ class MosqueRepository(private val context: Context) {
         }
 
         val freshMosques = getNearbyMosques(latitude, longitude)
+        if (freshMosques == null) {
+            Log.e("MosqueRepository", "Aborting fetchAndSaveMosques due to network failure, preventing geofence wipeout")
+            return
+        }
 
         // Sort by distance, keep only the nearest N for geofencing
         val nearestMosques = freshMosques
@@ -158,7 +162,7 @@ class MosqueRepository(private val context: Context) {
     }
 
 
-    suspend fun getNearbyMosques(latitude: Double, longitude: Double, radiusMeters: Int = 500): List<SilentZone> {
+    suspend fun getNearbyMosques(latitude: Double, longitude: Double, radiusMeters: Int = 500): List<SilentZone>? {
         val query = """
             [out:json];
             (
@@ -192,7 +196,7 @@ class MosqueRepository(private val context: Context) {
             }
         } catch (e: Exception) {
             Log.e("MosqueRepository", "Error fetching mosques: ${e.message}")
-            emptyList()
+            null
         }
     }
 

@@ -1,5 +1,6 @@
 package dhanfinix.android.sukun.core.network
 
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -16,8 +17,17 @@ object ApiClient {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
+    private val userAgentInterceptor = Interceptor { chain ->
+        val original = chain.request()
+        val requestWithUserAgent = original.newBuilder()
+            .header("User-Agent", "SukunApp/1.1.5 (Android)") // Required by Overpass API to prevent 403 Forbidden
+            .build()
+        chain.proceed(requestWithUserAgent)
+    }
+
     private val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor(userAgentInterceptor)
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
         .build()
