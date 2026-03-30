@@ -244,6 +244,7 @@
     <string name="notif_geofence_entered">Memasuki %1$s</string>
     <string name="notif_geofence_left">Meninggalkan %1$s</string>
     <string name="notif_geofence_enter_action">Ketuk untuk mengaktifkan mode hening</string>
+    <string name="geofence_channel_name">Peringatan Zona Hening</string>
     <string name="notif_volume_restored">Volume dikembalikan ke normal</string>
     <!-- Aggressive Location / Instant Geofence Mode -->
     <string name="aggressive_location_mode_title">Geofence Instan</string>

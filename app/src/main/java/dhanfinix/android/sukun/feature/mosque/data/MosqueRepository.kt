@@ -37,14 +37,16 @@ class MosqueRepository(private val context: Context) {
         if (!force) {
             val lastLat = userPrefs.lastFetchLat.first()
             val lastLng = userPrefs.lastFetchLng.first()
+            // Only skip if we have a previous fetch location AND we haven't moved much
             if (lastLat != null && lastLng != null) {
                 val results = FloatArray(1)
                 Location.distanceBetween(latitude, longitude, lastLat, lastLng, results)
-                if (results[0] < 500f) {
-                    Log.d("MosqueRepository", "Skipping fetch: moved less than 500m since last fetch")
+                if (results[0] < 200f) {
+                    Log.d("MosqueRepository", "Skipping fetch: moved less than 200m since last fetch")
                     return
                 }
             }
+            // If lastLat/lastLng are null → first fetch ever → always proceed
         }
 
         val freshMosques = getNearbyMosques(latitude, longitude)

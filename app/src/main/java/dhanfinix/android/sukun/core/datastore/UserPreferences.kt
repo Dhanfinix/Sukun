@@ -133,12 +133,12 @@ class UserPreferences(private val context: Context) {
 
     val prayerDurations: Flow<Map<PrayerName, Int>> = context.dataStore.data.map { prefs ->
         mapOf(
-            PrayerName.FAJR to (prefs[KEY_DUR_FAJR] ?: 15),
-            PrayerName.DHUHR to (prefs[KEY_DUR_DHUHR] ?: 15),
-            PrayerName.JUMUAH to (prefs[KEY_DUR_JUMUAH] ?: 45), // Default to 45m for Jumu'ah
-            PrayerName.ASR to (prefs[KEY_DUR_ASR] ?: 15),
-            PrayerName.MAGHRIB to (prefs[KEY_DUR_MAGHRIB] ?: 15),
-            PrayerName.ISHA to (prefs[KEY_DUR_ISHA] ?: 15)
+            PrayerName.FAJR to (prefs[KEY_DUR_FAJR] ?: 30),
+            PrayerName.DHUHR to (prefs[KEY_DUR_DHUHR] ?: 30),
+            PrayerName.JUMUAH to (prefs[KEY_DUR_JUMUAH] ?: 60), // Default to 60m for Jumu'ah
+            PrayerName.ASR to (prefs[KEY_DUR_ASR] ?: 30),
+            PrayerName.MAGHRIB to (prefs[KEY_DUR_MAGHRIB] ?: 30),
+            PrayerName.ISHA to (prefs[KEY_DUR_ISHA] ?: 30)
         )
     }
 

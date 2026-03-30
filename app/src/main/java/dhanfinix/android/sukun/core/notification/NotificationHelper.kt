@@ -196,7 +196,7 @@ object NotificationHelper {
         if (manager.getNotificationChannel(GEOFENCE_CHANNEL_ID) == null) {
             val channel = NotificationChannel(
                 GEOFENCE_CHANNEL_ID, 
-                "Silent Zone Alerts", 
+                context.getString(R.string.geofence_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             manager.createNotificationChannel(channel)
@@ -217,7 +217,7 @@ object NotificationHelper {
         if (isEntering) {
             val silenceIntent = Intent(context, SilenceReceiver::class.java).apply {
                 action = SilenceReceiver.ACTION_START_SILENCE
-                putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, "Location: $zoneName")
+                putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, context.getString(R.string.label_location_prefix, zoneName))
                 putExtra(SilenceReceiver.KEY_DURATION_MIN, silenceDuration ?: 720) 
                 addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
             }

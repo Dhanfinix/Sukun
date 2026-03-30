@@ -245,6 +245,7 @@
     <string name="notif_geofence_entered">Entered %1$s</string>
     <string name="notif_geofence_left">Left %1$s</string>
     <string name="notif_geofence_enter_action">Tap to activate silent mode</string>
+    <string name="geofence_channel_name">Silent Zone Alerts</string>
     <string name="notif_volume_restored">Volume restored to normal</string>
     <!-- Aggressive Location / Instant Geofence Mode -->
     <string name="aggressive_location_mode_title">Instant Geofence</string>

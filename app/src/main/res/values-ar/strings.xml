@@ -244,6 +244,7 @@
     <string name="notif_geofence_entered">تم دخول %1$s</string>
     <string name="notif_geofence_left">تم الخروج من %1$s</string>
     <string name="notif_geofence_enter_action">اضغط لتفعيل الوضع الصامت</string>
+    <string name="geofence_channel_name">تنبيهات المناطق الهادئة</string>
     <string name="notif_volume_restored">تم استعادة مستوى الصوت الطبيعي</string>
     <!-- Aggressive Location / Instant Geofence Mode -->
     <string name="aggressive_location_mode_title">نطاق جغرافي فوري</string>
