@@ -363,39 +363,18 @@ private fun SilentZonesSearchPanel(
 @Composable
 internal fun SilentZonesBottomOverlay(
     modifier: Modifier = Modifier,
-    zones: List<SilentZone>,
-    activeZoneId: Long?,
     isLocationFresh: Boolean,
     isLocating: Boolean,
-    isListExpanded: Boolean,
-    isLocationSilenceEnabled: Boolean,
-    isAutoMosqueSilenceEnabled: Boolean,
-    isAggressiveLocationEnabled: Boolean,
-    activeGeofenceCount: Int = 0,
-    maxGeofenceSlots: Int = 10,
-    onToggleList: () -> Unit,
     onMyLocation: () -> Unit,
     onAddZone: () -> Unit,
-    onFocusZone: (SilentZone) -> Unit,
-    onEditZone: (SilentZone) -> Unit,
-    onDeleteZone: (SilentZone) -> Unit,
-    onToggleEnabled: (SilentZone) -> Unit,
-    onToggleAutoSilent: (SilentZone) -> Unit,
-    onLocationSilenceToggled: (Boolean) -> Unit,
-    onAutoMosqueSilenceToggled: (Boolean) -> Unit,
-    onAggressiveLocationToggled: (Boolean) -> Unit,
-    onRefreshMosques: () -> Unit,
-    onToggleMosquePin: (SilentZone) -> Unit = {}
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
             horizontalAlignment = Alignment.End
         ) {
             SmallFloatingActionButton(
@@ -424,293 +403,290 @@ internal fun SilentZonesBottomOverlay(
             ) {
                 Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.cd_add_zone))
             }
-            
-            if (isListExpanded && selectedTab == 1) {
-                // FAB removed as per user feedback - moving to contextual list header/empty state
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun SilentZonesSheetContent(
+    zones: List<SilentZone>,
+    activeZoneId: Long?,
+    isLocationSilenceEnabled: Boolean,
+    isAutoMosqueSilenceEnabled: Boolean,
+    isAggressiveLocationEnabled: Boolean,
+    activeGeofenceCount: Int = 0,
+    maxGeofenceSlots: Int = 10,
+    onFocusZone: (SilentZone) -> Unit,
+    onEditZone: (SilentZone) -> Unit,
+    onDeleteZone: (SilentZone) -> Unit,
+    onToggleEnabled: (SilentZone) -> Unit,
+    onToggleAutoSilent: (SilentZone) -> Unit,
+    onLocationSilenceToggled: (Boolean) -> Unit,
+    onAutoMosqueSilenceToggled: (Boolean) -> Unit,
+    onAggressiveLocationToggled: (Boolean) -> Unit,
+    onRefreshMosques: () -> Unit,
+    onToggleMosquePin: (SilentZone) -> Unit = {}
+) {
+    var selectedTab by remember { mutableIntStateOf(0) }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // Drag handle
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Surface(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(50)
+            ) {
+                Spacer(Modifier.padding(horizontal = 16.dp, vertical = 2.dp))
             }
         }
 
-        Card(
+        // Tab row
+        SecondaryTabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = Color.Transparent,
+            divider = {},
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Tab(
+                selected = selectedTab == 0,
+                onClick = { selectedTab = 0 },
+                text = {
+                    Text(
+                        "${stringResource(R.string.tab_custom)} (${java.lang.String.format(java.util.Locale.US, "%d", zones.count { it.source == SilentZoneSource.MANUAL })})"
+                    )
+                }
+            )
+            Tab(
+                selected = selectedTab == 1,
+                onClick = { selectedTab = 1 },
+                text = {
+                    Text(
+                        "${stringResource(R.string.tab_mosques)} (${java.lang.String.format(java.util.Locale.US, "%d", zones.count { it.source == SilentZoneSource.AUTO_MOSQUE })})"
+                    )
+                }
+            )
+        }
+
+        // Feature toggle
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .animateContentSize()
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp),
-            shape = RoundedCornerShape(24.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-            )
+                .padding(top = 12.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
+            Surface(
+                onClick = {
+                    if (selectedTab == 0) {
+                        onLocationSilenceToggled(!isLocationSilenceEnabled)
+                    } else {
+                        onAutoMosqueSilenceToggled(!isAutoMosqueSilenceEnabled)
+                    }
+                },
+                shape = MaterialTheme.shapes.medium,
+                color = if (if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled)
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                else
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onToggleList() }
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Rounded.History,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.width(12.dp))
+                    Icon(
+                        imageVector = if (selectedTab == 0) {
+                            if (isLocationSilenceEnabled) Icons.Rounded.GpsFixed else Icons.Rounded.LocationOff
+                        } else {
+                            if (isAutoMosqueSilenceEnabled) Icons.Rounded.GpsFixed else Icons.Rounded.LocationOff
+                        },
+                        contentDescription = null,
+                        tint = if (if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "${stringResource(R.string.action_list)} (${java.lang.String.format(java.util.Locale.US, "%d", zones.size)})",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeightCompose.SemiBold
+                            if (selectedTab == 0) stringResource(R.string.location_silence_title) else stringResource(R.string.auto_mosque_silence_title),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeightCompose.Bold
+                        )
+                        Text(
+                            if (if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled)
+                                if (selectedTab == 0) stringResource(R.string.location_silence_desc) else stringResource(R.string.auto_mosque_silence_desc)
+                            else
+                                stringResource(R.string.status_location_silence_disabled),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Icon(
-                        imageVector = if (isListExpanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
-                        contentDescription = if (isListExpanded) stringResource(R.string.cd_collapse) else stringResource(R.string.cd_expand)
+                    Switch(
+                        checked = if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled,
+                        onCheckedChange = if (selectedTab == 0) onLocationSilenceToggled else onAutoMosqueSilenceToggled,
+                        modifier = Modifier.scale(0.8f)
                     )
                 }
+            }
 
-                if (isListExpanded) {
-                        SecondaryTabRow(
-                            selectedTabIndex = selectedTab,
-                            containerColor = Color.Transparent,
-                            divider = {},
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Tab(
-                                selected = selectedTab == 0,
-                                onClick = { selectedTab = 0 },
-                                text = { Text(stringResource(R.string.tab_custom)) }
-                            )
-                            Tab(
-                                selected = selectedTab == 1,
-                                onClick = { selectedTab = 1 },
-                                text = { Text(stringResource(R.string.tab_mosques)) }
-                            )
-                        }
-
-                    Column(
+            // Instant Geofence toggle — only on Mosque tab
+            AnimatedVisibility(
+                visible = selectedTab == 1 && isAutoMosqueSilenceEnabled,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Surface(
+                    onClick = { onAggressiveLocationToggled(!isAggressiveLocationEnabled) },
+                    shape = MaterialTheme.shapes.medium,
+                    color = Color.Transparent,
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .padding(bottom = 12.dp)
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Surface(
-                            onClick = { 
-                                if (selectedTab == 0) {
-                                    onLocationSilenceToggled(!isLocationSilenceEnabled)
-                                } else {
-                                    onAutoMosqueSilenceToggled(!isAutoMosqueSilenceEnabled)
-                                }
-                            },
-                            shape = MaterialTheme.shapes.medium,
-                            color = if (if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled) 
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                            else 
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = if (selectedTab == 0) {
-                                        if (isLocationSilenceEnabled) Icons.Rounded.GpsFixed else Icons.Rounded.LocationOff
-                                    } else {
-                                        if (isAutoMosqueSilenceEnabled) Icons.Rounded.GpsFixed else Icons.Rounded.LocationOff
-                                    },
-                                    contentDescription = null,
-                                    tint = if (if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled) 
-                                        MaterialTheme.colorScheme.primary 
-                                    else 
-                                        MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(Modifier.width(12.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        if (selectedTab == 0) stringResource(R.string.location_silence_title) else stringResource(R.string.auto_mosque_silence_title),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeightCompose.Bold
-                                    )
-                                    Text(
-                                        if (if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled) 
-                                            if (selectedTab == 0) stringResource(R.string.location_silence_desc) else stringResource(R.string.auto_mosque_silence_desc)
-                                        else 
-                                            stringResource(R.string.status_location_silence_disabled),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                Switch(
-                                    checked = if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled,
-                                    onCheckedChange = if (selectedTab == 0) onLocationSilenceToggled else onAutoMosqueSilenceToggled,
-                                    modifier = Modifier.scale(0.8f)
-                                )
-                            }
+                        Icon(
+                            imageVector = Icons.Rounded.GpsFixed,
+                            contentDescription = null,
+                            tint = if (isAggressiveLocationEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.aggressive_location_mode_title),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = if (isAggressiveLocationEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                stringResource(R.string.aggressive_location_mode_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-
-                        // Aggressive Location Toggle - only relevant on the Mosque tab
-                        AnimatedVisibility(
-                            visible = selectedTab == 1 && isAutoMosqueSilenceEnabled,
-                            enter = expandVertically() + fadeIn(),
-                            exit = shrinkVertically() + fadeOut()
-                        ) {
-                            Surface(
-                                onClick = { onAggressiveLocationToggled(!isAggressiveLocationEnabled) },
-                                shape = MaterialTheme.shapes.medium,
-                                color = Color.Transparent,
-                                modifier = Modifier.padding(top = 4.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.GpsFixed,
-                                        contentDescription = null,
-                                        tint = if (isAggressiveLocationEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(Modifier.width(12.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            stringResource(R.string.aggressive_location_mode_title),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = if (isAggressiveLocationEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                        )
-                                        Text(
-                                            stringResource(R.string.aggressive_location_mode_desc),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    Switch(
-                                        checked = isAggressiveLocationEnabled,
-                                        onCheckedChange = onAggressiveLocationToggled,
-                                        modifier = Modifier.scale(0.7f)
-                                    )
-                                }
-                            }
-                        }
+                        Switch(
+                            checked = isAggressiveLocationEnabled,
+                            onCheckedChange = onAggressiveLocationToggled,
+                            modifier = Modifier.scale(0.7f)
+                        )
                     }
+                }
+            }
+        }
 
-                    val filteredZones = zones.filter { 
-                        if (selectedTab == 0) it.source == SilentZoneSource.MANUAL 
-                        else it.source == SilentZoneSource.AUTO_MOSQUE 
+        // Zone list
+        val filteredZones = zones.filter {
+            if (selectedTab == 0) it.source == SilentZoneSource.MANUAL
+            else it.source == SilentZoneSource.AUTO_MOSQUE
+        }
+
+        if (filteredZones.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    if (selectedTab == 0) stringResource(R.string.no_zones_added) else stringResource(R.string.no_mosques_detected),
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                if (selectedTab == 1) {
+                    Spacer(Modifier.height(16.dp))
+                    FilledTonalButton(
+                        onClick = onRefreshMosques,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.btn_refresh))
                     }
-
-                    if (filteredZones.isEmpty()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                }
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (selectedTab == 1) {
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                if (selectedTab == 0) stringResource(R.string.no_zones_added) else stringResource(R.string.no_mosques_detected),
-                                color = MaterialTheme.colorScheme.secondary
+                                stringResource(R.string.label_detected_mosques),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeightCompose.Bold
                             )
-                            if (selectedTab == 1) {
-                                Spacer(Modifier.height(16.dp))
-                                FilledTonalButton(
-                                    onClick = onRefreshMosques,
-                                    shape = RoundedCornerShape(12.dp)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                val slotColor = if (activeGeofenceCount >= maxGeofenceSlots)
+                                    MaterialTheme.colorScheme.errorContainer
+                                else
+                                    MaterialTheme.colorScheme.primaryContainer
+                                val slotTextColor = if (activeGeofenceCount >= maxGeofenceSlots)
+                                    MaterialTheme.colorScheme.onErrorContainer
+                                else
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                Surface(
+                                    color = slotColor,
+                                    shape = RoundedCornerShape(50),
+                                    tonalElevation = 0.dp
                                 ) {
-                                    Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(stringResource(R.string.btn_refresh))
+                                    Text(
+                                        stringResource(R.string.geofence_counter, activeGeofenceCount, maxGeofenceSlots),
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = slotTextColor
+                                    )
                                 }
-                            }
-                        }
-                    } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.fillMaxHeight(0.6f)
-                        ) {
-                            if (selectedTab == 1) {
-                                item {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            stringResource(R.string.label_detected_mosques),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.secondary,
-                                            fontWeight = FontWeightCompose.Bold
-                                        )
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                        ) {
-                                            // Geofence slot counter chip
-                                            val slotColor = if (activeGeofenceCount >= maxGeofenceSlots)
-                                                MaterialTheme.colorScheme.errorContainer
-                                            else
-                                                MaterialTheme.colorScheme.primaryContainer
-                                            val slotTextColor = if (activeGeofenceCount >= maxGeofenceSlots)
-                                                MaterialTheme.colorScheme.onErrorContainer
-                                            else
-                                                MaterialTheme.colorScheme.onPrimaryContainer
-                                            Surface(
-                                                color = slotColor,
-                                                shape = RoundedCornerShape(50),
-                                                tonalElevation = 0.dp
-                                            ) {
-                                                Text(
-                                                    stringResource(R.string.geofence_counter, activeGeofenceCount, maxGeofenceSlots),
-                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = slotTextColor
-                                                )
-                                            }
-                                            TextButton(
-                                                onClick = onRefreshMosques,
-                                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                                                modifier = Modifier.height(28.dp)
-                                            ) {
-                                                Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                                                Spacer(Modifier.width(4.dp))
-                                                Text(stringResource(R.string.btn_refresh), style = MaterialTheme.typography.labelSmall)
-                                            }
-                                        }
-                                    }
+                                TextButton(
+                                    onClick = onRefreshMosques,
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                    modifier = Modifier.height(28.dp)
+                                ) {
+                                    Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(stringResource(R.string.btn_refresh), style = MaterialTheme.typography.labelSmall)
                                 }
-                            }
-                            
-                            items(filteredZones) { zone ->
-                                val isActive = activeZoneId == zone.id
-                                SilentZoneCard(
-                                    zone = zone,
-                                    isActive = isActive,
-                                    isGlobalEnabled = if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled,
-                                    onToggleEnabled = { onToggleEnabled(zone) },
-                                    onToggleAutoSilent = { onToggleAutoSilent(zone) },
-                                    onFocus = { onFocusZone(zone) },
-                                    onEdit = { onEditZone(zone) },
-                                    onDelete = { onDeleteZone(zone) },
-                                    onTogglePin = if (zone.source == SilentZoneSource.AUTO_MOSQUE) {
-                                        { onToggleMosquePin(zone) }
-                                    } else null
-                                )
                             }
                         }
                     }
+                }
+
+                items(filteredZones) { zone ->
+                    val isActive = activeZoneId == zone.id
+                    SilentZoneCard(
+                        zone = zone,
+                        isActive = isActive,
+                        isGlobalEnabled = if (selectedTab == 0) isLocationSilenceEnabled else isAutoMosqueSilenceEnabled,
+                        onToggleEnabled = { onToggleEnabled(zone) },
+                        onToggleAutoSilent = { onToggleAutoSilent(zone) },
+                        onFocus = { onFocusZone(zone) },
+                        onEdit = { onEditZone(zone) },
+                        onDelete = { onDeleteZone(zone) },
+                        onTogglePin = if (zone.source == SilentZoneSource.AUTO_MOSQUE) {
+                            { onToggleMosquePin(zone) }
+                        } else null
+                    )
                 }
             }
         }
     }
 }
+
 
 @Composable
 private fun SilentZoneCard(

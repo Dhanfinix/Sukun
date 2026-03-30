@@ -12,14 +12,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -44,9 +50,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.TextButton
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.database.entity.SilentZone
 import dhanfinix.android.sukun.feature.mosque.components.BackgroundLocationRationaleDialog
@@ -54,6 +57,7 @@ import dhanfinix.android.sukun.feature.mosque.components.CameraRequest
 import dhanfinix.android.sukun.feature.mosque.components.OsmMapView
 import dhanfinix.android.sukun.feature.mosque.components.SilentZoneEditDialog
 import dhanfinix.android.sukun.feature.mosque.components.SilentZonesBottomOverlay
+import dhanfinix.android.sukun.feature.mosque.components.SilentZonesSheetContent
 import dhanfinix.android.sukun.feature.mosque.components.SilentZonesTopOverlay
 import kotlinx.coroutines.delay
 
@@ -71,11 +75,9 @@ fun SilentZonesScreen(
     var selectedLat by remember { mutableStateOf(0.0) }
     var selectedLng by remember { mutableStateOf(0.0) }
 
-    // Initialize centering from uiState once it arrives from DataStore
     var centerLat by remember(uiState.userLat != null) { mutableStateOf(uiState.userLat) }
     var centerLng by remember(uiState.userLng != null) { mutableStateOf(uiState.userLng) }
     var zoom by remember { mutableStateOf(18.0) }
-    var isListExpanded by remember { mutableStateOf(false) }
     var editingZone by remember { mutableStateOf<SilentZone?>(null) }
     var focusedZoneId by remember { mutableStateOf<Long?>(null) }
     var searchQuery by remember { mutableStateOf("") }
@@ -162,7 +164,6 @@ fun SilentZonesScreen(
                 searchPinLat = lat
                 searchPinLng = lng
                 searchPinLabel = searchQuery
-                isListExpanded = false
                 searchExpanded = false
             },
             onError = { message ->
@@ -188,7 +189,6 @@ fun SilentZonesScreen(
         searchPinLat = suggestion.latitude
         searchPinLng = suggestion.longitude
         searchPinLabel = suggestion.title
-        isListExpanded = false
         searchExpanded = false
     }
 
@@ -200,7 +200,15 @@ fun SilentZonesScreen(
         }
     }
 
-    Scaffold(
+    val sheetState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(
+            initialValue = SheetValue.PartiallyExpanded,
+            skipHiddenState = true
+        )
+    )
+
+    BottomSheetScaffold(
+        scaffoldState = sheetState,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.location_silence_title)) },
@@ -218,7 +226,37 @@ fun SilentZonesScreen(
                     }
                 }
             )
-        }
+        },
+        sheetContent = {
+            SilentZonesSheetContent(
+                zones = uiState.zones,
+                activeZoneId = uiState.activeZoneId,
+                isLocationSilenceEnabled = uiState.isLocationSilenceEnabled,
+                isAutoMosqueSilenceEnabled = uiState.isAutoMosqueSilenceEnabled,
+                isAggressiveLocationEnabled = uiState.isAggressiveLocationEnabled,
+                activeGeofenceCount = uiState.activeGeofenceCount,
+                maxGeofenceSlots = uiState.maxGeofenceSlots,
+                onFocusZone = { zone ->
+                    focusedZoneId = zone.id
+                    zoom = 18.0
+                    cameraRequest = CameraRequest(zone.latitude, zone.longitude, 18.0)
+                },
+                onEditZone = { zone -> editingZone = zone },
+                onDeleteZone = { zone ->
+                    zoneToDelete = zone
+                    showDeleteConfirmation = true
+                },
+                onToggleEnabled = { zone -> viewModel.toggleSilentZone(zone) },
+                onToggleAutoSilent = { zone -> viewModel.toggleAutoSilent(zone) },
+                onLocationSilenceToggled = { enabled -> viewModel.setLocationSilenceEnabled(enabled) },
+                onAutoMosqueSilenceToggled = { enabled -> viewModel.setAutoMosqueSilenceEnabled(enabled) },
+                onAggressiveLocationToggled = { enabled -> viewModel.setAggressiveLocationEnabled(enabled) },
+                onRefreshMosques = { viewModel.refreshMosques() },
+                onToggleMosquePin = { zone -> viewModel.toggleMosquePinned(zone) }
+            )
+        },
+        sheetPeekHeight = 120.dp,
+        sheetDragHandle = null,
     ) { padding ->
         Box(
             modifier = Modifier
@@ -241,7 +279,6 @@ fun SilentZonesScreen(
                     focusedZoneId = focusedZoneId,
                     activeZoneId = uiState.activeZoneId,
                     onMapClick = {
-                        isListExpanded = false
                         focusedZoneId = null
                     },
                     onMapLongClick = { lat, lng ->
@@ -268,7 +305,6 @@ fun SilentZonesScreen(
                     }
                 )
             } else {
-                // Show a clean loading state instead of a blinking map
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -325,20 +361,13 @@ fun SilentZonesScreen(
                 }
             )
 
-
+            // FABs float above the sheet peek area
             SilentZonesBottomOverlay(
-                modifier = Modifier.align(Alignment.BottomCenter),
-                zones = uiState.zones,
-                activeZoneId = uiState.activeZoneId,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 136.dp),
                 isLocationFresh = uiState.isLocationFresh,
                 isLocating = uiState.isLoading,
-                isListExpanded = isListExpanded,
-                isLocationSilenceEnabled = uiState.isLocationSilenceEnabled,
-                isAutoMosqueSilenceEnabled = uiState.isAutoMosqueSilenceEnabled,
-                isAggressiveLocationEnabled = uiState.isAggressiveLocationEnabled,
-                activeGeofenceCount = uiState.activeGeofenceCount,
-                maxGeofenceSlots = uiState.maxGeofenceSlots,
-                onToggleList = { isListExpanded = !isListExpanded },
                 onMyLocation = {
                     when {
                         !uiState.isFineLocationGranted -> {
@@ -346,7 +375,6 @@ fun SilentZonesScreen(
                             fineLocationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                         }
                         uiState.userLat != null && uiState.userLng != null -> {
-                            // Center immediately to whatever we have, even if stale, then try to refresh.
                             zoom = 18.0
                             cameraRequest = CameraRequest(uiState.userLat!!, uiState.userLng!!, 18.0)
                             viewModel.requestSingleLocationFix {
@@ -365,33 +393,6 @@ fun SilentZonesScreen(
                     selectedLat = uiState.userLat ?: centerLat ?: 0.0
                     selectedLng = uiState.userLng ?: centerLng ?: 0.0
                     showAddDialog = true
-                },
-                onFocusZone = { zone ->
-                    focusedZoneId = zone.id
-                    zoom = 18.0
-                    cameraRequest = CameraRequest(zone.latitude, zone.longitude, 18.0)
-                },
-                onEditZone = { zone -> editingZone = zone },
-                onDeleteZone = { zone -> 
-                    zoneToDelete = zone
-                    showDeleteConfirmation = true
-                },
-                onToggleEnabled = { zone -> viewModel.toggleSilentZone(zone) },
-                onToggleAutoSilent = { zone -> viewModel.toggleAutoSilent(zone) },
-                onLocationSilenceToggled = { enabled ->
-                    viewModel.setLocationSilenceEnabled(enabled)
-                },
-                onAutoMosqueSilenceToggled = { enabled ->
-                    viewModel.setAutoMosqueSilenceEnabled(enabled)
-                },
-                onAggressiveLocationToggled = { enabled ->
-                    viewModel.setAggressiveLocationEnabled(enabled)
-                },
-                onRefreshMosques = {
-                    viewModel.refreshMosques()
-                },
-                onToggleMosquePin = { zone ->
-                    viewModel.toggleMosquePinned(zone)
                 }
             )
         }
