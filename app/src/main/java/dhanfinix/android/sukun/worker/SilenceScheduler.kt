@@ -42,10 +42,22 @@ class SilenceScheduler(private val context: Context) {
             if (!todayPrayer.isEnabled) return@forEach
 
             val todayTime = parseTime(todayPrayer.time) ?: return@forEach
+            val duration = durations[todayPrayer.name] ?: 15
+            val restoreTime = todayTime.plusMinutes(duration.toLong())
             
             if (todayTime.isAfter(now)) {
                 // Today's adhan is still in the future
-                scheduleSinglePrayer(todayPrayer, durations[todayPrayer.name] ?: 15, LocalDate.now(), reminderEnabled, reminderMinutes)
+                scheduleSinglePrayer(todayPrayer, duration, LocalDate.now(), reminderEnabled, reminderMinutes)
+            } else if (now.isBefore(restoreTime) || (restoreTime.isBefore(todayTime) && now.isAfter(todayTime))) {
+                // Adhan passed, but we are currently inside the silence window.
+                // We MUST schedule the restore alarm so it comes back to normal!
+                scheduleRestoreOnly(todayPrayer, duration, LocalDate.now())
+
+                // Then also schedule tomorrow's full sequence
+                val tomorrowPrayer = prayersTomorrow.find { it.name == todayPrayer.name }
+                if (tomorrowPrayer?.isEnabled == true) {
+                    scheduleSinglePrayer(tomorrowPrayer, durations[tomorrowPrayer.name] ?: 15, LocalDate.now().plusDays(1), reminderEnabled, reminderMinutes)
+                }
             } else {
                 // Today's adhan passed, schedule tomorrow's instead
                 val tomorrowPrayer = prayersTomorrow.find { it.name == todayPrayer.name }
@@ -54,8 +66,33 @@ class SilenceScheduler(private val context: Context) {
                 }
             }
         }
-        
-        scheduleMidnightReset()
+    }
+
+    private fun scheduleRestoreOnly(prayer: PrayerInfo, durationMin: Int, date: LocalDate) {
+        val prayerTime = parseTime(prayer.time) ?: return
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.YEAR, date.year)
+            set(Calendar.MONTH, date.monthValue - 1)
+            set(Calendar.DAY_OF_MONTH, date.dayOfMonth)
+            set(Calendar.HOUR_OF_DAY, prayerTime.hour)
+            set(Calendar.MINUTE, prayerTime.minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val requestCode = prayer.name.ordinal
+
+        val restoreTimeMs = calendar.timeInMillis + (durationMin * 60 * 1000L)
+        if (restoreTimeMs > System.currentTimeMillis()) {
+            val pendingRestore = PendingIntent.getBroadcast(
+                context,
+                requestCode + 100, // Offset to avoid collision
+                getRestoreIntent(),
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
+        }
     }
 
     fun scheduleManual(durationMin: Int) {
@@ -92,9 +129,6 @@ class SilenceScheduler(private val context: Context) {
     }
 
     fun cancelAll() {
-        // Cancel manual restore intent
-        cancelManualAlarms()
-
         // Cancel specific prayer scheduled intents
         dhanfinix.android.sukun.feature.prayer.data.model.PrayerName.entries.forEach { prayerName ->
             val pendingStart = getPendingIntent(SilenceReceiver.ACTION_START_SILENCE, prayerName.ordinal)
@@ -195,7 +229,7 @@ class SilenceScheduler(private val context: Context) {
         }
     }
 
-    private fun scheduleMidnightReset() {
+    fun scheduleMidnightReset() {
         val calendar = Calendar.getInstance().apply {
             add(Calendar.DAY_OF_YEAR, 1)
             set(Calendar.HOUR_OF_DAY, 0)
