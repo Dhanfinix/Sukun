@@ -1,3 +1,4 @@
-🔔 New: Contextual prayer reminders.
-Fixed: Resolved an issue where pre-prayer reminders were not appearing correctly.
-🔔 New: Smooth language and RTL/LTR switching without app restart.
+⚡ New: Instant Geofence mode — keeps app awake for instant mosque silence on arrival.
+🌍 New: Auto-updates prayer times when you travel more than 10km.
+🔔 Improved: Prayer silence alarms now bypass Doze mode using AlarmClock API.
+🔁 Fixed: Silence scheduling now fully recovers after device reboot or time change.

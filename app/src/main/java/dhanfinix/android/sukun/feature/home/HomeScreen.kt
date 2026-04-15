@@ -18,15 +18,16 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.asPaddingValues
@@ -59,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.layout.size
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import androidx.compose.ui.text.font.FontWeight
@@ -79,6 +81,7 @@ import dhanfinix.android.sukun.feature.volume.VolumeSection
 import dhanfinix.android.sukun.feature.volume.VolumeViewModel
 import dhanfinix.android.sukun.core.reliability.ReliabilityManager
 import dhanfinix.android.sukun.core.designsystem.components.TopSnackbar
+import dhanfinix.android.sukun.feature.home.components.LocationSilenceSection
 import androidx.compose.ui.Alignment
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +90,8 @@ fun HomeScreen(
     mainVm: MainViewModel,
     onShowOnboarding: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenLocationSilent: () -> Unit,
+    onShowDonation: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val volumeVm: VolumeViewModel = viewModel()
@@ -124,9 +129,7 @@ fun HomeScreen(
     val density = LocalDensity.current
     val config = LocalConfiguration.current
 
-    PullToRefreshBox(
-        isRefreshing = prayerState.isLoading,
-        onRefresh = { prayerVm.onEvent(PrayerEvent.RefreshTimes) },
+    Box(
         modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         Scaffold(
@@ -171,13 +174,17 @@ fun HomeScreen(
                 }
             }
         ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(innerPadding)
-                    .padding(vertical = 12.dp)
-                    .padding(
+            PullToRefreshBox(
+                isRefreshing = prayerState.isLoading,
+                onRefresh = { prayerVm.onEvent(PrayerEvent.RefreshTimes) },
+                modifier = Modifier.fillMaxSize().padding(innerPadding)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                        .padding(vertical = 12.dp)
+                        .padding(
                         bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars
                             .asPaddingValues()
                             .calculateBottomPadding()
@@ -220,6 +227,7 @@ fun HomeScreen(
                                 contentDescription = null,
                                 modifier = Modifier.size(28.dp)
                             )
+                            //todo: ko-fi donate popup not shown
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
@@ -236,7 +244,22 @@ fun HomeScreen(
                     }
                 }
 
-                // ── Divider ──
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                LocationSilenceSection(
+                    state = volumeState,
+                    onManageClick = onOpenLocationSilent,
+                    onSilenceNowClick = { volumeVm.onEvent(VolumeEvent.SilenceNow) },
+                    onLocationSilenceToggled = { enabled ->
+                        volumeVm.onEvent(VolumeEvent.LocationSilenceToggled(enabled))
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
+                )
+
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
@@ -251,11 +274,53 @@ fun HomeScreen(
                     onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
                 )
 
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                Surface(
+                    onClick = onShowDonation,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    shape = MaterialTheme.shapes.large
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Favorite,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.label_support_sukun),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = stringResource(R.string.desc_support_sukun),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+        }
 
-        if (!hasSeenCoachmark) {
+        AnimatedVisibility(
+            visible = !hasSeenCoachmark,
+            enter = fadeIn(tween(400)),
+            exit = fadeOut(tween(300))
+        ) {
             CoachMarkOverlay(
                 targets = coachMarkTargets,
                 onStepChange = { step ->

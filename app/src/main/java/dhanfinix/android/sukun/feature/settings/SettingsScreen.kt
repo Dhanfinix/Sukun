@@ -2,6 +2,10 @@ package dhanfinix.android.sukun.feature.settings
 
 import android.content.Intent
 import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.toArgb
+import dhanfinix.android.sukun.core.designsystem.util.launchSukunCustomTab
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -25,12 +29,15 @@ import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.AppLanguage
 import dhanfinix.android.sukun.core.datastore.AppTheme
 import dhanfinix.android.sukun.core.datastore.TimeFormat
+import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     mainVm: MainViewModel,
     onOpenAbout: () -> Unit,
+    onOpenLocationSilent: () -> Unit,
+    onOpenWebView: (String, String) -> Unit,
     onBack: () -> Unit
 ) {
     val appTheme by mainVm.appTheme.collectAsState()
@@ -45,11 +52,14 @@ fun SettingsScreen(
     var showLanguageSheet by remember { mutableStateOf(false) }
     var showTimeFormatSheet by remember { mutableStateOf(false) }
     var showReminderSheet by remember { mutableStateOf(false) }
+    var showDonationMethodSheet by remember { mutableStateOf(false) }
 
 
 
     val isArabic = java.util.Locale.getDefault().language == "ar"
     val context = LocalContext.current
+    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary.toArgb()
 
     Scaffold(
         topBar = {
@@ -152,8 +162,6 @@ fun SettingsScreen(
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
             // General Section
             SettingsSectionTitle(stringResource(R.string.section_general))
             
@@ -161,7 +169,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.show_onboarding),
                 subtitle = stringResource(R.string.show_onboarding_desc),
                 icon = Icons.AutoMirrored.Rounded.Help,
-                onClick = { 
+                onClick = {
                     mainVm.setCoachmarkShown(false)
                     onBack()
                 }
@@ -183,6 +191,18 @@ fun SettingsScreen(
                 subtitle = null,
                 icon = Icons.Rounded.Info,
                 onClick = onOpenAbout
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Support Section
+            SettingsSectionTitle(stringResource(R.string.label_support_sukun))
+
+            SettingsItem(
+                title = stringResource(R.string.label_support_sukun),
+                subtitle = stringResource(R.string.desc_support_sukun),
+                icon = Icons.Rounded.Favorite,
+                onClick = { showDonationMethodSheet = true }
             )
         }
 
@@ -218,6 +238,21 @@ fun SettingsScreen(
                 currentMinutes = reminderMinutes,
                 onMinutesSelected = { mainVm.setReminderMinutes(it) },
                 onDismiss = { showReminderSheet = false }
+            )
+        }
+
+        if (showDonationMethodSheet) {
+            DonationBottomSheet(
+                onDonateKofi = {
+                    launchSukunCustomTab(context, "https://ko-fi.com/dhandev", primaryColor, onPrimaryColor)
+                    showDonationMethodSheet = false
+                },
+                onDonateSaweria = {
+                    launchSukunCustomTab(context, "https://saweria.co/dhandev", primaryColor, onPrimaryColor)
+                    showDonationMethodSheet = false
+                },
+                onDismissRequest = { showDonationMethodSheet = false },
+                dismissTextContext = R.string.btn_cancel
             )
         }
     }
@@ -522,3 +557,4 @@ private fun ReminderSelectionSheet(
         }
     }
 }
+

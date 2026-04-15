@@ -29,8 +29,10 @@ object NotificationHelper {
 
     private const val CHANNEL_ID = "sukun_silence_channel"
     private const val REMINDER_CHANNEL_ID = "sukun_reminder_channel"
-    const val NOTIFICATION_ID = 1001
-    const val REMINDER_NOTIFICATION_ID = 1002
+    private const val GEOFENCE_CHANNEL_ID = "sukun_geofence_channel"
+
+    const val ID_ACTIVE_STATUS = 1001
+    const val ID_ALERT_EVENT = 1002
 
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
@@ -112,6 +114,7 @@ object NotificationHelper {
         // ── Expanded (big content) view ───────────────────────────────────────
         val expandedView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_expanded)
         expandedView.setTextViewText(R.id.notif_expanded_prayer, prayerName)
+        expandedView.setTextViewText(R.id.notif_expanded_prayer, prayerName)
         expandedView.setTextViewText(R.id.notif_expanded_status, localizedContext.getString(R.string.silence_active))
         expandedView.setChronometer(R.id.notif_expanded_chronometer, chronometerBase, "%s", true)
         expandedView.setChronometerCountDown(R.id.notif_expanded_chronometer, true)
@@ -130,12 +133,14 @@ object NotificationHelper {
             .setTimeoutAfter(remainingMs)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(NOTIFICATION_ID, builder.build())
+        manager.notify(ID_ACTIVE_STATUS, builder.build())
+        // When active silence starts, clear any transient alerts (like "Entered Area" or "Reminder")
+        manager.cancel(ID_ALERT_EVENT)
     }
 
     fun cancelNotification(context: Context) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.cancel(NOTIFICATION_ID)
+        manager.cancel(ID_ACTIVE_STATUS)
     }
 
     fun showReminderNotification(context: Context, prayerName: String, minutesBefore: Int) {
@@ -172,6 +177,58 @@ object NotificationHelper {
             .addAction(0, context.getString(R.string.btn_prepare), openAppPending)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(REMINDER_NOTIFICATION_ID, builder.build())
+        manager.notify(ID_ALERT_EVENT, builder.build())
+    }
+
+    fun showGeofenceStatusNotification(
+        context: Context, 
+        zoneName: String, 
+        isEntering: Boolean,
+        isAutoSilent: Boolean = true,
+        silenceDuration: Int? = null
+    ) {
+        // Optimization: If it's auto-silent, the "Active Silence" notification (ID 1001) 
+        // will show up immediately. We don't need a separate "Entered" alert (ID 1002).
+        if (isEntering && isAutoSilent) return
+
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        
+        if (manager.getNotificationChannel(GEOFENCE_CHANNEL_ID) == null) {
+            val channel = NotificationChannel(
+                GEOFENCE_CHANNEL_ID, 
+                context.getString(R.string.geofence_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            manager.createNotificationChannel(channel)
+        }
+
+        val title = if (isEntering) context.getString(R.string.notif_geofence_entered, zoneName) 
+                    else context.getString(R.string.notif_geofence_left, zoneName)
+        val content = if (isEntering) context.getString(R.string.notif_geofence_enter_action)
+                      else context.getString(R.string.notif_volume_restored)
+
+        val builder = NotificationCompat.Builder(context, GEOFENCE_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+
+        if (isEntering) {
+            val silenceIntent = Intent(context, SilenceReceiver::class.java).apply {
+                action = SilenceReceiver.ACTION_START_SILENCE
+                putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, context.getString(R.string.label_location_prefix, zoneName))
+                putExtra(SilenceReceiver.KEY_DURATION_MIN, silenceDuration ?: 720) 
+                addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+            }
+            val silencePending = PendingIntent.getBroadcast(
+                context, 3001, silenceIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.addAction(R.drawable.ic_notification, context.getString(R.string.action_silence_now), silencePending)
+            builder.setContentIntent(silencePending)
+        }
+
+        manager.notify(ID_ALERT_EVENT, builder.build())
     }
 }

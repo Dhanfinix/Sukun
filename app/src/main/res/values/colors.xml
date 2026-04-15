@@ -8,4 +8,16 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="splash_background">#FFB8A5E5</color>
+    <color name="zone_popup_bg">#FFFFFFFF</color>
+    <color name="zone_popup_stroke">#FFE0E0E0</color>
+    <color name="zone_chip_enabled">#FF4CAF50</color>
+    <color name="zone_chip_disabled">#FFFFCDD2</color>
+    <color name="zone_chip_neutral">#FFE0E0E0</color>
+    <color name="zone_text_primary">#FF1F1F1F</color>
+    <color name="zone_text_secondary">#FF5F6368</color>
+    <color name="zone_chip_enabled_text">#FFFFFFFF</color>
+    <color name="zone_chip_disabled_text">#FFB71C1C</color>
+    <color name="zone_chip_neutral_text">#FF424242</color>
+    <color name="search_pin">#FF6D4C41</color>
+    <color name="search_pin_center">#FFFFFFFF</color>
 </resources>

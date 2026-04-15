@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.work.WorkManager
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import java.time.LocalDate
@@ -20,7 +19,6 @@ import java.util.Calendar
 class SilenceScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    private val workManager = WorkManager.getInstance(context)
 
     /**
      * Schedules the NEXT occurrence of each enabled prayer across a rolling 24-hour window.
@@ -66,6 +64,24 @@ class SilenceScheduler(private val context: Context) {
         val startIntent = Intent(context, SilenceReceiver::class.java).apply {
             action = SilenceReceiver.ACTION_START_SILENCE
             putExtra(SilenceReceiver.KEY_PRAYER_NAME, R.string.label_manual)
+            putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
+        }
+        context.sendBroadcast(startIntent)
+
+        val restoreTimeMs = System.currentTimeMillis() + (durationMin * 60 * 1000L)
+        val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE)
+
+        scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
+    }
+
+    fun scheduleImmediate(label: String, durationMin: Int) {
+        // Cancel any prior manual/immediate restore alarms
+        cancelManualAlarms()
+
+        // Start silence IMMEDIATELY and schedule restore in the future
+        val startIntent = Intent(context, SilenceReceiver::class.java).apply {
+            action = SilenceReceiver.ACTION_START_SILENCE
+            putExtra(SilenceReceiver.KEY_PRAYER_NAME_STRING, label)
             putExtra(SilenceReceiver.KEY_DURATION_MIN, durationMin)
         }
         context.sendBroadcast(startIntent)

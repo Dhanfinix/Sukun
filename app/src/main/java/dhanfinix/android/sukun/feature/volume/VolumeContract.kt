@@ -24,7 +24,12 @@ data class VolumeUiState(
     val silenceMode: dhanfinix.android.sukun.core.datastore.SilenceMode = dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT,
     // Pending silence duration that is waiting for overwrite confirmation
     val pendingOverwriteDurationMin: Int? = null,
-    val snackbarMessage: String? = null
+    val snackbarMessage: String? = null,
+    
+    // Silent Zone tracking for Home Screen
+    val silentZoneCount: Int = 0,
+    val activeSilentZoneName: String? = null,
+    val isLocationSilenceEnabled: Boolean = true
 )
 
 /**
@@ -48,4 +53,6 @@ sealed class VolumeEvent {
     data object ConfirmOverwrite : VolumeEvent()
     data object DismissOverwrite : VolumeEvent()
     data object SnackbarMessageConsumed : VolumeEvent()
+    data object SilenceNow : VolumeEvent()
+    data class LocationSilenceToggled(val enabled: Boolean) : VolumeEvent()
 }

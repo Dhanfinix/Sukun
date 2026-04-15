@@ -72,6 +72,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = true
         )
 
+    val isLocationSilenceEnabled: StateFlow<Boolean> = userPrefs.isLocationSilenceEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
+    val isAutoMosqueSilenceEnabled: StateFlow<Boolean> = userPrefs.isAutoMosqueSilenceEnabled
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
     val reminderMinutes: StateFlow<Int> = userPrefs.reminderMinutes
         .stateIn(
             scope = viewModelScope,
@@ -83,14 +97,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
+            initialValue = true
         )
 
     val hasSeenHomeCoachmark: StateFlow<Boolean> = userPrefs.hasSeenHomeCoachmark
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
+            initialValue = true
         )
 
     fun setTheme(theme: AppTheme) {
@@ -114,6 +128,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setReminderEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPrefs.setReminderEnabled(enabled)
+        }
+    }
+
+    fun setLocationSilenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setLocationSilenceEnabled(enabled)
+        }
+    }
+
+    fun setAutoMosqueSilenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefs.setAutoMosqueSilenceEnabled(enabled)
         }
     }
 
@@ -156,6 +182,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = false
         )
 
+    val shouldShowDonation: StateFlow<Boolean> = userPrefs.shouldShowDonation
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     init {
         viewModelScope.launch {
             userPrefs.incrementAppOpenCount()
@@ -165,6 +198,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun markAsRated() {
         viewModelScope.launch {
             userPrefs.setHasRated(true)
+        }
+    }
+
+    fun markDonationAsShown() {
+        viewModelScope.launch {
+            userPrefs.setHasShownDonation(true)
         }
     }
 }

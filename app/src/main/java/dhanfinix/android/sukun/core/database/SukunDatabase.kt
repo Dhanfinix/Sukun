@@ -4,16 +4,37 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import dhanfinix.android.sukun.core.database.dao.PrayerDao
+import dhanfinix.android.sukun.core.database.dao.SilentZoneDao
 import dhanfinix.android.sukun.core.database.entity.PrayerDay
+import dhanfinix.android.sukun.core.database.entity.SilentZone
 
-@Database(entities = [PrayerDay::class], version = 1, exportSchema = true)
+@Database(entities = [PrayerDay::class, SilentZone::class], version = 6, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class SukunDatabase : RoomDatabase() {
     abstract fun prayerDao(): PrayerDao
+    abstract fun silentZoneDao(): SilentZoneDao
 
     companion object {
         @Volatile
         private var INSTANCE: SukunDatabase? = null
+
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE silent_zones ADD COLUMN source TEXT NOT NULL DEFAULT 'MANUAL'")
+                db.execSQL("ALTER TABLE silent_zones ADD COLUMN externalId TEXT")
+            }
+        }
+
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE silent_zones ADD COLUMN isUserPinned INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE silent_zones ADD COLUMN hasActiveGeofence INTEGER NOT NULL DEFAULT 0")
+            }
+        }
 
         fun getDatabase(context: Context): SukunDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -21,10 +42,14 @@ abstract class SukunDatabase : RoomDatabase() {
                     context.applicationContext,
                     SukunDatabase::class.java,
                     "sukun_database"
-                ).build()
+                )
+                .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }
         }
     }
 }
+

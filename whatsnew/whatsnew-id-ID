@@ -1,3 +1,4 @@
-🔔 Baru: Pengingat Salat Kontekstual!
-Perbaikan: Menangani masalah notifikasi pengingat salat yang tidak muncul.
-🔔 Baru: Perpindahan bahasa dan format RTL/LTR yang lancar tanpa restart aplikasi.
+⚡ Baru: Mode Geofence Instan — aplikasi tetap aktif agar langsung hening saat memasuki masjid.
+🌍 Baru: Waktu sholat otomatis diperbarui ketika kamu bepergian lebih dari 10 km.
+🔔 Peningkatan: Alarm hening sholat kini melewati Doze mode menggunakan AlarmClock API.
+🔁 Perbaikan: Penjadwalan hening kini pulih sepenuhnya setelah reboot atau perubahan waktu.

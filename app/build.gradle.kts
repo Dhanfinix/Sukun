@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -14,8 +15,8 @@ android {
         applicationId = "dhanfinix.android.sukun"
         minSdk = 26
         targetSdk = 36
-        versionCode = 30
-        versionName = "1.1.4"
+        versionCode = 44
+        versionName = "1.1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -84,8 +85,6 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 
-    // WorkManager
-    implementation(libs.androidx.work.runtime.ktx)
 
     // Networking (Aladhan API)
     implementation(libs.retrofit)
@@ -101,6 +100,12 @@ dependencies {
     implementation(libs.play.app.update.ktx)
     implementation(libs.play.app.review)
     implementation(libs.play.app.review.ktx)
+
+    // Map (OSM)
+    implementation(libs.osmdroid.android)
+
+    // Browser (Custom Tabs for Ko-fi)
+    implementation(libs.androidx.browser)
 
 
 

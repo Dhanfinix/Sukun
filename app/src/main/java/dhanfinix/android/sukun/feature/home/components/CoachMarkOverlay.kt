@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.NotificationsOff
 import androidx.compose.material3.*
@@ -41,6 +42,7 @@ enum class CoachMarkTarget {
     PRAYER_TOGGLES,
     NEXT_PRAYER,
     VOLUME_SLIDER,
+    LOCATION_SILENCE,
     MANUAL_SILENCE_FAB
 }
 
@@ -69,6 +71,12 @@ val HomeCoachMarkSteps = listOf(
         titleRes = R.string.coach_mark_volume_title,
         descriptionRes = R.string.coach_mark_volume_desc,
         icon = Icons.AutoMirrored.Rounded.VolumeUp
+    ),
+    CoachMarkStep(
+        target = CoachMarkTarget.LOCATION_SILENCE,
+        titleRes = R.string.coach_mark_location_silence_title,
+        descriptionRes = R.string.coach_mark_location_silence_desc,
+        icon = Icons.Rounded.Map
     ),
     CoachMarkStep(
         target = CoachMarkTarget.MANUAL_SILENCE_FAB,

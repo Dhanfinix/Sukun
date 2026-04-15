@@ -10,7 +10,9 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName // Temp: will be fixed later
@@ -91,6 +93,9 @@ class UserPreferences(private val context: Context) {
     // ── VOIP toggle ──
     private val KEY_VOIP_LINKED = booleanPreferencesKey("voip_linked")
     private val KEY_NOTIF_LINKED = booleanPreferencesKey("is_notif_linked")
+    private val KEY_LOCATION_SILENCE_ENABLED = booleanPreferencesKey("location_silence_enabled")
+    private val KEY_AUTO_MOSQUE_SILENCE_ENABLED = booleanPreferencesKey("auto_mosque_silence_enabled")
+    private val KEY_AGGRESSIVE_LOCATION_ENABLED = booleanPreferencesKey("aggressive_location_enabled")
 
     // ── Onboarding ──
     private val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
@@ -108,6 +113,10 @@ class UserPreferences(private val context: Context) {
     // ── In-App Review ──
     private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
     private val KEY_HAS_RATED = booleanPreferencesKey("has_rated")
+    private val KEY_ACTIVE_SILENT_ZONE_ID = longPreferencesKey("active_silent_zone_id")
+    private val KEY_LAST_FETCH_LAT = doublePreferencesKey("last_fetch_lat")
+    private val KEY_LAST_FETCH_LNG = doublePreferencesKey("last_fetch_lng")
+    private val KEY_HAS_SHOWN_DONATION = booleanPreferencesKey("has_shown_donation")
 
     // ── Flows ──
 
@@ -124,12 +133,12 @@ class UserPreferences(private val context: Context) {
 
     val prayerDurations: Flow<Map<PrayerName, Int>> = context.dataStore.data.map { prefs ->
         mapOf(
-            PrayerName.FAJR to (prefs[KEY_DUR_FAJR] ?: 15),
-            PrayerName.DHUHR to (prefs[KEY_DUR_DHUHR] ?: 15),
-            PrayerName.JUMUAH to (prefs[KEY_DUR_JUMUAH] ?: 45), // Default to 45m for Jumu'ah
-            PrayerName.ASR to (prefs[KEY_DUR_ASR] ?: 15),
-            PrayerName.MAGHRIB to (prefs[KEY_DUR_MAGHRIB] ?: 15),
-            PrayerName.ISHA to (prefs[KEY_DUR_ISHA] ?: 15)
+            PrayerName.FAJR to (prefs[KEY_DUR_FAJR] ?: 30),
+            PrayerName.DHUHR to (prefs[KEY_DUR_DHUHR] ?: 30),
+            PrayerName.JUMUAH to (prefs[KEY_DUR_JUMUAH] ?: 60), // Default to 60m for Jumu'ah
+            PrayerName.ASR to (prefs[KEY_DUR_ASR] ?: 30),
+            PrayerName.MAGHRIB to (prefs[KEY_DUR_MAGHRIB] ?: 30),
+            PrayerName.ISHA to (prefs[KEY_DUR_ISHA] ?: 30)
         )
     }
 
@@ -202,6 +211,18 @@ class UserPreferences(private val context: Context) {
     val isReminderEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[KEY_REMINDER_ENABLED] ?: true
     }
+
+    val isLocationSilenceEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_LOCATION_SILENCE_ENABLED] ?: true
+    }.distinctUntilChanged()
+
+    val isAutoMosqueSilenceEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_AUTO_MOSQUE_SILENCE_ENABLED] ?: true
+    }.distinctUntilChanged()
+
+    val isAggressiveLocationEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_AGGRESSIVE_LOCATION_ENABLED] ?: false
+    }.distinctUntilChanged()
 
     val reminderMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[KEY_REMINDER_MINUTES] ?: 10
@@ -320,11 +341,11 @@ class UserPreferences(private val context: Context) {
 
     val silenceEndTime: Flow<Long> = context.dataStore.data.map { prefs ->
         prefs[KEY_SILENCE_END_TIME] ?: 0L
-    }
+    }.distinctUntilChanged()
 
     val silenceLabel: Flow<String?> = context.dataStore.data.map { prefs ->
         prefs[KEY_SILENCE_LABEL]
-    }
+    }.distinctUntilChanged()
 
     suspend fun setSilenceMetadata(startTime: Long, endTime: Long, label: String?) {
         context.dataStore.edit {
@@ -375,6 +396,7 @@ class UserPreferences(private val context: Context) {
             it.remove(KEY_SAVED_ALARM)
             it.remove(KEY_SAVED_RINGER_MODE)
             it.remove(KEY_SAVED_INTERRUPTION_FILTER)
+            // Note: KEY_ACTIVE_SILENT_ZONE_ID is NOT cleared here. It is strictly controlled by Geofence entries/exits.
         }
     }
 
@@ -405,6 +427,24 @@ class UserPreferences(private val context: Context) {
     suspend fun setReminderMinutes(minutes: Int) {
         context.dataStore.edit { prefs ->
             prefs[KEY_REMINDER_MINUTES] = minutes
+        }
+    }
+
+    suspend fun setLocationSilenceEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LOCATION_SILENCE_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setAutoMosqueSilenceEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_AUTO_MOSQUE_SILENCE_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setAggressiveLocationEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_AGGRESSIVE_LOCATION_ENABLED] = enabled
         }
     }
 
@@ -456,6 +496,12 @@ class UserPreferences(private val context: Context) {
         count >= 5 && !rated
     }
 
+    val shouldShowDonation: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        val count = prefs[KEY_APP_OPEN_COUNT] ?: 0
+        val shown = prefs[KEY_HAS_SHOWN_DONATION] ?: false
+        count >= 3 && !shown
+    }
+
     suspend fun incrementAppOpenCount() {
         context.dataStore.edit { prefs ->
             val current = prefs[KEY_APP_OPEN_COUNT] ?: 0
@@ -466,6 +512,36 @@ class UserPreferences(private val context: Context) {
     suspend fun setHasRated(rated: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[KEY_HAS_RATED] = rated
+        }
+    }
+
+    suspend fun setHasShownDonation(shown: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_HAS_SHOWN_DONATION] = shown
+        }
+    }
+
+    val activeSilentZoneId: Flow<Long?> = context.dataStore.data.map { prefs ->
+        prefs[KEY_ACTIVE_SILENT_ZONE_ID]
+    }
+
+    suspend fun setActiveSilentZoneId(id: Long?) {
+        context.dataStore.edit { prefs ->
+            if (id != null) {
+                prefs[KEY_ACTIVE_SILENT_ZONE_ID] = id
+            } else {
+                prefs.remove(KEY_ACTIVE_SILENT_ZONE_ID)
+            }
+        }
+    }
+
+    val lastFetchLat: Flow<Double?> = context.dataStore.data.map { it[KEY_LAST_FETCH_LAT] }
+    val lastFetchLng: Flow<Double?> = context.dataStore.data.map { it[KEY_LAST_FETCH_LNG] }
+
+    suspend fun setLastFetchLocation(lat: Double, lng: Double) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LAST_FETCH_LAT] = lat
+            prefs[KEY_LAST_FETCH_LNG] = lng
         }
     }
 }
