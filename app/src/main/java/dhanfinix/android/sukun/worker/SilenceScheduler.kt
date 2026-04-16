@@ -71,7 +71,8 @@ class SilenceScheduler(private val context: Context) {
     private fun scheduleRestoreOnly(prayer: PrayerInfo, durationMin: Int, date: LocalDate) {
         val prayerTime = parseTime(prayer.time) ?: return
 
-        val calendar = Calendar.getInstance().apply {
+        // Build base calendar for the prayer date
+        val baseCalendar = Calendar.getInstance().apply {
             set(Calendar.YEAR, date.year)
             set(Calendar.MONTH, date.monthValue - 1)
             set(Calendar.DAY_OF_MONTH, date.dayOfMonth)
@@ -83,7 +84,16 @@ class SilenceScheduler(private val context: Context) {
 
         val requestCode = prayer.name.ordinal
 
-        val restoreTimeMs = calendar.timeInMillis + (durationMin * 60 * 1000L)
+        // Clone and add duration to compute restore time
+        val restoreCalendar = baseCalendar.clone() as Calendar
+        restoreCalendar.add(Calendar.MINUTE, durationMin)
+
+        // If restore time wrapped past midnight, advance to next day
+        if (restoreCalendar.timeInMillis < baseCalendar.timeInMillis) {
+            restoreCalendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        val restoreTimeMs = restoreCalendar.timeInMillis
         if (restoreTimeMs > System.currentTimeMillis()) {
             val pendingRestore = PendingIntent.getBroadcast(
                 context,
