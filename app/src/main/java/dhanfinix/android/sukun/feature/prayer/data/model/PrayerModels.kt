@@ -13,8 +13,25 @@ enum class PrayerName(val nameRes: Int) {
     JUMUAH(R.string.prayer_jumuah),
     ASR(R.string.prayer_asr),
     MAGHRIB(R.string.prayer_maghrib),
-    ISHA(R.string.prayer_isha)
+    ISHA(R.string.prayer_isha);
+
+    companion object {
+        /**
+         * Returns the prayers appropriate for a given day.
+         * On Fridays, DHUHR is replaced by JUMUAH (DHUHR filtered out).
+         * On other days, JUMUAH is filtered out.
+         */
+        fun filterByDay(isFriday: Boolean): List<PrayerName> = entries.filter {
+            if (isFriday) it != DHUHR else it != JUMUAH
+        }
+    }
 }
+
+/**
+ * Top-level alias so tests (and any external caller) can call filterByDay(dayOfWeek)
+ * without going through the companion object.
+ */
+fun filterByDay(isFriday: Boolean): List<PrayerName> = PrayerName.filterByDay(isFriday)
 
 /**
  * Holds info about a single prayer for display.

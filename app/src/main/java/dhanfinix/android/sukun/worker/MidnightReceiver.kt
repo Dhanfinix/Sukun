@@ -45,7 +45,10 @@ class MidnightReceiver : BroadcastReceiver() {
                     val timesMapToday = resultToday.getOrThrow()
                     val timesMapTomorrow = resultTomorrow.getOrThrow()
                     
-                    val prayersToday = PrayerName.entries.map { name ->
+                    val isTodayFriday = today.dayOfWeek == java.time.DayOfWeek.FRIDAY
+                    val isTomorrowFriday = tomorrow.dayOfWeek == java.time.DayOfWeek.FRIDAY
+
+                    val prayersToday = PrayerName.filterByDay(isTodayFriday).map { name ->
                         PrayerInfo(
                             name = name,
                             time = timesMapToday[name] ?: "--:--",
@@ -53,7 +56,7 @@ class MidnightReceiver : BroadcastReceiver() {
                         )
                     }
                     
-                    val prayersTomorrow = PrayerName.entries.map { name ->
+                    val prayersTomorrow = PrayerName.filterByDay(isTomorrowFriday).map { name ->
                         PrayerInfo(
                             name = name,
                             time = timesMapTomorrow[name] ?: "--:--",
@@ -68,6 +71,8 @@ class MidnightReceiver : BroadcastReceiver() {
                     scheduler.scheduleAll(prayersToday, prayersTomorrow, durations, offsets, isReminder, reminderMin)
                 }
             } finally {
+                // Ensure the next midnight reset is always scheduled, even if API calls fail
+                scheduler.scheduleMidnightReset()
                 pendingResult.finish()
             }
         }

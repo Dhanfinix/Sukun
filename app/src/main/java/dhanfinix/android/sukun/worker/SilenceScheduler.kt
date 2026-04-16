@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
+import android.util.Log
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Calendar
@@ -19,6 +20,7 @@ import java.util.Calendar
 class SilenceScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    private val workManager: WorkManager? by lazy { try { WorkManager.getInstance(context) } catch (e: Exception) { null } }
 
     /**
      * Schedules the NEXT occurrence of each enabled prayer across a rolling 24-hour window.
@@ -31,6 +33,19 @@ class SilenceScheduler(private val context: Context) {
         reminderEnabled: Boolean = false,
         reminderMinutes: Int = 10
     ) {
+        also {
+            prayersToday.forEach { prayer ->
+                if (prayer.time.isNullOrBlank()) {
+                    Log.w("SilenceScheduler", "Missing time for prayer today: ${prayer.name}")
+                }
+            }
+            prayersTomorrow.forEach { prayer ->
+                if (prayer.time.isNullOrBlank()) {
+                    Log.w("SilenceScheduler", "Missing time for prayer tomorrow: ${prayer.name}")
+                }
+            }
+        }
+
         cancelAll()
 
         val now = LocalTime.now()
@@ -40,10 +55,22 @@ class SilenceScheduler(private val context: Context) {
             if (!todayPrayer.isEnabled) return@forEach
 
             val todayTime = parseTime(todayPrayer.time) ?: return@forEach
+            val duration = durations[todayPrayer.name] ?: 15
+            val restoreTime = todayTime.plusMinutes(duration.toLong())
             
             if (todayTime.isAfter(now)) {
                 // Today's adhan is still in the future
-                scheduleSinglePrayer(todayPrayer, durations[todayPrayer.name] ?: 15, LocalDate.now(), reminderEnabled, reminderMinutes)
+                scheduleSinglePrayer(todayPrayer, duration, LocalDate.now(), reminderEnabled, reminderMinutes)
+            } else if (now.isBefore(restoreTime) || (restoreTime.isBefore(todayTime) && now.isAfter(todayTime))) {
+                // Adhan passed, but we are currently inside the silence window.
+                // We MUST schedule the restore alarm so it comes back to normal!
+                scheduleRestoreOnly(todayPrayer, duration, LocalDate.now())
+
+                // Then also schedule tomorrow's full sequence
+                val tomorrowPrayer = prayersTomorrow.find { it.name == todayPrayer.name }
+                if (tomorrowPrayer?.isEnabled == true) {
+                    scheduleSinglePrayer(tomorrowPrayer, durations[tomorrowPrayer.name] ?: 15, LocalDate.now().plusDays(1), reminderEnabled, reminderMinutes)
+                }
             } else {
                 // Today's adhan passed, schedule tomorrow's instead
                 val tomorrowPrayer = prayersTomorrow.find { it.name == todayPrayer.name }
@@ -52,8 +79,43 @@ class SilenceScheduler(private val context: Context) {
                 }
             }
         }
-        
-        scheduleMidnightReset()
+    }
+
+    private fun scheduleRestoreOnly(prayer: PrayerInfo, durationMin: Int, date: LocalDate) {
+        val prayerTime = parseTime(prayer.time) ?: return
+
+        // Build base calendar for the prayer date
+        val baseCalendar = Calendar.getInstance().apply {
+            set(Calendar.YEAR, date.year)
+            set(Calendar.MONTH, date.monthValue - 1)
+            set(Calendar.DAY_OF_MONTH, date.dayOfMonth)
+            set(Calendar.HOUR_OF_DAY, prayerTime.hour)
+            set(Calendar.MINUTE, prayerTime.minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val requestCode = prayer.name.ordinal
+
+        // Clone and add duration to compute restore time
+        val restoreCalendar = baseCalendar.clone() as Calendar
+        restoreCalendar.add(Calendar.MINUTE, durationMin)
+
+        // If restore time wrapped past midnight, advance to next day
+        if (restoreCalendar.timeInMillis < baseCalendar.timeInMillis) {
+            restoreCalendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        val restoreTimeMs = restoreCalendar.timeInMillis
+        if (restoreTimeMs > System.currentTimeMillis()) {
+            val pendingRestore = PendingIntent.getBroadcast(
+                context,
+                requestCode + 100, // Offset to avoid collision
+                getRestoreIntent(),
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
+        }
     }
 
     fun scheduleManual(durationMin: Int) {
@@ -108,7 +170,7 @@ class SilenceScheduler(private val context: Context) {
     }
 
     fun cancelAll() {
-        // Cancel manual restore intent
+        // Cancel manual restore alarm first (independent of prayer alarms)
         cancelManualAlarms()
 
         // Cancel specific prayer scheduled intents
@@ -211,7 +273,7 @@ class SilenceScheduler(private val context: Context) {
         }
     }
 
-    private fun scheduleMidnightReset() {
+    fun scheduleMidnightReset() {
         val calendar = Calendar.getInstance().apply {
             add(Calendar.DAY_OF_YEAR, 1)
             set(Calendar.HOUR_OF_DAY, 0)
@@ -221,11 +283,18 @@ class SilenceScheduler(private val context: Context) {
         }
 
         val intent = Intent(context, MidnightReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
+        val existingPendingIntent = PendingIntent.getBroadcast(
             context,
             999, // Unique ID for midnight
             intent,
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val pendingIntent = existingPendingIntent ?: PendingIntent.getBroadcast(
+            context,
+            999,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
         )
 
         scheduleExactAlarmSafely(calendar.timeInMillis, pendingIntent)

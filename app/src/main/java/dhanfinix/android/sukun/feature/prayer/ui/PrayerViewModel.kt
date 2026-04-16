@@ -583,6 +583,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             reminderEnabled,
             reminderMinutes
         )
+        silenceScheduler.scheduleMidnightReset()
     }
 
     private fun startClockTicker() {
