@@ -21,7 +21,8 @@ import java.util.Calendar
 class SilenceScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    private val workManager = WorkManager.getInstance(context)
+    // TODO: re-enable WorkManager when needed: private val workManager = WorkManager.getInstance(context)
+    private val workManager: WorkManager? by lazy { try { WorkManager.getInstance(context) } catch (e: Exception) { null } }
 
     /**
      * Schedules the NEXT occurrence of each enabled prayer across a rolling 24-hour window.
