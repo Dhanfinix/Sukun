@@ -129,6 +129,9 @@ class SilenceScheduler(private val context: Context) {
     }
 
     fun cancelAll() {
+        // Cancel manual restore alarm first (independent of prayer alarms)
+        cancelManualAlarms()
+
         // Cancel specific prayer scheduled intents
         dhanfinix.android.sukun.feature.prayer.data.model.PrayerName.entries.forEach { prayerName ->
             val pendingStart = getPendingIntent(SilenceReceiver.ACTION_START_SILENCE, prayerName.ordinal)
