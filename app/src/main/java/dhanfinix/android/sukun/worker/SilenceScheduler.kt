@@ -8,6 +8,7 @@ import android.content.Intent
 import androidx.work.WorkManager
 import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
+import android.util.Log
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Calendar
@@ -33,6 +34,19 @@ class SilenceScheduler(private val context: Context) {
         reminderEnabled: Boolean = false,
         reminderMinutes: Int = 10
     ) {
+        also {
+            prayersToday.forEach { prayer ->
+                if (prayer.time.isNullOrBlank()) {
+                    Log.w("SilenceScheduler", "Missing time for prayer today: ${prayer.name}")
+                }
+            }
+            prayersTomorrow.forEach { prayer ->
+                if (prayer.time.isNullOrBlank()) {
+                    Log.w("SilenceScheduler", "Missing time for prayer tomorrow: ${prayer.name}")
+                }
+            }
+        }
+
         cancelAll()
 
         val now = LocalTime.now()
@@ -252,11 +266,18 @@ class SilenceScheduler(private val context: Context) {
         }
 
         val intent = Intent(context, MidnightReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
+        val existingPendingIntent = PendingIntent.getBroadcast(
             context,
             999, // Unique ID for midnight
             intent,
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val pendingIntent = existingPendingIntent ?: PendingIntent.getBroadcast(
+            context,
+            999,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
         )
 
         scheduleExactAlarmSafely(calendar.timeInMillis, pendingIntent)
