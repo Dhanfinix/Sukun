@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.*
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.toRoute
 import dhanfinix.android.sukun.MainViewModel
 import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
@@ -41,9 +42,14 @@ fun AppNavigation(
     val context = LocalContext.current
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary.toArgb()
+    var isDonationManual by remember { mutableStateOf(false) }
 
-    LaunchedEffect(shouldShowDonation) {
-        if (shouldShowDonation) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val isOnHome = navBackStackEntry?.destination?.hasRoute<Home>() == true
+
+    LaunchedEffect(shouldShowDonation, isOnHome) {
+        if (shouldShowDonation && isOnHome) {
+            isDonationManual = false
             showDonationSheet = true
         }
     }
@@ -63,7 +69,13 @@ fun AppNavigation(
                 showDonationSheet = false
                 mainVm.markDonationAsShown()
                 launchSukunCustomTab(context, "https://saweria.co/dhandev", primaryColor, onPrimaryColor)
-            }
+            },
+            onDontShowAgain = {
+                showDonationSheet = false
+                mainVm.disableDonation()
+                mainVm.markDonationAsShown()
+            },
+            showDontShowAgain = !isDonationManual
         )
     }
 
@@ -130,7 +142,10 @@ fun AppNavigation(
                     mainVm = mainVm,
                     onShowOnboarding = { navController.navigate(Onboarding) },
                     onOpenSettings = { navController.navigate(Settings) },
-                    onShowDonation = { showDonationSheet = true }
+                    onShowDonation = { 
+                        isDonationManual = true
+                        showDonationSheet = true 
+                    }
                 )
             }
 
@@ -144,7 +159,10 @@ fun AppNavigation(
                     mainVm = mainVm,
                     onOpenAbout = { navController.navigate(About) },
                     onOpenWebView = { url, title -> navController.navigate(WebPageRoute(pageUrl = url, pageTitle = title)) },
-                    onDonate = { showDonationSheet = true },
+                    onDonate = { 
+                        isDonationManual = true
+                        showDonationSheet = true 
+                    },
                     onBack = { navController.popBackStack() }
                 )
             }

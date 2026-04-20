@@ -19,6 +19,8 @@ fun DonationBottomSheet(
     onDismissRequest: () -> Unit,
     onDonateKofi: () -> Unit,
     onDonateSaweria: () -> Unit,
+    onDontShowAgain: () -> Unit,
+    showDontShowAgain: Boolean = true,
     dismissTextContext: Int = R.string.btn_maybe_later
 ) {
     ModalBottomSheet(
@@ -121,6 +123,19 @@ fun DonationBottomSheet(
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+
+            if (showDontShowAgain) {
+                TextButton(
+                    onClick = onDontShowAgain,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.btn_dont_show_again),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                }
             }
         }
     }

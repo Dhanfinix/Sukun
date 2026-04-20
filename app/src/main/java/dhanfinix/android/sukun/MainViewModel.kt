@@ -182,4 +182,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             userPrefs.setLastDonationShownCount(currentCount)
         }
     }
+
+    fun disableDonation() {
+        viewModelScope.launch {
+            userPrefs.setDonationDisabled(true)
+        }
+    }
 }

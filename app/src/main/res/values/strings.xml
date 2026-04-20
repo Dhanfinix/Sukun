@@ -192,6 +192,7 @@
     <string name="donation_sheet_desc">Sukun is free and ad-free. If you find it helpful, consider supporting for more peace in pray.</string>
     <string name="donation_sheet_persuasive_desc">Your support keeps Sukun ad-free and helps us continuously improve the app for a better, more peaceful prayer experience. Every contribution makes a big difference.</string>
     <string name="btn_maybe_later">Maybe Later</string>
+    <string name="btn_dont_show_again">Don\'t show again</string>
     <string name="btn_donate_saweria">Donate via Saweria</string>
     <string name="label_choose_donation_method">Choose Donation Method</string>
     <string name="label_global">Global</string>

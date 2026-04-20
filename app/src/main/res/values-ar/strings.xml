@@ -191,6 +191,7 @@
     <string name="donation_sheet_desc">سكون مجاني تماماً وبدون إعلانات. إذا وجدت التطبيق مفيداً، فضلاً ادعمنا لمزيد من السكينة في الصلاة.</string>
     <string name="donation_sheet_persuasive_desc">دعمكم يبقي سكون مجانياً وبدون إعلانات، ويساعدنا على تطوير التطبيق باستمرار لتجربة صلاة أكثر سكينة. كل مساهمة تصنع فرقاً كبيراً.</string>
     <string name="btn_maybe_later">ربما لاحقاً</string>
+    <string name="btn_dont_show_again">لا تظهر مرة أخرى</string>
     <string name="btn_donate_saweria">تبرع عبر Saweria</string>
     <string name="label_choose_donation_method">اختر وسيلة التبرع</string>
     <string name="label_global">عالمي</string>
