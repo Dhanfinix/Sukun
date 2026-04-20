@@ -119,6 +119,14 @@ fun HomeScreen(
     val appTheme by mainVm.appTheme.collectAsState()
     val useDynamicColor by mainVm.useDynamicColor.collectAsState()
     val hasSeenCoachmark by mainVm.hasSeenHomeCoachmark.collectAsState()
+    val showSilenceSheetFromVm by mainVm.showSilenceSheet.collectAsState()
+
+    LaunchedEffect(showSilenceSheetFromVm) {
+        if (showSilenceSheetFromVm) {
+            showManualSilenceSheet = true
+            mainVm.onSilenceSheetConsumed()
+        }
+    }
     val coachMarkTargets = remember { mutableStateMapOf<CoachMarkTarget, Rect>() }
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()

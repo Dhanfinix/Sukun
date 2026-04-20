@@ -28,6 +28,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isReady = MutableStateFlow(false)
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
+    private val _showSilenceSheet = MutableStateFlow(false)
+    val showSilenceSheet: StateFlow<Boolean> = _showSilenceSheet.asStateFlow()
+
+    fun triggerSilenceSheet() {
+        _showSilenceSheet.value = true
+    }
+
+    fun onSilenceSheetConsumed() {
+        _showSilenceSheet.value = false
+    }
+
     val isOnboardingCompleted: StateFlow<Boolean> = userPrefs.isOnboardingCompleted
         .onEach { _isReady.value = true }
         .stateIn(

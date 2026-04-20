@@ -115,6 +115,10 @@ class SilenceReceiver : BroadcastReceiver() {
         // 5. Show ongoing notification with working chronometer
         val timeFormat = userPrefs.timeFormat.first()
         NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime, timeFormat)
+
+        // 6. Update Widgets
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
     }
 
     private suspend fun handleStopSilence(context: Context) {
@@ -164,6 +168,10 @@ class SilenceReceiver : BroadcastReceiver() {
 
         // 4. Show "Restored" notification (replaces countdown)
         NotificationHelper.showRestoredNotification(context, prayerName)
+
+        // 5. Update Widgets
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
     }
 
     companion object {

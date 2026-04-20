@@ -27,7 +27,7 @@ import dhanfinix.android.sukun.core.utils.withIsolate
  */
 object NotificationHelper {
 
-    private const val CHANNEL_ID = "sukun_silence_channel"
+    private const val CHANNEL_ID = "sukun_silence_channel_v2"
     private const val REMINDER_CHANNEL_ID = "sukun_reminder_channel"
     const val NOTIFICATION_ID = 1001
 
@@ -35,7 +35,7 @@ object NotificationHelper {
         val channel = NotificationChannel(
             CHANNEL_ID,
             context.getString(R.string.notif_channel_name),
-            NotificationManager.IMPORTANCE_LOW
+            NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = context.getString(R.string.notif_channel_desc)
         }
@@ -123,7 +123,8 @@ object NotificationHelper {
             .setCustomContentView(compactView)
             .setCustomBigContentView(expandedView)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setContentIntent(openAppPending)
             .setTimeoutAfter(remainingMs)

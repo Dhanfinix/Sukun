@@ -110,7 +110,7 @@ private val LightColorScheme = lightColorScheme(
 fun SukunTheme(
     appTheme: AppTheme = AppTheme.SYSTEM,
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val isAppInDarkTheme = when (appTheme) {

@@ -23,7 +23,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import dhanfinix.android.sukun.worker.SilenceScheduler
 import dhanfinix.android.sukun.core.reliability.ReliabilityManager
+import dhanfinix.android.sukun.core.datastore.AppTheme
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * ViewModel for the Volume Dashboard.
@@ -40,6 +43,20 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _uiState = MutableStateFlow(VolumeUiState())
     val uiState: StateFlow<VolumeUiState> = _uiState.asStateFlow()
+
+    val appTheme: StateFlow<AppTheme> = userPrefs.appTheme
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AppTheme.SYSTEM
+        )
+
+    val useDynamicColor: StateFlow<Boolean> = userPrefs.useDynamicColor
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
 
     private var lastMediaVolumeRaw: Int = -1
     private var lastUserRingSetTime: Long = 0L
