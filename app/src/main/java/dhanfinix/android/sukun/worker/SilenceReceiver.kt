@@ -122,6 +122,9 @@ class SilenceReceiver : BroadcastReceiver() {
         val notifManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val userPrefs = UserPreferences(context)
 
+        // Fetch prayer name for the final "Restored" notification before clearing state
+        val prayerName = userPrefs.silenceLabel.first() ?: context.getString(R.string.label_unknown)
+
         // 1. Restore exact system ringer mode / interruption filter
         val savedRingerMode = userPrefs.savedRingerMode.first()
         val savedFilter = userPrefs.savedInterruptionFilter.first()
@@ -159,8 +162,8 @@ class SilenceReceiver : BroadcastReceiver() {
         // 3. Clear silence metadata
         userPrefs.clearSilenceState()
 
-        // 4. Cancel notification
-        NotificationHelper.cancelNotification(context)
+        // 4. Show "Restored" notification (replaces countdown)
+        NotificationHelper.showRestoredNotification(context, prayerName)
     }
 
     companion object {

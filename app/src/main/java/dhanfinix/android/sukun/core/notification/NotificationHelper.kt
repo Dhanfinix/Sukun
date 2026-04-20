@@ -30,7 +30,6 @@ object NotificationHelper {
     private const val CHANNEL_ID = "sukun_silence_channel"
     private const val REMINDER_CHANNEL_ID = "sukun_reminder_channel"
     const val NOTIFICATION_ID = 1001
-    const val REMINDER_NOTIFICATION_ID = 1002
 
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
@@ -133,6 +132,41 @@ object NotificationHelper {
         manager.notify(NOTIFICATION_ID, builder.build())
     }
 
+    fun showRestoredNotification(context: Context, prayerName: String) {
+        val locale = if (context.resources.configuration.locales[0].language == "ar") {
+            Locale("ar")
+        } else Locale.getDefault()
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        val localizedContext = context.createConfigurationContext(config)
+
+        createChannel(context)
+
+        val openAppIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val openAppPending = PendingIntent.getActivity(
+            context, 2, openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val title = localizedContext.getString(R.string.notif_restored_title)
+        val content = localizedContext.getString(R.string.notif_restored_msg, prayerName.withIsolate())
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setAutoCancel(true)
+            .setContentIntent(openAppPending)
+
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(NOTIFICATION_ID, builder.build())
+    }
+
     fun cancelNotification(context: Context) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancel(NOTIFICATION_ID)
@@ -169,9 +203,10 @@ object NotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(openAppPending)
+            .setTimeoutAfter(minutesBefore * 60 * 1000L)
             .addAction(0, context.getString(R.string.btn_prepare), openAppPending)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(REMINDER_NOTIFICATION_ID, builder.build())
+        manager.notify(NOTIFICATION_ID, builder.build())
     }
 }

@@ -197,4 +197,7 @@
     <string name="label_choose_donation_method">Choose Donation Method</string>
     <string name="label_global">Global</string>
     <string name="label_indonesia">Indonesia</string>
+
+    <string name="notif_restored_title">Volumes Restored</string>
+    <string name="notif_restored_msg">Silence for %s has ended.</string>
 </resources>
