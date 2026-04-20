@@ -8,21 +8,23 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
+import androidx.navigation.toRoute
 import dhanfinix.android.sukun.MainViewModel
+import dhanfinix.android.sukun.core.designsystem.components.DonationBottomSheet
+import dhanfinix.android.sukun.core.designsystem.util.launchSukunCustomTab
 import dhanfinix.android.sukun.feature.home.HomeScreen
 import dhanfinix.android.sukun.feature.landing.LandingScreen
 import dhanfinix.android.sukun.feature.onboarding.OnboardingScreen
 import dhanfinix.android.sukun.feature.settings.AboutScreen
 import dhanfinix.android.sukun.feature.settings.SettingsScreen
 import dhanfinix.android.sukun.feature.splash.SplashScreen
+import dhanfinix.android.sukun.feature.webview.WebViewScreen
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -34,25 +36,55 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     val hasSeenLanding by mainVm.hasSeenLanding.collectAsState()
+    val shouldShowDonation by mainVm.shouldShowDonation.collectAsState()
+    var showDonationSheet by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary.toArgb()
+
+    LaunchedEffect(shouldShowDonation) {
+        if (shouldShowDonation) {
+            showDonationSheet = true
+        }
+    }
+
+    if (showDonationSheet) {
+        DonationBottomSheet(
+            onDismissRequest = {
+                showDonationSheet = false
+                mainVm.markDonationAsShown()
+            },
+            onDonateKofi = {
+                showDonationSheet = false
+                mainVm.markDonationAsShown()
+                launchSukunCustomTab(context, "https://ko-fi.com/dhandev", primaryColor, onPrimaryColor)
+            },
+            onDonateSaweria = {
+                showDonationSheet = false
+                mainVm.markDonationAsShown()
+                launchSukunCustomTab(context, "https://saweria.co/dhandev", primaryColor, onPrimaryColor)
+            }
+        )
+    }
 
     SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = Route.Splash,
+            startDestination = Splash,
             enterTransition = { fadeIn(tween(350)) },
             exitTransition = { fadeOut(tween(300)) },
             popEnterTransition = { fadeIn(tween(350)) },
             popExitTransition = { fadeOut(tween(300)) }
         ) {
-            composable<Route.Splash>(
+            composable<Splash>(
                 exitTransition = { fadeOut(tween(400)) }
             ) {
                 SplashScreen(
                     isReady = isReady,
                     onSplashFinished = {
-                        val destination = if (hasSeenLanding) Route.Home else Route.Landing
+                        val destination: Route = if (hasSeenLanding) Home else Landing
                         navController.navigate(destination) {
-                            popUpTo(Route.Splash) { inclusive = true }
+                            popUpTo(Splash) { inclusive = true }
                         }
                     },
                     sharedTransitionScope = this@SharedTransitionLayout,
@@ -60,16 +92,16 @@ fun AppNavigation(
                 )
             }
 
-            composable<Route.Landing> {
+            composable<Landing> {
                 LandingScreen(
                     mainVm = mainVm,
-                    onGetStarted = { navController.navigate(Route.Onboarding) },
+                    onGetStarted = { navController.navigate(Onboarding) },
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this
                 )
             }
 
-            composable<Route.Onboarding>(
+            composable<Onboarding>(
                 enterTransition = { slideInHorizontally(tween(350)) { it } + fadeIn(tween(350)) },
                 exitTransition = { slideOutHorizontally(tween(300)) { -it } + fadeOut(tween(300)) },
                 popEnterTransition = { slideInHorizontally(tween(350)) { -it } + fadeIn(tween(350)) },
@@ -81,14 +113,14 @@ fun AppNavigation(
                     onComplete = {
                         mainVm.setHasSeenLanding(true)
                         mainVm.setOnboardingCompleted(true)
-                        navController.navigate(Route.Home) {
+                        navController.navigate(Home) {
                             popUpTo(0) { inclusive = true } // Clear backstack
                         }
                     }
                 )
             }
 
-            composable<Route.Home>(
+            composable<Home>(
                 enterTransition = { slideInHorizontally(tween(350)) { -it } + fadeIn(tween(350)) },
                 exitTransition = { slideOutHorizontally(tween(300)) { -it } + fadeOut(tween(300)) },
                 popEnterTransition = { slideInHorizontally(tween(350)) { -it } + fadeIn(tween(350)) },
@@ -96,12 +128,13 @@ fun AppNavigation(
             ) {
                 HomeScreen(
                     mainVm = mainVm,
-                    onShowOnboarding = { navController.navigate(Route.Onboarding) },
-                    onOpenSettings = { navController.navigate(Route.Settings) }
+                    onShowOnboarding = { navController.navigate(Onboarding) },
+                    onOpenSettings = { navController.navigate(Settings) },
+                    onShowDonation = { showDonationSheet = true }
                 )
             }
 
-            composable<Route.Settings>(
+            composable<Settings>(
                 enterTransition = { slideInHorizontally(tween(350)) { it } + fadeIn(tween(350)) },
                 exitTransition = { slideOutHorizontally(tween(300)) { -it } + fadeOut(tween(300)) },
                 popEnterTransition = { slideInHorizontally(tween(350)) { -it } + fadeIn(tween(350)) },
@@ -109,16 +142,32 @@ fun AppNavigation(
             ) {
                 SettingsScreen(
                     mainVm = mainVm,
-                    onOpenAbout = { navController.navigate(Route.About) },
+                    onOpenAbout = { navController.navigate(About) },
+                    onOpenWebView = { url, title -> navController.navigate(WebPageRoute(pageUrl = url, pageTitle = title)) },
+                    onDonate = { showDonationSheet = true },
                     onBack = { navController.popBackStack() }
                 )
             }
 
-            composable<Route.About>(
+            composable<About>(
                 enterTransition = { slideInHorizontally(tween(350)) { it } + fadeIn(tween(350)) },
                 popExitTransition = { slideOutHorizontally(tween(300)) { it } + fadeOut(tween(300)) }
             ) {
                 AboutScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<WebPageRoute>(
+                enterTransition = { slideInHorizontally(tween(350)) { it } + fadeIn(tween(350)) },
+                exitTransition = { slideOutHorizontally(tween(300)) { -it } + fadeOut(tween(300)) },
+                popEnterTransition = { slideInHorizontally(tween(350)) { -it } + fadeIn(tween(350)) },
+                popExitTransition = { slideOutHorizontally(tween(300)) { it } + fadeOut(tween(300)) }
+            ) { backStackEntry ->
+                val webPageRoute: WebPageRoute = backStackEntry.toRoute()
+                WebViewScreen(
+                    url = webPageRoute.pageUrl,
+                    title = webPageRoute.pageTitle,
                     onBack = { navController.popBackStack() }
                 )
             }

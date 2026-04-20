@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
@@ -156,6 +157,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = false
         )
 
+    val shouldShowDonation: StateFlow<Boolean> = userPrefs.shouldShowDonation
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     init {
         viewModelScope.launch {
             userPrefs.incrementAppOpenCount()
@@ -165,6 +173,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun markAsRated() {
         viewModelScope.launch {
             userPrefs.setHasRated(true)
+        }
+    }
+
+    fun markDonationAsShown() {
+        viewModelScope.launch {
+            val currentCount = userPrefs.appOpenCount.first()
+            userPrefs.setLastDonationShownCount(currentCount)
         }
     }
 }
