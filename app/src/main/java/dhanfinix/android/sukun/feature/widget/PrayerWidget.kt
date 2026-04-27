@@ -1,24 +1,47 @@
 package dhanfinix.android.sukun.feature.widget
 
-import android.app.PendingIntent
-import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
+import androidx.glance.appwidget.updateAll
+
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
-import android.graphics.Color
-import android.view.View
-import android.widget.RemoteViews
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.glance.GlanceId
+import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
+import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
+import androidx.glance.action.clickable
+import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.cornerRadius
+import androidx.glance.background
+import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
+import androidx.glance.layout.Column
+import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
+import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
+import androidx.glance.layout.padding
+import androidx.glance.layout.width
+import androidx.glance.text.FontWeight
+import androidx.glance.text.Text
+import androidx.glance.text.TextStyle
 import dhanfinix.android.sukun.MainActivity
 import dhanfinix.android.sukun.R
-import dhanfinix.android.sukun.core.datastore.AppTheme
 import dhanfinix.android.sukun.core.datastore.UserPreferences
+import dhanfinix.android.sukun.core.designsystem.SukunGlanceTheme
 import dhanfinix.android.sukun.feature.prayer.data.PrayerRepository
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -27,106 +50,134 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-class PrayerWidget : AppWidgetProvider() {
+class PrayerWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = PrayerWidget()
+}
 
-    private val job = SupervisorJob()
-    private val scope = CoroutineScope(Dispatchers.IO + job)
+class PrayerWidget : GlanceAppWidget() {
 
-    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        for (appWidgetId in appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId)
+    companion object {
+        fun update(context: Context) {
+            MainScope().launch {
+                PrayerWidget().updateAll(context)
+            }
         }
     }
 
-    private fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-        scope.launch {
-            val userPrefs = UserPreferences(context)
-            val repository = PrayerRepository(context)
+    override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val userPrefs = UserPreferences(context)
+        val repository = PrayerRepository(context)
+
+        // Initial data fetch
+        val lat = userPrefs.latitude.first()
+        val lng = userPrefs.longitude.first()
+        val method = userPrefs.calculationMethod.first()
+        val offsets = userPrefs.prayerOffsets.first()
+        val locationName = userPrefs.locationName.first() ?: context.getString(R.string.jakarta)
+        
+        val result = repository.getPrayerTimes(LocalDate.now(), lat, lng, method, offsets)
+        val timings = result.getOrNull() ?: emptyMap()
+        
+        val useDynamicColorInit = userPrefs.useDynamicColor.first()
+        
+        provideContent {
+            val useDynamicColor by userPrefs.useDynamicColor.collectAsState(initial = useDynamicColorInit)
             
-            val appTheme = userPrefs.appTheme.first()
-            val isDark = when (appTheme) {
-                AppTheme.DARK -> true
-                AppTheme.LIGHT -> false
-                AppTheme.SYSTEM -> {
-                    val uiMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-                    uiMode == Configuration.UI_MODE_NIGHT_YES
+            SukunGlanceTheme(useDynamicColor = useDynamicColor) {
+                PrayerWidgetContent(
+                    timings = timings,
+                    locationName = locationName
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun PrayerWidgetContent(
+        timings: Map<PrayerName, String>,
+        locationName: String
+    ) {
+        val context = LocalContext.current
+        val nextPrayer = findNextPrayer(timings)
+        val colors = GlanceTheme.colors
+
+        Column(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .background(colors.surface)
+                .cornerRadius(16.dp)
+                .padding(8.dp)
+                .clickable(actionStartActivity(Intent(context, MainActivity::class.java)))
+        ) {
+            // Prayers Row
+            Row(
+                modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf(
+                    PrayerName.FAJR,
+                    PrayerName.DHUHR,
+                    PrayerName.ASR,
+                    PrayerName.MAGHRIB,
+                    PrayerName.ISHA
+                ).forEach { prayer ->
+                    PrayerSlot(
+                        prayer = prayer,
+                        time = timings[prayer] ?: "--:--",
+                        isNext = prayer == nextPrayer?.first,
+                        modifier = GlanceModifier.defaultWeight()
+                    )
                 }
             }
 
-            val colors = if (isDark) {
-                WidgetColors(
-                    surface = "#1C1611",
-                    onSurface = "#FAF6F0",
-                    primary = "#D4B49A",
-                    highlight = "#6B5042",
-                    onSurfaceVariant = "#C9BFB5"
+            // Footer
+            Row(
+                modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val dateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault())
+                val dateStr = LocalDate.now().format(dateFormatter)
+
+                Text(
+                    text = locationName,
+                    style = TextStyle(color = colors.onSurfaceVariant, fontSize = 8.sp),
+                    modifier = GlanceModifier.defaultWeight()
                 )
-            } else {
-                WidgetColors(
-                    surface = "#FAF6F0",
-                    onSurface = "#1C1611",
-                    primary = "#6B5042",
-                    highlight = "#D4B49A",
-                    onSurfaceVariant = "#7D7063"
+
+                Text(
+                    text = "Sukun",
+                    style = TextStyle(
+                        color = colors.primary,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = GlanceModifier.padding(horizontal = 4.dp)
+                )
+
+                Text(
+                    text = dateStr,
+                    style = TextStyle(
+                        color = colors.onSurfaceVariant,
+                        fontSize = 8.sp,
+                        textAlign = androidx.glance.text.TextAlign.End
+                    ),
+                    modifier = GlanceModifier.defaultWeight()
                 )
             }
-            
-            val lat = userPrefs.latitude.first()
-            val lng = userPrefs.longitude.first()
-            val method = userPrefs.calculationMethod.first()
-            val offsets = userPrefs.prayerOffsets.first()
-            val locationName = userPrefs.locationName.first() ?: context.getString(R.string.jakarta)
-
-            val result = repository.getPrayerTimes(LocalDate.now(), lat, lng, method, offsets)
-            
-            val views = RemoteViews(context.packageName, R.layout.widget_prayer)
-
-            // Dynamic theming
-            views.setInt(R.id.widget_root, "setBackgroundColor", Color.parseColor(colors.surface))
-            // Header & Footer
-            views.setTextColor(R.id.prayer_widget_title, Color.parseColor(colors.primary))
-            views.setTextColor(R.id.prayer_widget_location, Color.parseColor(colors.onSurfaceVariant))
-            views.setTextColor(R.id.prayer_widget_date, Color.parseColor(colors.onSurfaceVariant))
-
-            // Update footer
-            views.setTextViewText(R.id.prayer_widget_location, locationName)
-            val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.getDefault())
-            views.setTextViewText(R.id.prayer_widget_date, LocalDate.now().format(dateFormatter))
-
-            result.onSuccess { timings ->
-                val nextPrayer = findNextPrayer(timings)
-                
-                // Populate all slots
-                updateSlot(context, views, timings, PrayerName.FAJR, R.id.slot_fajr, R.id.fajr_name, R.id.fajr_time, nextPrayer?.first, colors)
-                updateSlot(context, views, timings, PrayerName.DHUHR, R.id.slot_dhuhr, R.id.dhuhr_name, R.id.dhuhr_time, nextPrayer?.first, colors)
-                updateSlot(context, views, timings, PrayerName.ASR, R.id.slot_asr, R.id.asr_name, R.id.asr_time, nextPrayer?.first, colors)
-                updateSlot(context, views, timings, PrayerName.MAGHRIB, R.id.slot_maghrib, R.id.maghrib_name, R.id.maghrib_time, nextPrayer?.first, colors)
-                updateSlot(context, views, timings, PrayerName.ISHA, R.id.slot_isha, R.id.isha_name, R.id.isha_time, nextPrayer?.first, colors)
-            }
-
-            // Click to open app
-            val intent = Intent(context, MainActivity::class.java)
-            val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
-
-            appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 
-    private fun updateSlot(
-        context: Context,
-        views: RemoteViews,
-        timings: Map<PrayerName, String>,
+    @Composable
+    private fun PrayerSlot(
         prayer: PrayerName,
-        slotId: Int,
-        nameId: Int,
-        timeId: Int,
-        nextPrayerName: PrayerName?,
-        colors: WidgetColors
+        time: String,
+        isNext: Boolean,
+        modifier: GlanceModifier = GlanceModifier
     ) {
-        val timeStr = timings[prayer] ?: "--:--"
+        val context = LocalContext.current
+        val colors = GlanceTheme.colors
         
-        // Handle Dhuhr/Jumu'ah swap
         val isFriday = LocalDate.now().dayOfWeek == DayOfWeek.FRIDAY
         val displayName = if (prayer == PrayerName.DHUHR && isFriday) {
             context.getString(R.string.prayer_jumuah)
@@ -134,19 +185,36 @@ class PrayerWidget : AppWidgetProvider() {
             context.getString(prayer.nameRes)
         }
 
-        views.setTextViewText(nameId, displayName)
-        views.setTextViewText(timeId, timeStr)
+        val slotBackground = if (isNext) colors.primaryContainer else androidx.glance.unit.ColorProvider(android.graphics.Color.TRANSPARENT)
+        val nameColor = if (isNext) colors.onPrimaryContainer else colors.primary
+        val timeColor = if (isNext) colors.onPrimaryContainer else colors.onSurface
 
-        // Highlight if it's the next prayer
-        if (prayer == nextPrayerName) {
-            val highlightBg = if (colors.surface == "#1C1611") R.drawable.widget_item_next_bg_dark else R.drawable.widget_item_next_bg_light
-            views.setInt(slotId, "setBackgroundResource", highlightBg)
-            views.setTextColor(nameId, Color.parseColor(colors.onSurface)) 
-            views.setTextColor(timeId, Color.parseColor(colors.onSurface)) 
-        } else {
-            views.setInt(slotId, "setBackgroundResource", 0) // No background
-            views.setTextColor(nameId, Color.parseColor(colors.primary)) 
-            views.setTextColor(timeId, Color.parseColor(colors.onSurface)) 
+        Box(
+            modifier = modifier
+                .fillMaxHeight()
+                .padding(2.dp)
+                .background(slotBackground)
+                .cornerRadius(12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = displayName,
+                    style = TextStyle(
+                        color = nameColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                Text(
+                    text = time,
+                    style = TextStyle(
+                        color = timeColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
         }
     }
 
@@ -172,26 +240,6 @@ class PrayerWidget : AppWidgetProvider() {
             }
         }
         
-        val firstPrayer = sortedPrayers.firstOrNull()
-        return firstPrayer?.let { it to (timings[it] ?: "--:--") }
-    }
-
-    data class WidgetColors(
-        val surface: String,
-        val onSurface: String,
-        val primary: String,
-        val highlight: String,
-        val onSurfaceVariant: String
-    )
-
-    companion object {
-        fun update(context: Context) {
-            val intent = Intent(context, PrayerWidget::class.java).apply {
-                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-            }
-            val ids = AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, PrayerWidget::class.java))
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-            context.sendBroadcast(intent)
-        }
+        return sortedPrayers.firstOrNull()?.let { it to (timings[it] ?: "--:--") }
     }
 }
