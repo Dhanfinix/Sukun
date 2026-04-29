@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
@@ -26,6 +27,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _isReady = MutableStateFlow(false)
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
+
+    private val _showSilenceSheet = MutableStateFlow(false)
+    val showSilenceSheet: StateFlow<Boolean> = _showSilenceSheet.asStateFlow()
+
+    fun triggerSilenceSheet() {
+        _showSilenceSheet.value = true
+    }
+
+    fun onSilenceSheetConsumed() {
+        _showSilenceSheet.value = false
+    }
 
     val isOnboardingCompleted: StateFlow<Boolean> = userPrefs.isOnboardingCompleted
         .onEach { _isReady.value = true }
@@ -156,6 +168,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = false
         )
 
+    val shouldShowDonation: StateFlow<Boolean> = userPrefs.shouldShowDonation
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     init {
         viewModelScope.launch {
             userPrefs.incrementAppOpenCount()
@@ -165,6 +184,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun markAsRated() {
         viewModelScope.launch {
             userPrefs.setHasRated(true)
+        }
+    }
+
+    fun markDonationAsShown() {
+        viewModelScope.launch {
+            val currentCount = userPrefs.appOpenCount.first()
+            userPrefs.setLastDonationShownCount(currentCount)
+        }
+    }
+
+    fun disableDonation() {
+        viewModelScope.launch {
+            userPrefs.setDonationDisabled(true)
         }
     }
 }

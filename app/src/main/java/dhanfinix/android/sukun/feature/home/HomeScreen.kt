@@ -87,6 +87,7 @@ fun HomeScreen(
     mainVm: MainViewModel,
     onShowOnboarding: () -> Unit,
     onOpenSettings: () -> Unit,
+    onShowDonation: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val volumeVm: VolumeViewModel = viewModel()
@@ -118,6 +119,14 @@ fun HomeScreen(
     val appTheme by mainVm.appTheme.collectAsState()
     val useDynamicColor by mainVm.useDynamicColor.collectAsState()
     val hasSeenCoachmark by mainVm.hasSeenHomeCoachmark.collectAsState()
+    val showSilenceSheetFromVm by mainVm.showSilenceSheet.collectAsState()
+
+    LaunchedEffect(showSilenceSheetFromVm) {
+        if (showSilenceSheetFromVm) {
+            showManualSilenceSheet = true
+            mainVm.onSilenceSheetConsumed()
+        }
+    }
     val coachMarkTargets = remember { mutableStateMapOf<CoachMarkTarget, Rect>() }
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -250,6 +259,46 @@ fun HomeScreen(
                     onManualSilenceDismiss = { showManualSilenceSheet = false },
                     onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
                 )
+
+                // ── Support Card ──
+                ElevatedCard(
+                    onClick = onShowDonation,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Favorite,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.label_support_sukun),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = stringResource(R.string.desc_support_sukun),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
             }

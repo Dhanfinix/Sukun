@@ -81,6 +81,10 @@ class SilenceScheduler(private val context: Context) {
                 }
             }
         }
+
+        // Update Widgets
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
     }
 
     private fun scheduleRestoreOnly(prayer: PrayerInfo, durationMin: Int, date: LocalDate) {

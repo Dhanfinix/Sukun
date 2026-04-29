@@ -14,8 +14,8 @@ android {
         applicationId = "dhanfinix.android.sukun"
         minSdk = 26
         targetSdk = 36
-        versionCode = 45
-        versionName = "1.1.5"
+        versionCode = 46
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -101,6 +101,7 @@ dependencies {
     implementation(libs.play.app.update.ktx)
     implementation(libs.play.app.review)
     implementation(libs.play.app.review.ktx)
+    implementation(libs.androidx.browser)
 
 
 

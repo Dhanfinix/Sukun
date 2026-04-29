@@ -31,6 +31,8 @@ import dhanfinix.android.sukun.core.datastore.TimeFormat
 fun SettingsScreen(
     mainVm: MainViewModel,
     onOpenAbout: () -> Unit,
+    onOpenWebView: (String, String) -> Unit,
+    onDonate: () -> Unit,
     onBack: () -> Unit
 ) {
     val appTheme by mainVm.appTheme.collectAsState()
@@ -176,6 +178,13 @@ fun SettingsScreen(
                         Uri.parse("https://play.google.com/store/apps/details?id=dhanfinix.android.sukun"))
                     context.startActivity(intent)
                 }
+            )
+
+            SettingsItem(
+                title = stringResource(R.string.label_support_sukun),
+                subtitle = stringResource(R.string.desc_support_sukun),
+                icon = Icons.Rounded.Favorite,
+                onClick = onDonate
             )
 
             SettingsItem(

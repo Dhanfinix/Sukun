@@ -197,8 +197,6 @@ fun VolumeSection(
                 enabled = !state.isSukunActive
             )
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
     }
 
     if (showManualSilenceSheet) {

@@ -115,12 +115,19 @@ class SilenceReceiver : BroadcastReceiver() {
         // 5. Show ongoing notification with working chronometer
         val timeFormat = userPrefs.timeFormat.first()
         NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime, timeFormat)
+
+        // 6. Update Widgets
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
     }
 
     private suspend fun handleStopSilence(context: Context) {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val notifManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val userPrefs = UserPreferences(context)
+
+        // Fetch prayer name for the final "Restored" notification before clearing state
+        val prayerName = userPrefs.silenceLabel.first() ?: context.getString(R.string.label_unknown)
 
         // 1. Restore exact system ringer mode / interruption filter
         val savedRingerMode = userPrefs.savedRingerMode.first()
@@ -159,8 +166,12 @@ class SilenceReceiver : BroadcastReceiver() {
         // 3. Clear silence metadata
         userPrefs.clearSilenceState()
 
-        // 4. Cancel notification
-        NotificationHelper.cancelNotification(context)
+        // 4. Show "Restored" notification (replaces countdown)
+        NotificationHelper.showRestoredNotification(context, prayerName)
+
+        // 5. Update Widgets
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
     }
 
     companion object {

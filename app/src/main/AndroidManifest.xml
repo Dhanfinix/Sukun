@@ -21,6 +21,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Sukun">
         <activity
+            android:name=".feature.widget.ManualSilenceOverlayActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Sukun.Translucent" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
@@ -47,6 +55,30 @@
         <receiver
             android:name=".worker.MidnightReceiver"
             android:exported="false" />
+
+        <receiver
+            android:name=".feature.widget.PrayerWidget"
+            android:exported="false"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/prayer_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".feature.widget.SilenceWidget"
+            android:exported="false"
+            android:label="@string/manual_silence">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/silence_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

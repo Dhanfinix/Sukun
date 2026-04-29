@@ -108,6 +108,8 @@ class UserPreferences(private val context: Context) {
     // ── In-App Review ──
     private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
     private val KEY_HAS_RATED = booleanPreferencesKey("has_rated")
+    private val KEY_LAST_DONATION_SHOWN_COUNT = intPreferencesKey("last_donation_shown_count")
+    private val KEY_DONATION_DISABLED = booleanPreferencesKey("donation_disabled")
 
     // ── Flows ──
 
@@ -456,6 +458,13 @@ class UserPreferences(private val context: Context) {
         count >= 5 && !rated
     }
 
+    val shouldShowDonation: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        val count = prefs[KEY_APP_OPEN_COUNT] ?: 0
+        val lastShown = prefs[KEY_LAST_DONATION_SHOWN_COUNT] ?: 0
+        val disabled = prefs[KEY_DONATION_DISABLED] ?: false
+        !disabled && count > 0 && count % 3 == 0 && count != lastShown
+    }
+
     suspend fun incrementAppOpenCount() {
         context.dataStore.edit { prefs ->
             val current = prefs[KEY_APP_OPEN_COUNT] ?: 0
@@ -467,5 +476,13 @@ class UserPreferences(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[KEY_HAS_RATED] = rated
         }
+    }
+
+    suspend fun setLastDonationShownCount(count: Int) {
+        context.dataStore.edit { it[KEY_LAST_DONATION_SHOWN_COUNT] = count }
+    }
+
+    suspend fun setDonationDisabled(disabled: Boolean) {
+        context.dataStore.edit { it[KEY_DONATION_DISABLED] = disabled }
     }
 }

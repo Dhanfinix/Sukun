@@ -42,6 +42,10 @@ class MainActivity : AppCompatActivity() {
     @Volatile
     private var showUpdateSnackbar = false
 
+    companion object {
+        const val ACTION_SHOW_SILENCE_SHEET = "dhanfinix.android.sukun.ACTION_SHOW_SILENCE_SHEET"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -55,6 +59,9 @@ class MainActivity : AppCompatActivity() {
 
         // Check for flexible in-app update
         checkForUpdate()
+
+        // Handle intent from widget
+        handleIntent(intent)
         
         setContent {
             val isOnboardingCompleted by mainVm.isOnboardingCompleted.collectAsState()
@@ -122,6 +129,17 @@ class MainActivity : AppCompatActivity() {
             }
         }.addOnFailureListener { e ->
             Log.d("MainActivity", "Update check failed: ${e.message}")
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: android.content.Intent?) {
+        if (intent?.action == ACTION_SHOW_SILENCE_SHEET) {
+            mainVm.triggerSilenceSheet()
         }
     }
 
