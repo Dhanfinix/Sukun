@@ -44,6 +44,9 @@ class SilenceReceiver : BroadcastReceiver() {
                     val reminderMin = intent.getIntExtra(KEY_REMINDER_MINUTES, 10)
                     NotificationHelper.showReminderNotification(context, prayerName, reminderMin)
                 }
+                else if (action == ACTION_EXTEND_SILENCE) {
+                    handleExtendSilence(context)
+                }
             } finally {
                 pendingResult.finish()
             }
@@ -114,7 +117,8 @@ class SilenceReceiver : BroadcastReceiver() {
 
         // 5. Show ongoing notification with working chronometer
         val timeFormat = userPrefs.timeFormat.first()
-        NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime, timeFormat)
+        val extendMin = userPrefs.silenceExtendMinutes.first()
+        NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime, timeFormat, extendMin)
 
         // 6. Update Widgets
         dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
@@ -174,10 +178,33 @@ class SilenceReceiver : BroadcastReceiver() {
         dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
     }
 
+    private suspend fun handleExtendSilence(context: Context) {
+        val userPrefs = UserPreferences(context)
+        val currentEndTime = userPrefs.silenceEndTime.first()
+        if (currentEndTime <= System.currentTimeMillis()) return // Already expired, nothing to extend
+
+        val extendMin = userPrefs.silenceExtendMinutes.first()
+        val newEndTime = currentEndTime + (extendMin * 60 * 1000L)
+
+        // Update metadata
+        val startTime = userPrefs.silenceStartTime.first()
+        val label = userPrefs.silenceLabel.first()
+        userPrefs.setSilenceMetadata(startTime, newEndTime, label)
+
+        // Reschedule restore alarm
+        SilenceScheduler(context).extendManual(newEndTime)
+
+        // Refresh notification
+        val timeFormat = userPrefs.timeFormat.first()
+        val prayerName = label ?: context.getString(R.string.label_manual)
+        NotificationHelper.showSilenceNotification(context, prayerName, System.currentTimeMillis(), newEndTime, timeFormat, extendMin)
+    }
+
     companion object {
         const val ACTION_START_SILENCE = "dhanfinix.android.sukun.START_SILENCE"
         const val ACTION_STOP_SILENCE = "dhanfinix.android.sukun.STOP_SILENCE"
         const val ACTION_SHOW_REMINDER = "dhanfinix.android.sukun.SHOW_REMINDER"
+        const val ACTION_EXTEND_SILENCE = "dhanfinix.android.sukun.EXTEND_SILENCE"
         const val KEY_PRAYER_NAME = "prayer_name"
         const val KEY_DURATION_MIN = "duration_min"
         const val KEY_REMINDER_MINUTES = "reminder_minutes"

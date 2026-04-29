@@ -24,7 +24,8 @@ data class VolumeUiState(
     val silenceMode: dhanfinix.android.sukun.core.datastore.SilenceMode = dhanfinix.android.sukun.core.datastore.SilenceMode.SILENT,
     // Pending silence duration that is waiting for overwrite confirmation
     val pendingOverwriteDurationMin: Int? = null,
-    val snackbarMessage: String? = null
+    val snackbarMessage: String? = null,
+    val silenceExtendMinutes: Int = 5
 )
 
 /**
@@ -48,4 +49,5 @@ sealed class VolumeEvent {
     data object ConfirmOverwrite : VolumeEvent()
     data object DismissOverwrite : VolumeEvent()
     data object SnackbarMessageConsumed : VolumeEvent()
+    data object ExtendSilence : VolumeEvent()
 }

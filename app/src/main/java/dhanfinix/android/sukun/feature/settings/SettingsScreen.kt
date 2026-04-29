@@ -47,6 +47,9 @@ fun SettingsScreen(
     var showLanguageSheet by remember { mutableStateOf(false) }
     var showTimeFormatSheet by remember { mutableStateOf(false) }
     var showReminderSheet by remember { mutableStateOf(false) }
+    var showExtendMinutesSheet by remember { mutableStateOf(false) }
+    
+    val silenceExtendMinutes by mainVm.silenceExtendMinutes.collectAsState()
 
 
 
@@ -153,6 +156,13 @@ fun SettingsScreen(
                     onClick = { showReminderSheet = true }
                 )
             }
+            
+            SettingsItem(
+                title = stringResource(R.string.setting_extend_silence),
+                subtitle = stringResource(R.string.setting_extend_silence_desc) + " (${stringResource(R.string.minutes_format, silenceExtendMinutes)})",
+                icon = Icons.Rounded.MoreTime,
+                onClick = { showExtendMinutesSheet = true }
+            )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
@@ -227,6 +237,14 @@ fun SettingsScreen(
                 currentMinutes = reminderMinutes,
                 onMinutesSelected = { mainVm.setReminderMinutes(it) },
                 onDismiss = { showReminderSheet = false }
+            )
+        }
+        
+        if (showExtendMinutesSheet) {
+            ExtendMinutesSelectionSheet(
+                currentMinutes = silenceExtendMinutes,
+                onMinutesSelected = { mainVm.setSilenceExtendMinutes(it) },
+                onDismiss = { showExtendMinutesSheet = false }
             )
         }
     }
@@ -519,6 +537,61 @@ private fun ReminderSelectionSheet(
                     ) {
                         Text(
                             text = stringResource(R.string.minutes_before, minutes),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
+                        if (isSelected) {
+                            Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExtendMinutesSelectionSheet(
+    currentMinutes: Int,
+    onMinutesSelected: (Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.setting_extend_silence),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp, start = 8.dp)
+            )
+
+            val options = listOf(5, 10, 15, 30, 60)
+
+            options.forEach { minutes ->
+                val isSelected = minutes == currentMinutes
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable {
+                            onMinutesSelected(minutes)
+                            onDismiss()
+                        },
+                    shape = MaterialTheme.shapes.medium,
+                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.minutes_format, minutes),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                         )

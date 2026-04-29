@@ -132,6 +132,11 @@
     <string name="reminder_msg_context">اقترب موعد صلاة %1$s. بقي %2$s دقائق. حان وقت الاستعداد.</string>
     <string name="btn_prepare">استعد الآن</string>
 
+    <string name="extend_silence">تمديد الصمت</string>
+    <string name="setting_extend_silence">مدة التمديد</string>
+    <string name="setting_extend_silence_desc">الدقائق المضافة عند كل تمديد</string>
+    <string name="minutes_format">%d دقائق</string>
+
     <!-- General Section -->
     <string name="settings_title">الإعدادات</string>
     <string name="section_general">عام</string>
@@ -196,4 +201,7 @@
     <string name="label_choose_donation_method">اختر وسيلة التبرع</string>
     <string name="label_global">عالمي</string>
     <string name="label_indonesia">إندونيسيا</string>
+    <string name="notif_restored_title">تمت استعادة الصوت</string>
+    <string name="notif_restored_msg">انتهت فترة الصمت لـ %s.</string>
 </resources>
+

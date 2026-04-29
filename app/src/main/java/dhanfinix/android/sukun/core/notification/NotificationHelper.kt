@@ -57,7 +57,8 @@ object NotificationHelper {
         prayerName: String,
         startTimeMs: Long,
         endTimeMs: Long,
-        timeFormat: TimeFormat = TimeFormat.AUTO
+        timeFormat: TimeFormat = TimeFormat.AUTO,
+        extendMinutes: Int = 5
     ) {
         val locale = if (context.resources.configuration.locales[0].language == "ar") {
              Locale("ar")
@@ -82,6 +83,14 @@ object NotificationHelper {
         }
         val stopPending = PendingIntent.getBroadcast(
             context, 0, stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val extendIntent = Intent(context, SilenceReceiver::class.java).apply {
+            action = SilenceReceiver.ACTION_EXTEND_SILENCE
+        }
+        val extendPending = PendingIntent.getBroadcast(
+            context, 10, extendIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -116,6 +125,8 @@ object NotificationHelper {
         expandedView.setChronometerCountDown(R.id.notif_expanded_chronometer, true)
         expandedView.setTextViewText(R.id.notif_expanded_end_time, endsAtLabel)
         expandedView.setOnClickPendingIntent(R.id.notif_expanded_stop, stopPending)
+        expandedView.setTextViewText(R.id.notif_expanded_extend, "+${extendMinutes}m")
+        expandedView.setOnClickPendingIntent(R.id.notif_expanded_extend, extendPending)
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)

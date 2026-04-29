@@ -131,6 +131,11 @@
     <string name="reminder_msg_context">Waktu %1$s akan tiba dalam %2$d menit lagi. Ayo bersiap!</string>
     <string name="btn_prepare">Bersiap Sekarang</string>
 
+    <string name="extend_silence">Perpanjang Senyap</string>
+    <string name="setting_extend_silence">Durasi Perpanjang Senyap</string>
+    <string name="setting_extend_silence_desc">Menit yang ditambahkan setiap kali tombol ditekan</string>
+    <string name="minutes_format">%d menit</string>
+
     <!-- General Section -->
     <string name="settings_title">Pengaturan</string>
     <string name="section_general">Umum</string>
@@ -196,4 +201,6 @@
     <string name="label_choose_donation_method">Pilih Metode Donasi</string>
     <string name="label_global">Global</string>
     <string name="label_indonesia">Indonesia</string>
+    <string name="notif_restored_title">Volume Dipulihkan</string>
+    <string name="notif_restored_msg">Waktu hening untuk %s telah berakhir.</string>
 </resources>

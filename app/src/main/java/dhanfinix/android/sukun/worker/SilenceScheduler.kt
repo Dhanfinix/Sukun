@@ -127,6 +127,21 @@ class SilenceScheduler(private val context: Context) {
         context.sendBroadcast(stopIntent)
     }
 
+    /**
+     * Extends an already-active silence by rescheduling the restore alarm to [newEndTimeMs].
+     * Does NOT restart the silence — volumes stay muted by the already-running session.
+     */
+    fun extendManual(newEndTimeMs: Long) {
+        // Cancel the old restore alarm first
+        cancelManualAlarms()
+        // Schedule new restore alarm at the extended time
+        val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE)
+        scheduleExactAlarmSafely(newEndTimeMs, pendingRestore)
+        // Update widgets to reflect new countdown
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
+    }
+
     private fun cancelManualAlarms() {
         // Cancel the dedicated request code for manual restore
         alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE))

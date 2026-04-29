@@ -132,6 +132,11 @@
     <string name="reminder_title_context">Prepare for %s</string>
     <string name="reminder_msg_context">It\'s almost time for %1$s. You have about %2$s minutes to prepare.</string>
     <string name="btn_prepare">Prepare Now</string>
+    
+    <string name="extend_silence">Extend Silence</string>
+    <string name="setting_extend_silence">Extend Silence Duration</string>
+    <string name="setting_extend_silence_desc">Minutes added per extension tap</string>
+    <string name="minutes_format">%d minutes</string>
 
     <!-- General Section -->
     <string name="settings_title">Settings</string>

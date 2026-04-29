@@ -105,8 +105,10 @@ fun PrayerSection(
     isSukunActive: Boolean = false,
     sukunEndTime: Long = 0L,
     sukunLabel: String? = null,
-    hasDndPermission: Boolean = true,
+    extendMinutes: Int = 5,
+    hasDndPermission: Boolean = false,
     onStopSilence: () -> Unit = {},
+    onExtendSilence: () -> Unit = {},
     onEvent: (PrayerEvent) -> Unit,
     modifier: Modifier = Modifier,
     onTargetPositioned: ((CoachMarkTarget, Rect) -> Unit)? = null
@@ -161,7 +163,9 @@ fun PrayerSection(
             isSukunActive = isSukunActive,
             sukunEndTime = sukunEndTime,
             sukunLabel = sukunLabel,
+            extendMinutes = extendMinutes,
             onStopSilence = onStopSilence,
+            onExtendSilence = onExtendSilence,
             onLocationClick = onLocationClick,
             onSearchClick = { showSearchDialog = true },
             modifier = Modifier

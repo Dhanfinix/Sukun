@@ -99,6 +99,7 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             is VolumeEvent.ConfirmOverwrite -> confirmOverwrite()
             is VolumeEvent.DismissOverwrite -> _uiState.update { it.copy(pendingOverwriteDurationMin = null) }
             is VolumeEvent.SnackbarMessageConsumed -> _uiState.update { it.copy(snackbarMessage = null) }
+            is VolumeEvent.ExtendSilence -> extendSilence()
         }
     }
 
@@ -282,6 +283,11 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
                 _uiState.update { it.copy(silenceMode = mode) }
             }
         }
+        viewModelScope.launch {
+            userPrefs.silenceExtendMinutes.collect { minutes ->
+                _uiState.update { it.copy(silenceExtendMinutes = minutes) }
+            }
+        }
     }
 
     private var silenceTickerJob: kotlinx.coroutines.Job? = null
@@ -394,6 +400,35 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             delay(500) 
             loadCurrentVolumes()
+        }
+    }
+
+    private fun extendSilence() {
+        val currentEndTime = _uiState.value.sukunEndTime
+        if (currentEndTime <= System.currentTimeMillis()) return // Not active, ignore
+
+        val extendMs = _uiState.value.silenceExtendMinutes * 60 * 1000L
+        val newEndTime = currentEndTime + extendMs
+
+        viewModelScope.launch {
+            // Update DataStore metadata first
+            val startTime = userPrefs.silenceStartTime.first()
+            val label = userPrefs.silenceLabel.first()
+            userPrefs.setSilenceMetadata(startTime, newEndTime, label)
+
+            // Reschedule the restore alarm
+            silenceScheduler.extendManual(newEndTime)
+
+            // Refresh the notification with the new end time
+            val timeFormat = userPrefs.timeFormat.first()
+            val extendMin = _uiState.value.silenceExtendMinutes
+            val prayerName = label ?: getApplication<Application>().getString(R.string.label_manual)
+            dhanfinix.android.sukun.core.notification.NotificationHelper.showSilenceNotification(
+                getApplication(), prayerName, System.currentTimeMillis(), newEndTime, timeFormat, extendMin
+            )
+
+            // Update UI immediately
+            updateSilenceState(newEndTime)
         }
     }
 

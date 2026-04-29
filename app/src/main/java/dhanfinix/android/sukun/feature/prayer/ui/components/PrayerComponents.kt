@@ -22,6 +22,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -475,7 +476,9 @@ fun NextPrayerCard(
     isSukunActive: Boolean = false,
     sukunEndTime: Long = 0L,
     sukunLabel: String? = null,
+    extendMinutes: Int = 5,
     onStopSilence: () -> Unit = {},
+    onExtendSilence: () -> Unit = {},
     onLocationClick: () -> Unit,
     onSearchClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -686,27 +689,61 @@ fun NextPrayerCard(
                             label = "PulseAlpha"
                         )
 
-                        // Large Circular Stop Button
-                        FilledTonalButton(
-                            onClick = onStopSilence,
-                            modifier = Modifier
-                                .size(64.dp)
-                                .graphicsLayer {
-                                    scaleX = pulseScale
-                                    scaleY = pulseScale
-                                },
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            contentPadding = PaddingValues(0.dp),
-                            colors = ButtonDefaults.filledTonalButtonColors(
-                                containerColor = MaterialTheme.colorScheme.error.copy(alpha = pulseAlpha),
-                                contentColor = MaterialTheme.colorScheme.error
-                            )
+                        // Actions Row: Extend and Stop
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Stop,
-                                contentDescription = stringResource(R.string.stop_silence),
-                                modifier = Modifier.size(32.dp)
-                            )
+                            // Secondary Button: Extend (Following Chip Styling)
+                            Surface(
+                                onClick = onExtendSilence,
+                                shape = MaterialTheme.shapes.small,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                contentColor = MaterialTheme.colorScheme.primary
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(
+                                        horizontal = 10.dp,
+                                        vertical = 4.dp
+                                    ),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "${extendMinutes}m",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            // Large Circular Stop Button
+                            FilledTonalButton(
+                                onClick = onStopSilence,
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .graphicsLayer {
+                                        scaleX = pulseScale
+                                        scaleY = pulseScale
+                                    },
+                                shape = androidx.compose.foundation.shape.CircleShape,
+                                contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.error.copy(alpha = pulseAlpha),
+                                    contentColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Stop,
+                                    contentDescription = stringResource(R.string.stop_silence),
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
                         }
                     }
                 } else {

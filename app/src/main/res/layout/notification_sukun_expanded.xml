@@ -2,7 +2,7 @@
 <!--
     Sukun EXPANDED notification view (big content view) — RemoteViews safe.
     Shown when user swipes down / long-presses the notification.
-    Layout: top label row | giant chronometer | end-time | stop button row
+    Layout: top label row | giant chronometer | end-time | action buttons (extend + stop)
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -75,14 +75,43 @@
             android:maxLines="1" />
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/notif_expanded_stop"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@drawable/ic_stop"
-        android:background="@drawable/bg_stop_circle"
-        android:padding="14dp"
-        android:contentDescription="@string/stop_silence"
-        android:scaleType="fitCenter" />
+    <!-- Action buttons: Extend + Stop -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginStart="8dp">
+
+        <!-- +Xm Extend Button -->
+        <TextView
+            android:id="@+id/notif_expanded_extend"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="12dp"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="+5m"
+            android:textAppearance="@style/TextAppearance.Compat.Notification.Line2"
+            android:textColor="@color/sukun_primary"
+            android:textStyle="bold"
+            android:background="@drawable/bg_extend_pill"
+            android:contentDescription="@string/extend_silence" />
+
+        <!-- Stop Button -->
+        <ImageView
+            android:id="@+id/notif_expanded_stop"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_stop"
+            android:tint="@color/sukun_error"
+            android:background="@drawable/bg_stop_tonal_circle"
+            android:padding="14dp"
+            android:contentDescription="@string/stop_silence"
+            android:scaleType="fitCenter" />
+
+    </LinearLayout>
 
 </LinearLayout>
+

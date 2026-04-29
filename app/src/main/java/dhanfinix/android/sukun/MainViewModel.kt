@@ -91,6 +91,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = 10
         )
 
+    val silenceExtendMinutes: StateFlow<Int> = userPrefs.silenceExtendMinutes
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 5
+        )
+
     val hasSeenLanding: StateFlow<Boolean> = userPrefs.hasSeenLanding
         .stateIn(
             scope = viewModelScope,
@@ -134,6 +141,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setReminderMinutes(minutes: Int) {
         viewModelScope.launch {
             userPrefs.setReminderMinutes(minutes)
+        }
+    }
+
+    fun setSilenceExtendMinutes(minutes: Int) {
+        viewModelScope.launch {
+            userPrefs.setSilenceExtendMinutes(minutes)
         }
     }
 

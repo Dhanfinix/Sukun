@@ -105,6 +105,9 @@ class UserPreferences(private val context: Context) {
     private val KEY_REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
     private val KEY_REMINDER_MINUTES = intPreferencesKey("reminder_minutes")
 
+    // ── Silence Extension ──
+    private val KEY_SILENCE_EXTEND_MINUTES = intPreferencesKey("silence_extend_minutes")
+
     // ── In-App Review ──
     private val KEY_APP_OPEN_COUNT = intPreferencesKey("app_open_count")
     private val KEY_HAS_RATED = booleanPreferencesKey("has_rated")
@@ -207,6 +210,10 @@ class UserPreferences(private val context: Context) {
 
     val reminderMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[KEY_REMINDER_MINUTES] ?: 10
+    }
+
+    val silenceExtendMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_SILENCE_EXTEND_MINUTES] ?: 5
     }
 
     val silenceMode: Flow<SilenceMode> = context.dataStore.data.map { prefs ->
@@ -407,6 +414,12 @@ class UserPreferences(private val context: Context) {
     suspend fun setReminderMinutes(minutes: Int) {
         context.dataStore.edit { prefs ->
             prefs[KEY_REMINDER_MINUTES] = minutes
+        }
+    }
+
+    suspend fun setSilenceExtendMinutes(minutes: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_SILENCE_EXTEND_MINUTES] = minutes
         }
     }
 

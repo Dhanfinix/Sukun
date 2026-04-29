@@ -198,8 +198,10 @@ fun HomeScreen(
                     isSukunActive = volumeState.isSukunActive,
                     sukunEndTime = volumeState.sukunEndTime,
                     sukunLabel = volumeState.sukunLabel,
+                    extendMinutes = volumeState.silenceExtendMinutes,
                     hasDndPermission = hasDndPermission,
                     onStopSilence = { volumeVm.onEvent(VolumeEvent.StopSilence) },
+                    onExtendSilence = { volumeVm.onEvent(VolumeEvent.ExtendSilence) },
                     onEvent = prayerVm::onEvent,
                     onTargetPositioned = { target, rect -> coachMarkTargets[target] = rect }
                 )
