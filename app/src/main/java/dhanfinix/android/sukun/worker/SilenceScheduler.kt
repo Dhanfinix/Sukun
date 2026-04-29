@@ -195,7 +195,8 @@ class SilenceScheduler(private val context: Context) {
                     reminderIntent,
                     PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                scheduleExactAlarmSafely(reminderTimeMs, pendingReminder)
+                // Use INEXACT alarm for reminder so it doesn't consume the exact alarm Doze quota!
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, reminderTimeMs, pendingReminder)
             }
         }
 
