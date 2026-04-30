@@ -23,6 +23,8 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
@@ -57,10 +59,21 @@ class PrayerWidgetReceiver : GlanceAppWidgetReceiver() {
 class PrayerWidget : GlanceAppWidget() {
 
     companion object {
+        /**
+         * Standard update method for non-suspend callers (e.g. ViewModel).
+         */
         fun update(context: Context) {
             MainScope().launch {
-                PrayerWidget().updateAll(context)
+                updateAll(context)
             }
+        }
+
+        /**
+         * Suspend update for background receivers (e.g. SilenceReceiver).
+         * Ensures the update completes before the receiver process finishes.
+         */
+        suspend fun updateAll(context: Context) {
+            PrayerWidget().updateAll(context)
         }
     }
 
@@ -68,25 +81,32 @@ class PrayerWidget : GlanceAppWidget() {
         val userPrefs = UserPreferences(context)
         val repository = PrayerRepository(context)
 
-        // Initial data fetch
-        val lat = userPrefs.latitude.first()
-        val lng = userPrefs.longitude.first()
-        val method = userPrefs.calculationMethod.first()
-        val offsets = userPrefs.prayerOffsets.first()
-        val locationName = userPrefs.locationName.first() ?: context.getString(R.string.jakarta)
-        
-        val result = repository.getPrayerTimes(LocalDate.now(), lat, lng, method, offsets)
-        val timings = result.getOrNull() ?: emptyMap()
-        
-        val useDynamicColorInit = userPrefs.useDynamicColor.first()
-        
         provideContent {
-            val useDynamicColor by userPrefs.useDynamicColor.collectAsState(initial = useDynamicColorInit)
+            val lat by userPrefs.latitude.collectAsState(initial = 0.0)
+            val lng by userPrefs.longitude.collectAsState(initial = 0.0)
+            val method by userPrefs.calculationMethod.collectAsState(initial = 20)
+            val offsets by userPrefs.prayerOffsets.collectAsState(initial = emptyMap())
+            val locationName by userPrefs.locationName.collectAsState(initial = null)
+            val useDynamicColor by userPrefs.useDynamicColor.collectAsState(initial = true)
+
+            // Re-fetch timings when location or settings change
+            // In Glance, provideContent is a periodic composition, but we can 
+            // use the state values to ensure the UI stays fresh.
+            val timings = androidx.compose.runtime.remember(lat, lng, method, offsets) {
+                // We use runBlocking here because provideGlance is already suspend, 
+                // but the internal Composable needs a synchronous-looking value or a side effect.
+                // However, the best way in Glance is to fetch outside and update state, 
+                // but for simplicity and reactivity, we'll ensure the content re-renders.
+                // Since this is a widget, we can't do heavy network here, but repository has Room cache.
+                kotlinx.coroutines.runBlocking {
+                    repository.getPrayerTimes(LocalDate.now(), lat, lng, method, offsets).getOrNull() ?: emptyMap()
+                }
+            }
             
             SukunGlanceTheme(useDynamicColor = useDynamicColor) {
                 PrayerWidgetContent(
                     timings = timings,
-                    locationName = locationName
+                    locationName = locationName ?: context.getString(R.string.jakarta)
                 )
             }
         }

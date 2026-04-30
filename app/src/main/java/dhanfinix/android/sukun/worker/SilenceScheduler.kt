@@ -7,10 +7,16 @@ import android.content.Context
 import android.content.Intent
 import androidx.work.WorkManager
 import dhanfinix.android.sukun.R
+import dhanfinix.android.sukun.feature.prayer.data.PrayerRepository
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
+import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Calendar
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * Schedules silence using AlarmManager for exact timing:
@@ -25,11 +31,11 @@ class SilenceScheduler(private val context: Context) {
     /**
      * Schedules the NEXT occurrence of each enabled prayer across a rolling 24-hour window.
      */
-    fun scheduleAll(
+    suspend fun scheduleAll(
         prayersToday: List<PrayerInfo>,
         prayersTomorrow: List<PrayerInfo>,
-        durations: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int>,
-        offsets: Map<dhanfinix.android.sukun.feature.prayer.data.model.PrayerName, Int> = emptyMap(),
+        durations: Map<PrayerName, Int>,
+        offsets: Map<PrayerName, Int> = emptyMap(),
         reminderEnabled: Boolean = false,
         reminderMinutes: Int = 10
     ) {
@@ -67,9 +73,9 @@ class SilenceScheduler(private val context: Context) {
             }
         }
 
-        // Update Widgets
-        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
-        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
+        // Update Widgets (Suspend for reliability)
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
     }
 
     private fun scheduleRestoreOnly(prayer: PrayerInfo, durationMin: Int, date: LocalDate) {
@@ -131,15 +137,15 @@ class SilenceScheduler(private val context: Context) {
      * Extends an already-active silence by rescheduling the restore alarm to [newEndTimeMs].
      * Does NOT restart the silence — volumes stay muted by the already-running session.
      */
-    fun extendManual(newEndTimeMs: Long) {
+    suspend fun extendManual(newEndTimeMs: Long) {
         // Cancel the old restore alarm first
         cancelManualAlarms()
         // Schedule new restore alarm at the extended time
         val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE)
         scheduleExactAlarmSafely(newEndTimeMs, pendingRestore)
-        // Update widgets to reflect new countdown
-        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
-        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
+        // Update widgets to reflect new countdown (Suspend for reliability)
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
     }
 
     private fun cancelManualAlarms() {

@@ -21,6 +21,8 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import androidx.glance.layout.Column
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
@@ -53,10 +55,20 @@ class SilenceWidgetReceiver : GlanceAppWidgetReceiver() {
 class SilenceWidget : GlanceAppWidget() {
 
     companion object {
+        /**
+         * Standard update method for non-suspend callers.
+         */
         fun update(context: Context) {
             MainScope().launch {
-                SilenceWidget().updateAll(context)
+                updateAll(context)
             }
+        }
+
+        /**
+         * Suspend update for background receivers.
+         */
+        suspend fun updateAll(context: Context) {
+            SilenceWidget().updateAll(context)
         }
     }
 

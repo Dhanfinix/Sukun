@@ -120,9 +120,9 @@ class SilenceReceiver : BroadcastReceiver() {
         val extendMin = userPrefs.silenceExtendMinutes.first()
         NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime, timeFormat, extendMin)
 
-        // 6. Update Widgets
-        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
-        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
+        // 6. Update Widgets (Suspend to ensure completion before finish)
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
     }
 
     private suspend fun handleStopSilence(context: Context) {
@@ -173,9 +173,9 @@ class SilenceReceiver : BroadcastReceiver() {
         // 4. Show "Restored" notification (replaces countdown)
         NotificationHelper.showRestoredNotification(context, prayerName)
 
-        // 5. Update Widgets
-        dhanfinix.android.sukun.feature.widget.SilenceWidget.update(context)
-        dhanfinix.android.sukun.feature.widget.PrayerWidget.update(context)
+        // 5. Update Widgets (Suspend to ensure completion before finish)
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
     }
 
     private suspend fun handleExtendSilence(context: Context) {

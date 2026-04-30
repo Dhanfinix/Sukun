@@ -568,7 +568,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun scheduleWorkers(
+    private suspend fun scheduleWorkers(
         prayersToday: List<PrayerInfo>,
         prayersTomorrow: List<PrayerInfo>,
         durations: Map<PrayerName, Int>,
