@@ -117,7 +117,13 @@ class PrayerWidget : GlanceAppWidget() {
                 .background(colors.surface)
                 .cornerRadius(16.dp)
                 .padding(8.dp)
-                .clickable(actionStartActivity(Intent(context, MainActivity::class.java)))
+                .clickable(
+                    actionStartActivity(
+                        Intent(context, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                    )
+                )
         ) {
             // Prayers Row
             Row(
@@ -195,16 +201,21 @@ class PrayerWidget : GlanceAppWidget() {
             context.getString(prayer.nameRes)
         }
 
-        val slotBackground = if (isNext) colors.primaryContainer else androidx.glance.unit.ColorProvider(android.graphics.Color.TRANSPARENT)
         val nameColor = if (isNext) colors.onPrimaryContainer else colors.primary
         val timeColor = if (isNext) colors.onPrimaryContainer else colors.onSurface
+        val slotModifier = modifier
+            .fillMaxHeight()
+            .padding(2.dp)
+            .let {
+                if (isNext) {
+                    it.background(colors.primaryContainer).cornerRadius(12.dp)
+                } else {
+                    it
+                }
+            }
 
         Box(
-            modifier = modifier
-                .fillMaxHeight()
-                .padding(2.dp)
-                .background(slotBackground)
-                .cornerRadius(12.dp),
+            modifier = slotModifier,
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

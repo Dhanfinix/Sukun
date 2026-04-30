@@ -71,7 +71,7 @@ object NotificationHelper {
         createChannel(context)
 
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val openAppPending = PendingIntent.getActivity(
             context, 0, openAppIntent,
@@ -156,7 +156,7 @@ object NotificationHelper {
         createChannel(context)
 
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val openAppPending = PendingIntent.getActivity(
             context, 2, openAppIntent,
@@ -196,7 +196,7 @@ object NotificationHelper {
         createChannel(context)
 
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val openAppPending = PendingIntent.getActivity(
             context, 1, openAppIntent,
@@ -204,7 +204,7 @@ object NotificationHelper {
         )
 
         val title = context.getString(R.string.reminder_title_context, prayerName.withIsolate())
-        val minutesStr = java.lang.String.format(java.util.Locale.US, "%d", minutesBefore).withIsolate()
+        val minutesStr = java.lang.String.format(Locale.US, "%d", minutesBefore).withIsolate()
         val content = context.getString(R.string.reminder_msg_context, prayerName.withIsolate(), minutesStr)
 
         val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)

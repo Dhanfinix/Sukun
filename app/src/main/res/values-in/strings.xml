@@ -128,7 +128,7 @@
     <string name="reminder_time">Waktu Pengingat</string>
     <string name="minutes_before">%d menit sebelum</string>
     <string name="reminder_title_context">Siap-siap %s</string>
-    <string name="reminder_msg_context">Waktu %1$s akan tiba dalam %2$d menit lagi. Ayo bersiap!</string>
+    <string name="reminder_msg_context">Waktu %1$s akan tiba dalam %2$s menit lagi. Ayo bersiap!</string>
     <string name="btn_prepare">Bersiap Sekarang</string>
 
     <string name="extend_silence">Perpanjang Senyap</string>

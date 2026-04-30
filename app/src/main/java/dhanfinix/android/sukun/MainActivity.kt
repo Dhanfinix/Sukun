@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
 
         // Handle intent from widget
         handleIntent(intent)
-        
+
         setContent {
             val isOnboardingCompleted by mainVm.isOnboardingCompleted.collectAsState()
             val isReady by mainVm.isReady.collectAsState()
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
                     requestInAppReview()
                 }
             }
-            
+
             SukunTheme(
                 appTheme = appTheme,
                 dynamicColor = useDynamicColor
@@ -134,6 +134,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         handleIntent(intent)
     }
 
