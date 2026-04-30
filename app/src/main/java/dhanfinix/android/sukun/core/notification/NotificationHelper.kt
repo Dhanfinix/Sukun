@@ -29,6 +29,8 @@ object NotificationHelper {
 
     private const val CHANNEL_ID = "sukun_silence_channel_v2"
     private const val REMINDER_CHANNEL_ID = "sukun_reminder_channel"
+    private const val PROGRESS_MAX = 1000
+    private const val EXPANDED_REBIND_INTERVAL_MS = 15_000L
     const val NOTIFICATION_ID = 1001
 
     fun createChannel(context: Context) {
@@ -94,9 +96,14 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val nowMs = System.currentTimeMillis()
+
         // Chronometer base (elapsed realtime domain)
-        val remainingMs = endTimeMs - System.currentTimeMillis()
+        val remainingMs = endTimeMs - nowMs
         val chronometerBase = android.os.SystemClock.elapsedRealtime() + remainingMs
+        val totalMs = (endTimeMs - startTimeMs).coerceAtLeast(1L)
+        val elapsedMs = (nowMs - startTimeMs).coerceIn(0L, totalMs)
+        val progress = ((elapsedMs * PROGRESS_MAX) / totalMs).toInt()
 
         // Human-readable end time, e.g. "05:30 PM"
         val formattedEndTime = SimpleDateFormat("HH:mm", Locale.US).format(Date(endTimeMs))
@@ -109,6 +116,11 @@ object NotificationHelper {
         }
         
         val endsAtLabel = localizedContext.getString(R.string.notif_ends_at, endTimeDisplay)
+        val expandedLayout = if ((nowMs / EXPANDED_REBIND_INTERVAL_MS) % 2L == 0L) {
+            R.layout.notification_sukun_expanded
+        } else {
+            R.layout.notification_sukun_expanded_alt
+        }
 
         // ── Compact (collapsed) view ──────────────────────────────────────────
         val compactView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_countdown)
@@ -118,11 +130,12 @@ object NotificationHelper {
         compactView.setChronometerCountDown(R.id.notification_chronometer, true)
 
         // ── Expanded (big content) view ───────────────────────────────────────
-        val expandedView = RemoteViews(localizedContext.packageName, R.layout.notification_sukun_expanded)
+        val expandedView = RemoteViews(localizedContext.packageName, expandedLayout)
         expandedView.setTextViewText(R.id.notif_expanded_prayer, prayerName)
         expandedView.setTextViewText(R.id.notif_expanded_status, localizedContext.getString(R.string.silence_active))
         expandedView.setChronometer(R.id.notif_expanded_chronometer, chronometerBase, "%s", true)
         expandedView.setChronometerCountDown(R.id.notif_expanded_chronometer, true)
+        expandedView.setProgressBar(R.id.notif_expanded_progress, PROGRESS_MAX, progress, false)
         expandedView.setTextViewText(R.id.notif_expanded_end_time, endsAtLabel)
         expandedView.setOnClickPendingIntent(R.id.notif_expanded_stop, stopPending)
         expandedView.setTextViewText(R.id.notif_expanded_extend, "+${extendMinutes}m")

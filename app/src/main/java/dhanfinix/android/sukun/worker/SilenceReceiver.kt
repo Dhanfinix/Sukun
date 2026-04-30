@@ -48,6 +48,9 @@ class SilenceReceiver : BroadcastReceiver() {
                 else if (action == ACTION_EXTEND_SILENCE) {
                     handleExtendSilence(context)
                 }
+                else if (action == ACTION_REFRESH_SILENCE_NOTIFICATION) {
+                    handleRefreshSilenceNotification(context)
+                }
             } finally {
                 pendingResult.finish()
             }
@@ -144,6 +147,7 @@ class SilenceReceiver : BroadcastReceiver() {
         val timeFormat = userPrefs.timeFormat.first()
         val extendMin = userPrefs.silenceExtendMinutes.first()
         NotificationHelper.showSilenceNotification(context, prayerName, startTime, endTime, timeFormat, extendMin)
+        SilenceScheduler(context).scheduleNotificationRefresh()
 
         // 6. Update Widgets (Suspend to ensure completion before finish)
         dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
@@ -154,6 +158,7 @@ class SilenceReceiver : BroadcastReceiver() {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val notifManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val userPrefs = UserPreferences(context)
+        SilenceScheduler(context).cancelNotificationRefresh()
 
         // Fetch prayer name for the final "Restored" notification before clearing state
         val prayerName = userPrefs.silenceLabel.first() ?: context.getString(R.string.label_unknown)
@@ -222,7 +227,23 @@ class SilenceReceiver : BroadcastReceiver() {
         // Refresh notification
         val timeFormat = userPrefs.timeFormat.first()
         val prayerName = label ?: context.getString(R.string.label_manual)
-        NotificationHelper.showSilenceNotification(context, prayerName, System.currentTimeMillis(), newEndTime, timeFormat, extendMin)
+        NotificationHelper.showSilenceNotification(context, prayerName, startTime, newEndTime, timeFormat, extendMin)
+        SilenceScheduler(context).scheduleNotificationRefresh()
+    }
+
+    private suspend fun handleRefreshSilenceNotification(context: Context) {
+        val userPrefs = UserPreferences(context)
+        val endTime = userPrefs.silenceEndTime.first()
+        if (endTime <= System.currentTimeMillis()) return
+
+        val startTime = userPrefs.silenceStartTime.first().takeIf { it > 0L }
+            ?: (endTime - 30 * 60 * 1000L)
+        val label = userPrefs.silenceLabel.first() ?: context.getString(R.string.label_manual)
+        val timeFormat = userPrefs.timeFormat.first()
+        val extendMin = userPrefs.silenceExtendMinutes.first()
+
+        NotificationHelper.showSilenceNotification(context, label, startTime, endTime, timeFormat, extendMin)
+        SilenceScheduler(context).scheduleNotificationRefresh()
     }
 
     companion object {
@@ -230,6 +251,7 @@ class SilenceReceiver : BroadcastReceiver() {
         const val ACTION_STOP_SILENCE = "dhanfinix.android.sukun.STOP_SILENCE"
         const val ACTION_SHOW_REMINDER = "dhanfinix.android.sukun.SHOW_REMINDER"
         const val ACTION_EXTEND_SILENCE = "dhanfinix.android.sukun.EXTEND_SILENCE"
+        const val ACTION_REFRESH_SILENCE_NOTIFICATION = "dhanfinix.android.sukun.REFRESH_SILENCE_NOTIFICATION"
         const val KEY_PRAYER_NAME = "prayer_name"
         const val KEY_DURATION_MIN = "duration_min"
         const val KEY_REMINDER_MINUTES = "reminder_minutes"

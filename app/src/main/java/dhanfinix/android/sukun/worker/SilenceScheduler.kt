@@ -148,6 +148,16 @@ class SilenceScheduler(private val context: Context) {
         dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
     }
 
+    fun scheduleNotificationRefresh(delayMs: Long = NOTIFICATION_REFRESH_INTERVAL_MS) {
+        val refreshTimeMs = System.currentTimeMillis() + delayMs
+        val pendingRefresh = getPendingIntent(SilenceReceiver.ACTION_REFRESH_SILENCE_NOTIFICATION, REQUEST_CODE_NOTIFICATION_REFRESH)
+        scheduleExactAlarmSafely(refreshTimeMs, pendingRefresh)
+    }
+
+    fun cancelNotificationRefresh() {
+        alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_REFRESH_SILENCE_NOTIFICATION, REQUEST_CODE_NOTIFICATION_REFRESH))
+    }
+
     fun cancelManualRestoreAlarm() {
         // Cancel the dedicated request code for manual restore
         alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE))
@@ -302,5 +312,7 @@ class SilenceScheduler(private val context: Context) {
         const val TAG_SUKUN = "sukun_silence"
         // Dedicated request code for manual silence restore alarm (distinct from prayer codes 0..N+100)
         const val REQUEST_CODE_MANUAL_RESTORE = 9000
+        const val REQUEST_CODE_NOTIFICATION_REFRESH = 9001
+        const val NOTIFICATION_REFRESH_INTERVAL_MS = 15_000L
     }
 }

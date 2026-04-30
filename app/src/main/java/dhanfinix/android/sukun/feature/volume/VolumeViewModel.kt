@@ -424,8 +424,9 @@ class VolumeViewModel(application: Application) : AndroidViewModel(application) 
             val extendMin = _uiState.value.silenceExtendMinutes
             val prayerName = label ?: getApplication<Application>().getString(R.string.label_manual)
             dhanfinix.android.sukun.core.notification.NotificationHelper.showSilenceNotification(
-                getApplication(), prayerName, System.currentTimeMillis(), newEndTime, timeFormat, extendMin
+                getApplication(), prayerName, startTime, newEndTime, timeFormat, extendMin
             )
+            silenceScheduler.scheduleNotificationRefresh()
 
             // Update UI immediately
             updateSilenceState(newEndTime)

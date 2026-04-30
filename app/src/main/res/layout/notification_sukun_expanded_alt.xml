@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Sukun EXPANDED notification view (big content view) — RemoteViews safe.
-    Shown when user swipes down / long-presses the notification.
-    Layout: top label row | giant chronometer | end-time | action buttons (extend + stop)
+    Alternate copy of notification_sukun_expanded.
+    SystemUI can cache an already-expanded custom notification view; alternating
+    layout ids forces a clean re-bind so progress changes are visible in-place.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -22,7 +22,6 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- Prayer name badge -->
             <TextView
                 android:id="@+id/notif_expanded_prayer"
                 android:layout_width="wrap_content"
@@ -48,7 +47,6 @@
 
         </LinearLayout>
 
-        <!-- Row 2: Giant countdown timer -->
         <Chronometer
             android:id="@+id/notif_expanded_chronometer"
             android:layout_width="wrap_content"
@@ -60,7 +58,6 @@
             android:fontFamily="monospace"
             android:textSize="36sp" />
 
-        <!-- Row 3: Visual silence progress -->
         <ProgressBar
             android:id="@+id/notif_expanded_progress"
             style="?android:attr/progressBarStyleHorizontal"
@@ -72,7 +69,6 @@
             android:max="1000"
             android:progressDrawable="@drawable/bg_notification_progress" />
 
-        <!-- Row 3: "Ends at HH:mm" -->
         <TextView
             android:id="@+id/notif_expanded_end_time"
             android:layout_width="wrap_content"
@@ -83,7 +79,6 @@
             android:maxLines="1" />
     </LinearLayout>
 
-    <!-- Action buttons: Extend + Stop -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -91,7 +86,6 @@
         android:gravity="center_vertical"
         android:layout_marginStart="8dp">
 
-        <!-- +Xm Extend Button -->
         <TextView
             android:id="@+id/notif_expanded_extend"
             android:layout_width="wrap_content"
@@ -107,7 +101,6 @@
             android:background="@drawable/bg_extend_pill"
             android:contentDescription="@string/extend_silence" />
 
-        <!-- Stop Button -->
         <ImageView
             android:id="@+id/notif_expanded_stop"
             android:layout_width="48dp"
