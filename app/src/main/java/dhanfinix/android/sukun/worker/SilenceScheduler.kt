@@ -107,7 +107,7 @@ class SilenceScheduler(private val context: Context) {
 
     fun scheduleManual(durationMin: Int) {
         // Cancel any prior manual restore alarm before scheduling a new one
-        cancelManualAlarms()
+        cancelManualRestoreAlarm()
 
         // For manual, we start silence IMMEDIATELY and schedule restore in the future
         val startIntent = Intent(context, SilenceReceiver::class.java).apply {
@@ -125,7 +125,7 @@ class SilenceScheduler(private val context: Context) {
 
     fun stopSilence() {
         // Only cancel the manual restore alarm — do NOT touch prayer-scheduled alarms!
-        cancelManualAlarms()
+        cancelManualRestoreAlarm()
         // Immediately restore volumes
         val stopIntent = Intent(context, SilenceReceiver::class.java).apply {
             action = SilenceReceiver.ACTION_STOP_SILENCE
@@ -139,7 +139,7 @@ class SilenceScheduler(private val context: Context) {
      */
     suspend fun extendManual(newEndTimeMs: Long) {
         // Cancel the old restore alarm first
-        cancelManualAlarms()
+        cancelManualRestoreAlarm()
         // Schedule new restore alarm at the extended time
         val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE)
         scheduleExactAlarmSafely(newEndTimeMs, pendingRestore)
@@ -148,9 +148,14 @@ class SilenceScheduler(private val context: Context) {
         dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
     }
 
-    private fun cancelManualAlarms() {
+    fun cancelManualRestoreAlarm() {
         // Cancel the dedicated request code for manual restore
         alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE))
+    }
+
+    fun cancelPrayerRestore(prayer: PrayerName) {
+        val requestCode = prayer.ordinal + 100
+        alarmManager.cancel(getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, requestCode))
     }
 
     fun cancelAll() {

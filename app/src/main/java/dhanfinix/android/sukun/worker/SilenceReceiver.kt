@@ -11,6 +11,7 @@ import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.SilenceMode
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.core.notification.NotificationHelper
+import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -33,7 +34,7 @@ class SilenceReceiver : BroadcastReceiver() {
                     val prayerResId = intent.getIntExtra(KEY_PRAYER_NAME, R.string.app_name)
                     val prayerName = context.getString(prayerResId)
                     val durationMin = intent.getIntExtra(KEY_DURATION_MIN, 15)
-                    handleStartSilence(context, prayerName, durationMin)
+                    handleStartSilence(context, prayerResId, prayerName, durationMin)
                 } 
                 else if (action == ACTION_STOP_SILENCE) {
                     handleStopSilence(context)
@@ -53,7 +54,7 @@ class SilenceReceiver : BroadcastReceiver() {
         }
     }
 
-    private suspend fun handleStartSilence(context: Context, prayerName: String, durationMin: Int) {
+    private suspend fun handleStartSilence(context: Context, prayerResId: Int, prayerName: String, durationMin: Int) {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val notifManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -66,6 +67,30 @@ class SilenceReceiver : BroadcastReceiver() {
         val userPrefs = UserPreferences(context)
 
         val silenceMode = userPrefs.silenceMode.first()
+        val currentLabel = userPrefs.silenceLabel.first()
+        val manualLabel = context.getString(R.string.label_manual)
+        val currentEndTime = userPrefs.silenceEndTime.first()
+        val currentTimeMs = System.currentTimeMillis()
+        val existingIsActive = currentEndTime > currentTimeMs
+        val prayer = PrayerName.entries.firstOrNull { it.nameRes == prayerResId }
+        val newEndTime = currentTimeMs + (durationMin * 60 * 1000L)
+        val isManualSilenceActive = existingIsActive && currentLabel == manualLabel
+
+        if (isManualSilenceActive) {
+            // A prayer started while a manual silence was already active.
+            // Cancel the manual restore alarm so the prayer window can take over.
+            SilenceScheduler(context).cancelManualRestoreAlarm()
+        }
+
+        if (existingIsActive && currentEndTime >= newEndTime) {
+            // The currently active silence already lasts longer than this prayer window.
+            // Keep the active silence as-is and cancel the prayer restore alarm so it
+            // does not shorten the existing window.
+            if (prayer != null) {
+                SilenceScheduler(context).cancelPrayerRestore(prayer)
+            }
+            return
+        }
 
         // 1. Save current volumes & system modes
         val currentMedia = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -111,8 +136,8 @@ class SilenceReceiver : BroadcastReceiver() {
         }
 
         // 4. Update UI/metadata
-        val startTime = System.currentTimeMillis()
-        val endTime = startTime + (durationMin * 60 * 1000L)
+        val startTime = currentTimeMs
+        val endTime = newEndTime
         userPrefs.setSilenceMetadata(startTime, endTime, prayerName)
 
         // 5. Show ongoing notification with working chronometer
