@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
@@ -54,46 +55,48 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
     private var loadJob: Job? = null
 
     init {
-        // Simple startup flow: 
-        // 1. Check if we need to auto-detect (fresh install)
-        // 2. If yes, try to detect (with timeout)
-        // 3. Load prayer times using whatever coordinates we have (GPS or fallback)
         viewModelScope.launch {
             val latVal = userPrefs.latitude.first()
             val lngVal = userPrefs.longitude.first()
             val locNameVal = userPrefs.locationName.first()
+            currentTimeFormat = userPrefs.timeFormat.first()
+            val isFreshInstallLocation = latVal == -6.2088 && lngVal == 106.8456 && locNameVal == null
 
-            if (latVal == -6.2088 && lngVal == 106.8456 && locNameVal == null) {
-                val nm = getApplication<Application>().checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
-                if (nm == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    // We have permission, try a quick detection before loading
+            // Do not block first paint on GPS or reverse geocoding. A fresh install can
+            // have no cached location yet, but fallback prayer times should still render.
+            loadPrayerTimes()
+
+            if (isFreshInstallLocation && hasLocationPermission()) {
+                launch {
                     detectLocationSync()
+                    loadPrayerTimes()
                 }
             }
-            
-            // Load the data (either with newly detected GPS, or fallback Jakarta)
-            loadPrayerTimes()
-            
-            // Observe Preferences
-
 
             launch {
-                userPrefs.timeFormat.collect {
+                userPrefs.timeFormat.drop(1).collect {
                     currentTimeFormat = it
                     loadPrayerTimes() // Reload to re-format strings
                 }
             }
 
             launch {
-                userPrefs.isReminderEnabled.collect { loadPrayerTimes() }
+                userPrefs.isReminderEnabled.drop(1).collect { loadPrayerTimes() }
             }
 
             launch {
-                userPrefs.reminderMinutes.collect { loadPrayerTimes() }
+                userPrefs.reminderMinutes.drop(1).collect { loadPrayerTimes() }
             }
             
             startClockTicker()
         }
+    }
+
+    private fun hasLocationPermission(): Boolean {
+        val application = getApplication<Application>()
+        val hasCoarse = application.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        val hasFine = application.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        return hasCoarse || hasFine
     }
 
     fun onEvent(event: PrayerEvent) {
@@ -441,8 +444,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
         anyOf = ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"]
     )
     private suspend fun detectLocationSync() {
-        val nm = getApplication<Application>().checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
-        if (nm != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (!hasLocationPermission()) {
             _uiState.update { state -> state.copy(isDetectingLocation = false, errorMessage = getApplication<Application>().getString(R.string.err_permission_denied)) }
             return
         }
