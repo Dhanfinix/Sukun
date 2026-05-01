@@ -7,6 +7,7 @@ import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -210,7 +211,7 @@ class PrayerWidget : GlanceAppWidget() {
                 if (isNext) {
                     it.background(colors.primaryContainer).cornerRadius(12.dp)
                 } else {
-                    it
+                    it.background(Color.Transparent)
                 }
             }
 

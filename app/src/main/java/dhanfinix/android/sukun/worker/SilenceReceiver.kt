@@ -51,6 +51,9 @@ class SilenceReceiver : BroadcastReceiver() {
                 else if (action == ACTION_REFRESH_SILENCE_NOTIFICATION) {
                     handleRefreshSilenceNotification(context)
                 }
+                else if (action == ACTION_UPDATE_WIDGETS) {
+                    handleUpdateWidgets(context)
+                }
             } finally {
                 pendingResult.finish()
             }
@@ -246,12 +249,18 @@ class SilenceReceiver : BroadcastReceiver() {
         SilenceScheduler(context).scheduleNotificationRefresh()
     }
 
+    private suspend fun handleUpdateWidgets(context: Context) {
+        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
+        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
+    }
+
     companion object {
         const val ACTION_START_SILENCE = "dhanfinix.android.sukun.START_SILENCE"
         const val ACTION_STOP_SILENCE = "dhanfinix.android.sukun.STOP_SILENCE"
         const val ACTION_SHOW_REMINDER = "dhanfinix.android.sukun.SHOW_REMINDER"
         const val ACTION_EXTEND_SILENCE = "dhanfinix.android.sukun.EXTEND_SILENCE"
         const val ACTION_REFRESH_SILENCE_NOTIFICATION = "dhanfinix.android.sukun.REFRESH_SILENCE_NOTIFICATION"
+        const val ACTION_UPDATE_WIDGETS = "dhanfinix.android.sukun.UPDATE_WIDGETS"
         const val KEY_PRAYER_NAME = "prayer_name"
         const val KEY_DURATION_MIN = "duration_min"
         const val KEY_REMINDER_MINUTES = "reminder_minutes"

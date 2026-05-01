@@ -174,9 +174,11 @@ class SilenceScheduler(private val context: Context) {
             val pendingStart = getPendingIntent(SilenceReceiver.ACTION_START_SILENCE, prayerName.ordinal)
             val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, prayerName.ordinal + 100)
             val pendingReminder = getPendingIntent(SilenceReceiver.ACTION_SHOW_REMINDER, prayerName.ordinal + 200)
+            val pendingWidgetUpdate = getPendingIntent(SilenceReceiver.ACTION_UPDATE_WIDGETS, prayerName.ordinal + 300)
             alarmManager.cancel(pendingStart)
             alarmManager.cancel(pendingRestore)
             alarmManager.cancel(pendingReminder)
+            alarmManager.cancel(pendingWidgetUpdate)
         }
     }
 
@@ -250,6 +252,18 @@ class SilenceScheduler(private val context: Context) {
 
             scheduleExactAlarmSafely(restoreTimeMs, pendingRestore)
         }
+
+        // 4. Schedule Widget Update (Always, even if silence is disabled)
+        val widgetIntent = Intent(context, SilenceReceiver::class.java).apply {
+            action = SilenceReceiver.ACTION_UPDATE_WIDGETS
+        }
+        val pendingWidgetUpdate = PendingIntent.getBroadcast(
+            context,
+            requestCode + 300, // Offset to avoid collision
+            widgetIntent,
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        scheduleExactAlarmSafely(calendar.timeInMillis, pendingWidgetUpdate)
     }
 
     private fun getPendingIntent(action: String, requestCode: Int = 0): PendingIntent {
