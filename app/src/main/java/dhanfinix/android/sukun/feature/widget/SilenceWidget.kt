@@ -21,8 +21,6 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import androidx.glance.layout.Column
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
@@ -44,8 +42,6 @@ import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.core.designsystem.SukunGlanceTheme
 import dhanfinix.android.sukun.worker.SilenceReceiver
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 
 class SilenceWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = SilenceWidget()
@@ -58,16 +54,7 @@ class SilenceWidget : GlanceAppWidget() {
          * Standard update method for non-suspend callers.
          */
         fun update(context: Context) {
-            MainScope().launch {
-                updateAll(context)
-            }
-        }
-
-        /**
-         * Suspend update for background receivers.
-         */
-        suspend fun updateAll(context: Context) {
-            SilenceWidget().updateAll(context)
+            WidgetUpdateCoordinator.refreshSilenceAsync(context)
         }
     }
 

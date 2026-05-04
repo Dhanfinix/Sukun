@@ -42,9 +42,7 @@ import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.core.designsystem.SukunGlanceTheme
 import dhanfinix.android.sukun.feature.prayer.data.PrayerRepository
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -62,17 +60,7 @@ class PrayerWidget : GlanceAppWidget() {
          * Standard update method for non-suspend callers (e.g. ViewModel).
          */
         fun update(context: Context) {
-            MainScope().launch {
-                updateAll(context)
-            }
-        }
-
-        /**
-         * Suspend update for background receivers (e.g. SilenceReceiver).
-         * Ensures the update completes before the receiver process finishes.
-         */
-        suspend fun updateAll(context: Context) {
-            PrayerWidget().updateAll(context)
+            WidgetUpdateCoordinator.refreshPrayerAsync(context)
         }
     }
 

@@ -66,6 +66,8 @@ class BootReceiver : BroadcastReceiver() {
                 val durations = userPrefs.prayerDurations.first()
                 val offsets = userPrefs.prayerOffsets.first()
                 val enabledMap = userPrefs.isPrayerEnabled.first()
+                val isReminderEnabled = userPrefs.isReminderEnabled.first()
+                val reminderMinutes = userPrefs.reminderMinutes.first()
 
                 val today = LocalDate.now()
                 val tomorrow = today.plusDays(1)
@@ -100,7 +102,14 @@ class BootReceiver : BroadcastReceiver() {
                         )
                     }
                     
-                    scheduler.scheduleAll(prayersToday, prayersTomorrow, durations, offsets)
+                    scheduler.scheduleAll(
+                        prayersToday,
+                        prayersTomorrow,
+                        durations,
+                        offsets,
+                        isReminderEnabled,
+                        reminderMinutes
+                    )
                 }
             } finally {
                 // Ensure midnight reset is scheduled even if API calls fail

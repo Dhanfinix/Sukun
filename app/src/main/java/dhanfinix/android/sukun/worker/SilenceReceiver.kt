@@ -11,6 +11,7 @@ import dhanfinix.android.sukun.R
 import dhanfinix.android.sukun.core.datastore.SilenceMode
 import dhanfinix.android.sukun.core.datastore.UserPreferences
 import dhanfinix.android.sukun.core.notification.NotificationHelper
+import dhanfinix.android.sukun.feature.widget.WidgetUpdateCoordinator
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -153,8 +154,7 @@ class SilenceReceiver : BroadcastReceiver() {
         SilenceScheduler(context).scheduleNotificationRefresh()
 
         // 6. Update Widgets (Suspend to ensure completion before finish)
-        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
-        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
+        WidgetUpdateCoordinator.refreshAll(context)
     }
 
     private suspend fun handleStopSilence(context: Context) {
@@ -207,8 +207,7 @@ class SilenceReceiver : BroadcastReceiver() {
         NotificationHelper.showRestoredNotification(context, prayerName)
 
         // 5. Update Widgets (Suspend to ensure completion before finish)
-        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
-        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
+        WidgetUpdateCoordinator.refreshAll(context)
     }
 
     private suspend fun handleExtendSilence(context: Context) {
@@ -250,8 +249,7 @@ class SilenceReceiver : BroadcastReceiver() {
     }
 
     private suspend fun handleUpdateWidgets(context: Context) {
-        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
-        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
+        WidgetUpdateCoordinator.refreshAll(context)
     }
 
     companion object {

@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.work.WorkManager
 import dhanfinix.android.sukun.R
+import dhanfinix.android.sukun.feature.widget.WidgetUpdateCoordinator
 import dhanfinix.android.sukun.feature.prayer.data.PrayerRepository
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerInfo
 import dhanfinix.android.sukun.feature.prayer.data.model.PrayerName
@@ -73,9 +74,7 @@ class SilenceScheduler(private val context: Context) {
             }
         }
 
-        // Update Widgets (Suspend for reliability)
-        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
-        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
+        WidgetUpdateCoordinator.refreshAll(context)
     }
 
     private fun scheduleRestoreOnly(prayer: PrayerInfo, durationMin: Int, date: LocalDate) {
@@ -143,15 +142,13 @@ class SilenceScheduler(private val context: Context) {
         // Schedule new restore alarm at the extended time
         val pendingRestore = getPendingIntent(SilenceReceiver.ACTION_STOP_SILENCE, REQUEST_CODE_MANUAL_RESTORE)
         scheduleExactAlarmSafely(newEndTimeMs, pendingRestore)
-        // Update widgets to reflect new countdown (Suspend for reliability)
-        dhanfinix.android.sukun.feature.widget.PrayerWidget.updateAll(context)
-        dhanfinix.android.sukun.feature.widget.SilenceWidget.updateAll(context)
+        WidgetUpdateCoordinator.refreshAll(context)
     }
 
     fun scheduleNotificationRefresh(delayMs: Long = NOTIFICATION_REFRESH_INTERVAL_MS) {
         val refreshTimeMs = System.currentTimeMillis() + delayMs
         val pendingRefresh = getPendingIntent(SilenceReceiver.ACTION_REFRESH_SILENCE_NOTIFICATION, REQUEST_CODE_NOTIFICATION_REFRESH)
-        scheduleExactAlarmSafely(refreshTimeMs, pendingRefresh)
+        scheduleInexactAlarm(refreshTimeMs, pendingRefresh)
     }
 
     fun cancelNotificationRefresh() {
@@ -218,8 +215,7 @@ class SilenceScheduler(private val context: Context) {
                     reminderIntent,
                     PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                // Use INEXACT alarm for reminder so it doesn't consume the exact alarm Doze quota!
-                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, reminderTimeMs, pendingReminder)
+                scheduleExactAlarmSafely(reminderTimeMs, pendingReminder)
             }
         }
 
@@ -263,7 +259,7 @@ class SilenceScheduler(private val context: Context) {
             widgetIntent,
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        scheduleExactAlarmSafely(calendar.timeInMillis, pendingWidgetUpdate)
+        scheduleInexactAlarm(calendar.timeInMillis, pendingWidgetUpdate)
     }
 
     private fun getPendingIntent(action: String, requestCode: Int = 0): PendingIntent {
@@ -313,6 +309,10 @@ class SilenceScheduler(private val context: Context) {
         }
     }
 
+    private fun scheduleInexactAlarm(timeMs: Long, pendingIntent: PendingIntent) {
+        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMs, pendingIntent)
+    }
+
     private fun parseTime(timeStr: String): LocalTime? {
         return try {
             val parts = timeStr.split(":")
@@ -327,6 +327,6 @@ class SilenceScheduler(private val context: Context) {
         // Dedicated request code for manual silence restore alarm (distinct from prayer codes 0..N+100)
         const val REQUEST_CODE_MANUAL_RESTORE = 9000
         const val REQUEST_CODE_NOTIFICATION_REFRESH = 9001
-        const val NOTIFICATION_REFRESH_INTERVAL_MS = 15_000L
+        const val NOTIFICATION_REFRESH_INTERVAL_MS = 60_000L
     }
 }

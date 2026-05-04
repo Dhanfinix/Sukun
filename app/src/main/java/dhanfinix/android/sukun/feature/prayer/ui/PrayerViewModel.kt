@@ -412,7 +412,7 @@ class PrayerViewModel(application: Application) : AndroidViewModel(application) 
             val lng = userPrefs.longitude.first()
             val method = userPrefs.calculationMethod.first()
             val tomorrow = LocalDate.now().plusDays(1)
-            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method).getOrNull() ?: emptyMap()
+            val timesMapTomorrow = prayerRepo.getPrayerTimes(tomorrow, lat, lng, method, _uiState.value.prayerOffsets).getOrNull() ?: emptyMap()
             
             val isTomorrowFriday = tomorrow.dayOfWeek == java.time.DayOfWeek.FRIDAY
             val prayersTomorrow = PrayerName.entries.filter { 

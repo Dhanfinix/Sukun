@@ -115,8 +115,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch {
             userPrefs.setAppTheme(theme)
-            dhanfinix.android.sukun.feature.widget.SilenceWidget.update(getApplication())
-            dhanfinix.android.sukun.feature.widget.PrayerWidget.update(getApplication())
+            dhanfinix.android.sukun.feature.widget.WidgetUpdateCoordinator.refreshAll(getApplication())
         }
     }
 
@@ -153,8 +152,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setUseDynamicColor(enabled: Boolean) {
         viewModelScope.launch {
             userPrefs.setUseDynamicColor(enabled)
-            dhanfinix.android.sukun.feature.widget.SilenceWidget.update(getApplication())
-            dhanfinix.android.sukun.feature.widget.PrayerWidget.update(getApplication())
+            dhanfinix.android.sukun.feature.widget.WidgetUpdateCoordinator.refreshAll(getApplication())
         }
     }
 
